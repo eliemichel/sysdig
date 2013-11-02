@@ -1,10 +1,11 @@
+(* From TD1 *)
 exception Parse_error of string
 
 let find_file filename =
   try
     open_in filename
   with
-    | _ -> raise (Parse_error "No such file '%s'")
+    | _ -> raise (Parse_error ("No such file '" ^ filename ^ "'"))
 
 let read_file filename =
   let ic = find_file filename in

@@ -1,6 +1,6 @@
 # Makefile générant *sim*
-CMX=netlist_ast.cmx netlist_parser.cmx netlist_lexer.cmx netlist.cmx netlist_printer.cmx graph.cmx scheduler.cmx core.cmx main.cmx
-GEN=netlist_parser.ml netlist_lexer.ml netlist_parser.mli
+CMX=netlist_ast.cmx netlist_parser.cmx netlist_lexer.cmx netlist.cmx netlist_printer.cmx graph.cmx scheduler.cmx core.cmx input.cmx main.cmx
+GEN=netlist_parser.ml netlist_parser.mli netlist_lexer.ml input.ml
 BIN=sim
 
 
@@ -11,8 +11,8 @@ WARN_COLOR=\033[33;01m
 
 
 all: $(CMX)
-	@echo "Building $(BIN)..."
-	ocamlopt -o $(BIN) unix.cmxa $(CMX)
+	@echo "Linking for $(BIN)..."
+	@ocamlopt -o $(BIN) unix.cmxa $(CMX)
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
 
@@ -35,7 +35,7 @@ all: $(CMX)
 
 clean:
 	@echo "Cleaning directory..."
-	@rm -v -f *.cmi *.o *.automaton *~ $(BIN) $(CMX) $(GEN)
+	@rm -v -f .depend *.cmi *.o *.automaton *~ $(BIN) $(CMX) $(GEN)
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
 .depend: $(GEN)
