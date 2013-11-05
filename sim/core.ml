@@ -24,9 +24,7 @@ let tic inputs oldEnv ram rom p =
 	
 	let ramUp = ref [] in
 	
-	let rec addInput valuation vars =
-		Debug.print_list (function VBit _ -> "bit" | VBitArray _ -> "array") valuation;
-		match valuation, vars with
+	let rec addInput valuation vars = match valuation, vars with
 		| [], []            -> Env.empty
 		| [], _ | _, []     -> raise (
 			Sim_error
@@ -84,21 +82,22 @@ let tic inputs oldEnv ram rom p =
 		!addr
 	in
 	
+	let fixSize ws d =
+		d (* TODO : donner la taille ws à d, quitte à tronquer ou ajouter des 0 *)
+	in
+	
 	let getWord mem addr wordSize =
-		VBitArray (Array.init
+		fixSize
 			wordSize
-			(fun k ->
-				try Hashtbl.find mem (addr + k)
-				with Not_found -> false
+			(
+				try Hashtbl.find mem addr
+				with Not_found -> VBit false
 			)
-		)
 	in
 	
 	let setWord env mem wa wordSize data =
-		let data = array_of_value (evalArg env data) in
-		for k = 0 to wordSize - 1 do
-			Hashtbl.replace mem (wa + k) data.(k)
-		done;
+		let data = fixSize wordSize (evalArg env data) in
+			Hashtbl.replace mem wa data
 	in
 	
 	let oldValue ident =

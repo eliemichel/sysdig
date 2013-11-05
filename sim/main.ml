@@ -2,17 +2,35 @@ open Netlist_ast
 
 let input_file = ref "input.sim"
 let output_file = ref "output.sim"
+let rom_file = ref "rom.sim"
 let number_steps = ref (-1)
 let export_sch = ref false
 
 
 let simulate filename =
+	let env = ref (Env.empty) in
+	let (ram : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97 in
+	let (rom : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97 in	
+	
 	let out = open_out !output_file in
 	let close_all () =
 		close_out out
 	in
 	
-	let inputs = Input.read_file !input_file in
+	let inputs = Sim_lexer.read_file !input_file in
+	
+	(try
+		let addr = ref 0 in
+		List.iter
+			(fun l -> List.iter
+				(fun v ->
+					Hashtbl.add rom !addr v;
+					incr addr
+				)
+				l
+			)
+			(Sim_lexer.read_file !rom_file)
+	with Sim_lexer.Sim_lexing_error s -> Format.eprintf "Error during ROM loading: %s@." s);
 	
 	let p =
 		try Netlist.read_file filename
@@ -55,9 +73,7 @@ let simulate filename =
 			close_out outnet;
 	);
 	
-	let env = ref (Env.empty) in
-	let (ram : (int, bool) Hashtbl.t) = Hashtbl.create 97 in
-	let (rom : (int, bool) Hashtbl.t) = Hashtbl.create 97 in
+	print_string "Running simulation...\n";
 	let rec run n inputs = if n <> 0 then match inputs with
 		| []     -> print_string "Simulation done.\n"
 		| i :: q ->
@@ -79,6 +95,9 @@ let () =
 		 "-output", Arg.Set_string output_file,
 		 "File in which the result is returned (if not specified, result is
 		 displayed in output.sim)";
+		 
+		 "-rom", Arg.Set_string rom_file,
+		 "File containing ROM (set by default to rom.sim)";
 		 
 		 "-n", Arg.Set_int number_steps,
 		 "Number of steps to simulate (if not specified, number of lines of

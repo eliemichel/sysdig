@@ -149,3 +149,14 @@ l'autre a été fusionnée avec `master`.
 
 Il n'est en fait pas possible de mettre plusieurs lignes de commentaires de
 suite dans un fichier `.sim`... <= Corrigé
+Reste le problème des commentaires en début de fichier. Peut-être faut-il revoir
+tout `input.mll` et ajouter une règle `comment`.
+
+La rom doit être préenregistrée. Gérer un fichier `rom.sim` contenant la rom.
+Du coup `input.mll` pourrait être renommé `sim_lexer.mll` pour factoriser les
+lectures de fichiers .sim.
+
+Les mots en mémoire sont-ils sur plusieurs adresses ou une seule ? Comment
+connaître la taille des mots a priori ?
+
+Solution : Faire des tables de hachage de `Netlist_ast.value` et non de `bool` !

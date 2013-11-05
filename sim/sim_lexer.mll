@@ -1,6 +1,6 @@
 {
 	exception EOF
-	exception Input_error of string
+	exception Sim_lexing_error of string
 	
 	let input = ref []
 	let current_line = ref []
@@ -43,14 +43,17 @@ and bit_array = parse
 			current_line := a :: !current_line;
 			token lexbuf
 		}
-	| eof        { raise (Input_error "Syntax error") }
+	| eof        { raise (Sim_lexing_error "Syntax error") }
 
 {
 	let read_file filename =
 		let ic =
 			try open_in filename
-			with _ -> raise (Input_error ("No such file '" ^ filename ^ "'"))
+			with _ -> raise (Sim_lexing_error ("No such file '" ^ filename ^ "'"))
 		in
+			input := [];
+			current_line := [];
+			current_array := [];
 			token (Lexing.from_channel ic);
 			List.rev !input
 	
