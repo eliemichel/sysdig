@@ -137,7 +137,7 @@ valeur de `c` à la première itération est prise en compte dans la simulation 
 `ram.net`.
 Dédoublement de la table de hachage de la ram  en `ram` et `newRam` pour
 conserver l'ancienne valeur de la mémoire à la lecture.
-Pb : Comment la ram doit-elle être gérée ? Doit-on considérer qu'il y a un
+*Problème* : Comment la ram doit-elle être gérée ? Doit-on considérer qu'il y a un
 registre devant l'entrée de la ram ou juste que l'on fait les enregistrement en
 fin d'itération ? Dans le premier cas, le write enable doit-il lui aussi être
 retardé (plus instinctif) ?
@@ -159,7 +159,7 @@ lectures de fichiers .sim.
 Les mots en mémoire sont-ils sur plusieurs adresses ou une seule ? Comment
 connaître la taille des mots a priori ?
 
-Solution : Faire des tables de hachage de `Netlist_ast.value` et non de `bool` !
+*Solution* : Faire des tables de hachage de `Netlist_ast.value` et non de `bool` !
 
 On tronque ou complète arbitrairement (on suppose les poids faibles à droite)
 les entrées et sorties de la mémoire. Ces situations ne sont censées arriver en

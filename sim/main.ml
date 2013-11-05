@@ -1,25 +1,22 @@
 open Netlist_ast
 
-let input_file = ref "input.sim"
-let output_file = ref "output.sim"
-let rom_file = ref "rom.sim"
+let default_input_file = "input.sim"
+let default_output_file = "output.sim"
+let default_rom_file = "rom.sim"
+
+let input_file = ref default_input_file
+let output_file = ref default_output_file
+let rom_file = ref default_rom_file
 let number_steps = ref (-1)
 let export_sch = ref false
+let prefix = ref false
 
+let env = ref (Env.empty)
+let (ram : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97
+let (rom : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97
 
-let simulate filename =
-	let env = ref (Env.empty) in
-	let (ram : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97 in
-	let (rom : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97 in	
-	
-	let out = open_out !output_file in
-	let close_all () =
-		close_out out
-	in
-	
-	let inputs = Sim_lexer.read_file !input_file in
-	
-	(try
+let loadRom () =
+	try
 		let addr = ref 0 in
 		List.iter
 			(fun l -> List.iter
@@ -30,7 +27,29 @@ let simulate filename =
 				l
 			)
 			(Sim_lexer.read_file !rom_file)
-	with Sim_lexer.Sim_lexing_error s -> Format.eprintf "Error during ROM loading: %s@." s);
+	with Sim_lexer.Sim_lexing_error s ->
+		Format.eprintf "Error during ROM loading: %s@." s
+
+
+let simulate filename =
+	if !prefix then (
+		if !input_file = default_input_file
+		then input_file := filename ^ "_input.sim";
+		
+		if !output_file = default_output_file
+		then output_file := filename ^ "_output.sim";
+		
+		if !rom_file = default_rom_file
+		then rom_file := filename ^ "_rom.sim";
+	);
+	
+	let out = open_out !output_file in
+	let close_all () =
+		close_out out
+	in
+	
+	let inputs = Sim_lexer.read_file !input_file in
+	loadRom ();
 	
 	let p =
 		try Netlist.read_file filename
@@ -93,19 +112,23 @@ let () =
 		 "File containing input values (set by default to input.sim)";
 		
 		 "-output", Arg.Set_string output_file,
-		 "File in which the result is returned (if not specified, result is
+		 "File in which the result is returned (if not specified, result is\
 		 displayed in output.sim)";
 		 
 		 "-rom", Arg.Set_string rom_file,
 		 "File containing ROM (set by default to rom.sim)";
 		 
 		 "-n", Arg.Set_int number_steps,
-		 "Number of steps to simulate (if not specified, number of lines of
+		 "Number of steps to simulate (if not specified, number of lines of\
 		 input file)";
+		 
+		 "-p", Arg.Set prefix,
+		 "If specified, default input, output and rom files will be prefixed\
+		 by [filename]_";
 		 
 		 "-sch", Arg.Set export_sch,
 		 "Specify whether the sorted netlist must be exported (in sch.net)";
 		]
 		simulate
-		""
+		"sim [filename] simulates the circuit described in the given .net file."
 
