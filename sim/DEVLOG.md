@@ -88,7 +88,8 @@ Dans quel sens sont notées les adresses ? J'ai pris pour convention que
 La mémoire est initialisée à 0.
 
 ### TODO
-Ajouter une commande pour utiliser plutôt les fichiers. *ok*
+Ajouter une commande pour utiliser plutôt des fichiers d'entrée/sortie préfixés.
+ *ok*
 Localiser et préciser les erreurs. **TODO**
 Gérer RAM et ROM. (Hash table ou Map ? -> Hash table pour la ROM qui est en
 lue plus souvent qu'écrite) *ok*
@@ -98,13 +99,13 @@ Bit tricks pour les slices ? *abandonné*
 Écrire le fichier NET « schédulé ». *ok*
 Régler le problème de .depend dans make clean. **TODO**
 Ajoute une ligne make run au Makefile pour lancer un petit exemple et vérifier
-que la compilation s'est bien déroulée. **TODO**
+que la compilation s'est bien déroulée. **ok**
 Vérifier les données d'entrée ?
 Trouver une regexp pour matcher le début du fichier. (`_#_` semble ne pas
 fonctionner.) *abandonné au profit d'une autre solution*
 
 
-## 03/11/2013 (Jour 3.5 <- suite après minuit du jour 3)
+## 03/11/2013 (Jour 3.5)
 Le compilateur mjc semble préférer `SELECT 1 foo` à `SLICE 1 1 foo`. Il faut en
 conclure que `SELECT` peut se faire sur un bit simple et pas uniquement sur un
 groupe de bits. `[|b|]` et `b` sont donc identifiés.
@@ -172,5 +173,6 @@ et `rom_file` deviennent respectivement `filename_input.sim`,
 les fichiers input et rom pour plusieurs circuit différents sans avoir à
 spécifier à `sim` les paramètres `-input`, `-output` et `-rom` en permanence.
 
+Les commentaires dans les fichiers .sim sont désormais entièrement fonctionnels.
 
 

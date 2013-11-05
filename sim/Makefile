@@ -8,6 +8,7 @@ NO_COLOR=\033[0m
 OK_COLOR=\033[32;01m
 ERROR_COLOR=\033[31;01m
 WARN_COLOR=\033[33;01m
+HIGHLIGHT_COLOR=\033[1m
 
 
 all: $(CMX)
@@ -15,6 +16,11 @@ all: $(CMX)
 	@ocamlopt -o $(BIN) unix.cmxa $(CMX)
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
+run: $(BIN)
+	@echo "$(HIGHLIGHT_COLOR)  ./$(BIN) test/ram.net$(NO_COLOR)"
+	@./$(BIN) test/ram.net
+	@echo "$(HIGHLIGHT_COLOR)  cat output.sim$(NO_COLOR)"
+	@cat output.sim
 
 .SUFFIXES: .mli .ml .cmi .cmx .mll .mly
 
