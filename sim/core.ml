@@ -22,7 +22,7 @@ let tic inputs oldEnv ram rom p =
 	[ram] and [rom] containing RAM and ROM values and then returns the output
 	vector. *)
 	
-	let (newRam : (int, bool) Hashtbl.t) = Hashtbl.create 97 in
+	let ramUp = ref [] in
 	
 	let rec addInput valuation vars = match valuation, vars with
 		| [], []            -> Env.empty
@@ -92,8 +92,8 @@ let tic inputs oldEnv ram rom p =
 		)
 	in
 	
-	let setWord mem wa wordSize data =
-		let data = array_of_value data in
+	let setWord env mem wa wordSize data =
+		let data = array_of_value (evalArg env data) in
 		for k = 0 to wordSize - 1 do
 			Hashtbl.replace mem (wa + k) data.(k)
 		done;
@@ -112,12 +112,13 @@ let tic inputs oldEnv ram rom p =
 	let ramHandler addrSize wordSize rAddr writeEnable wAddr data =
 		let ra = getAddr addrSize rAddr in
 		let wa = getAddr addrSize wAddr in
-			if bool_of_value writeEnable then setWord newRam wa wordSize data;
+			if bool_of_value writeEnable
+			then ramUp := (wa, wordSize, data) :: !ramUp;
 			getWord ram ra wordSize
 	in
 	
-	let updateRam () =
-		Hashtbl.iter (fun a v -> Hashtbl.replace ram a v) newRam
+	let updateRam env =
+		List.iter (fun (wa, ws, d) -> setWord env ram wa ws d) !ramUp
 	in
 	
 	let evalExp env =
@@ -145,10 +146,7 @@ let tic inputs oldEnv ram rom p =
 				(evalArg ra)
 				(evalArg we)
 				(evalArg wa)
-				(match d with
-					| Avar ident -> oldValue ident
-					| Aconst v   -> v
-				)
+				d
 		| Econcat (arg1, arg2) -> (match evalArg arg1, evalArg arg2 with
 			| VBitArray a, VBitArray b -> VBitArray (Array.append a b)
 			| VBitArray a, VBit b      -> VBitArray (Array.append a [|b|])
@@ -182,7 +180,7 @@ let tic inputs oldEnv ram rom p =
 		| o :: q -> (Env.find o env) :: (getOutput env q)
 	in
 	let env = applyEq (addInput inputs p.p_inputs) p.p_eqs in (
-		updateRam ();
+		updateRam env;
 		env, getOutput env p.p_outputs
 		)
 
