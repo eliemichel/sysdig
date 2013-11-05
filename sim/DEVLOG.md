@@ -88,20 +88,20 @@ Dans quel sens sont notées les adresses ? J'ai pris pour convention que
 La mémoire est initialisée à 0.
 
 ### TODO
-Ajouter une commande pour utiliser plutôt les fichiers.
-Localiser et préciser les erreurs.
+Ajouter une commande pour utiliser plutôt les fichiers. *ok*
+Localiser et préciser les erreurs. **TODO**
 Gérer RAM et ROM. (Hash table ou Map ? -> Hash table pour la ROM qui est en
-lue plus souvent qu'écrite)
+lue plus souvent qu'écrite) *ok*
 Gérer la possibilité d'entrer les données au clavier et de lire la sortie dans
-la console.
-Bit tricks pour les slices ?
-Écrire le fichier NET « schédulé ».
-Régler le problème de .depend dans make clean.
+la console. *abandonné*
+Bit tricks pour les slices ? *abandonné*
+Écrire le fichier NET « schédulé ». *ok*
+Régler le problème de .depend dans make clean. **TODO**
 Ajoute une ligne make run au Makefile pour lancer un petit exemple et vérifier
-que la compilation s'est bien déroulée.
+que la compilation s'est bien déroulée. **TODO**
 Vérifier les données d'entrée ?
 Trouver une regexp pour matcher le début du fichier. (`_#_` semble ne pas
-fonctionner.)
+fonctionner.) *abandonné au profit d'une autre solution*
 
 
 ## 03/11/2013 (Jour 3.5 <- suite après minuit du jour 3)
@@ -137,7 +137,7 @@ valeur de `c` à la première itération est prise en compte dans la simulation 
 `ram.net`.
 Dédoublement de la table de hachage de la ram  en `ram` et `newRam` pour
 conserver l'ancienne valeur de la mémoire à la lecture.
-*Problème* : Comment la ram doit-elle être gérée ? Doit-on considérer qu'il y a un
+**Problème** : Comment la ram doit-elle être gérée ? Doit-on considérer qu'il y a un
 registre devant l'entrée de la ram ou juste que l'on fait les enregistrement en
 fin d'itération ? Dans le premier cas, le write enable doit-il lui aussi être
 retardé (plus instinctif) ?
@@ -159,9 +159,18 @@ lectures de fichiers .sim.
 Les mots en mémoire sont-ils sur plusieurs adresses ou une seule ? Comment
 connaître la taille des mots a priori ?
 
-*Solution* : Faire des tables de hachage de `Netlist_ast.value` et non de `bool` !
+**Solution** : Faire des tables de hachage de `Netlist_ast.value` et non de `bool` !
 
 On tronque ou complète arbitrairement (on suppose les poids faibles à droite)
 les entrées et sorties de la mémoire. Ces situations ne sont censées arriver en
 pratique que lorsque la valeur de la mémoire n'est pas initialisée si on
 conserve dans tout le circuit la même `wordSize`.
+
+Ajout de l'option `-p` : Les valeurs par défaut de `input_file`, `output_file`
+et `rom_file` deviennent respectivement `filename_input.sim`,
+`filename_output.sim` et `filename_rom.sim`. Ça permet de conserver en parallèle
+les fichiers input et rom pour plusieurs circuit différents sans avoir à
+spécifier à `sim` les paramètres `-input`, `-output` et `-rom` en permanence.
+
+
+

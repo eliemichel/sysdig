@@ -33,14 +33,15 @@ let loadRom () =
 
 let simulate filename =
 	if !prefix then (
+		let f = Filename.chop_suffix filename ".net" in
 		if !input_file = default_input_file
-		then input_file := filename ^ "_input.sim";
+		then input_file := f ^ "_input.sim";
 		
 		if !output_file = default_output_file
-		then output_file := filename ^ "_output.sim";
+		then output_file := f ^ "_output.sim";
 		
 		if !rom_file = default_rom_file
-		then rom_file := filename ^ "_rom.sim";
+		then rom_file := f ^ "_rom.sim";
 	);
 	
 	let out = open_out !output_file in

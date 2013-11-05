@@ -5,31 +5,38 @@
 	let input = ref []
 	let current_line = ref []
 	let current_array = ref []
+	let empty = ref true
 	
 	let bool_of_char c = c = '1'
+	
+	let handleNewline () =
+		input := (List.rev !current_line) :: !input;
+		current_line := [];
+		empty := true
 }
 
-let comment = ( '\n'? '#' [^'\n']* )+
 let value = ['0' '1']
 let whitespace = [' ' '\t']+
-let newline = comment? '\n'
+let newline = '\n'
 
 
 rule token = parse
-	| whitespace { token lexbuf }
+	| whitespace { empty := false ; token lexbuf }
 	| newline    {
-		input := (List.rev !current_line) :: !input;
-		current_line := [];
+		handleNewline ();
 		token lexbuf
 		}
 	| value as v {
+		empty := false;
 		current_line := (Netlist_ast.VBit (bool_of_char v)) :: !current_line;
 		token lexbuf
 		}
 	| '['        {
+		empty := false;
 		current_array := [];
 		bit_array lexbuf
 		}
+	| '#'        { if not !empty then handleNewline () ;  comment lexbuf }
 	| eof        { () }
 
 and bit_array = parse
@@ -44,6 +51,11 @@ and bit_array = parse
 			token lexbuf
 		}
 	| eof        { raise (Sim_lexing_error "Syntax error") }
+
+and comment = parse
+	| newline { empty := true ; token lexbuf }
+	| _       { comment lexbuf }
+	| eof     { () }
 
 {
 	let read_file filename =
