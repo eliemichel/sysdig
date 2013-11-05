@@ -21,6 +21,9 @@ let tic inputs oldEnv ram rom p =
 	vector [i], the environnement [oldEnv] (for registers) and the hash tables
 	[ram] and [rom] containing RAM and ROM values and then returns the output
 	vector. *)
+	
+	let ramUp = ref [] in
+	
 	let rec addInput valuation vars = match valuation, vars with
 		| [], []            -> Env.empty
 		| [], _ | _, []     -> raise (
@@ -89,8 +92,8 @@ let tic inputs oldEnv ram rom p =
 		)
 	in
 	
-	let setWord mem wa wordSize data =
-		let data = array_of_value data in
+	let setWord env mem wa wordSize data =
+		let data = array_of_value (evalArg env data) in
 		for k = 0 to wordSize - 1 do
 			Hashtbl.replace mem (wa + k) data.(k)
 		done;
@@ -109,14 +112,18 @@ let tic inputs oldEnv ram rom p =
 	let ramHandler addrSize wordSize rAddr writeEnable wAddr data =
 		let ra = getAddr addrSize rAddr in
 		let wa = getAddr addrSize wAddr in
-			if bool_of_value writeEnable then setWord ram wa wordSize data;
+			if bool_of_value writeEnable
+			then ramUp := (wa, wordSize, data) :: !ramUp;
 			getWord ram ra wordSize
 	in
 	
-	let evalExp oldEnv env =
-		(** evalExp [oldEnv] [env] [exp] evaluates [exp] with the variables
-		bounded in [env] and the old values (values of precedent tic call) in
-		[oldEnv] *)
+	let updateRam env =
+		List.iter (fun (wa, ws, d) -> setWord env ram wa ws d) !ramUp
+	in
+	
+	let evalExp env =
+		(** evalExp [env] [exp] evaluates [exp] with the variables
+		bounded in [env] *)
 		let evalArg = evalArg env in
 		function
 		| Earg arg   -> evalArg arg
@@ -139,10 +146,7 @@ let tic inputs oldEnv ram rom p =
 				(evalArg ra)
 				(evalArg we)
 				(evalArg wa)
-				(match d with
-					| Avar ident -> oldValue ident
-					| Aconst v   -> v
-				)
+				d
 		| Econcat (arg1, arg2) -> (match evalArg arg1, evalArg arg2 with
 			| VBitArray a, VBitArray b -> VBitArray (Array.append a b)
 			| VBitArray a, VBit b      -> VBitArray (Array.append a [|b|])
@@ -164,18 +168,20 @@ let tic inputs oldEnv ram rom p =
 	
 	
 	
-	let rec applyEq oldEnv env = function
+	let rec applyEq env = function
 		| []                -> env
 		| (ident, exp) :: q ->
-			let env' = Env.add ident (evalExp oldEnv env exp) env in
-				applyEq oldEnv env' q
+			let env' = Env.add ident (evalExp env exp) env in
+				applyEq env' q
 	in
 	
 	let rec getOutput env = function
 		| []     -> []
 		| o :: q -> (Env.find o env) :: (getOutput env q)
 	in
-	let env = applyEq oldEnv (addInput inputs p.p_inputs) p.p_eqs in
+	let env = applyEq (addInput inputs p.p_inputs) p.p_eqs in (
+		updateRam env;
 		env, getOutput env p.p_outputs
+		)
 
 
