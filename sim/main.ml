@@ -1,8 +1,9 @@
 open Netlist_ast
 
-let input_file = ref "input.txt"
-let output_file = ref "output.txt"
+let input_file = ref "input.sim"
+let output_file = ref "output.sim"
 let number_steps = ref (-1)
+let export_sch = ref false
 
 
 let simulate filename =
@@ -48,12 +49,19 @@ let simulate filename =
 		in aux o
 	in
 	
+	if !export_sch then (
+		let outnet = open_out "sch.net" in
+			Netlist_printer.print_program outnet p;
+			close_out outnet;
+	);
 	
 	let env = ref (Env.empty) in
+	let (ram : (int, bool) Hashtbl.t) = Hashtbl.create 97 in
+	let (rom : (int, bool) Hashtbl.t) = Hashtbl.create 97 in
 	let rec run n inputs = if n <> 0 then match inputs with
 		| []     -> print_string "Simulation done.\n"
 		| i :: q ->
-			let env', o = Core.tic i !env p in (
+			let env', o = Core.tic i !env ram rom p in (
 				env := env';
 				formatedOutput o;
 				run (n - 1) q
@@ -65,9 +73,20 @@ let simulate filename =
 
 let () =
 	Arg.parse
-		["-input", Arg.Set_string input_file, "File containing input values (set by default to input.txt)";
-		 "-output", Arg.Set_string output_file, "File in which the result is returned (if not specified, result is displayed in output.txt)";
-		 "-n", Arg.Set_int number_steps, "Number of steps to simulate (if not specified, number of lines of input file)"]
+		["-input", Arg.Set_string input_file,
+		 "File containing input values (set by default to input.sim)";
+		
+		 "-output", Arg.Set_string output_file,
+		 "File in which the result is returned (if not specified, result is
+		 displayed in output.sim)";
+		 
+		 "-n", Arg.Set_int number_steps,
+		 "Number of steps to simulate (if not specified, number of lines of
+		 input file)";
+		 
+		 "-sch", Arg.Set export_sch,
+		 "Specify whether the sorted netlist must be exported (in sch.net)";
+		]
 		simulate
 		""
 
