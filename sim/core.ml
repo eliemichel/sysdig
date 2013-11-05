@@ -83,7 +83,16 @@ let tic inputs oldEnv ram rom p =
 	in
 	
 	let fixSize ws d =
-		d (* TODO : donner la taille ws à d, quitte à tronquer ou ajouter des 0 *)
+		let d = match d with
+			| VBit b      -> [|b|]
+			| VBitArray a -> a
+		in
+		let diff = Array.length d - ws in
+		VBitArray (
+			if diff > 0
+			then Array.sub d diff ws (* On suppose les poids faibles à droite *)
+			else Array.append (Array.make (-diff) false) d
+		)
 	in
 	
 	let getWord mem addr wordSize =

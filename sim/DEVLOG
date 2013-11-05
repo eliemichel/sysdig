@@ -160,3 +160,8 @@ Les mots en mémoire sont-ils sur plusieurs adresses ou une seule ? Comment
 connaître la taille des mots a priori ?
 
 Solution : Faire des tables de hachage de `Netlist_ast.value` et non de `bool` !
+
+On tronque ou complète arbitrairement (on suppose les poids faibles à droite)
+les entrées et sorties de la mémoire. Ces situations ne sont censées arriver en
+pratique que lorsque la valeur de la mémoire n'est pas initialisée si on
+conserve dans tout le circuit la même `wordSize`.
