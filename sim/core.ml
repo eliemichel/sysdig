@@ -24,7 +24,9 @@ let tic inputs oldEnv ram rom p =
 	
 	let ramUp = ref [] in
 	
-	let rec addInput valuation vars = match valuation, vars with
+	let rec addInput valuation vars =
+		Debug.print_list (function VBit _ -> "bit" | VBitArray _ -> "array") valuation;
+		match valuation, vars with
 		| [], []            -> Env.empty
 		| [], _ | _, []     -> raise (
 			Sim_error

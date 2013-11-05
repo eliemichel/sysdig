@@ -146,3 +146,6 @@ Ajout d'une branche pour tester le second cas.
 Le second cas est plus convaincant, mais je conserve les deux en attendant.
 Le premier cas a été placé dans une branche `ram_avec_registres` tandis que
 l'autre a été fusionnée avec `master`.
+
+Il n'est en fait pas possible de mettre plusieurs lignes de commentaires de
+suite dans un fichier `.sim`... <= Corrigé

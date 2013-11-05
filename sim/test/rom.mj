@@ -1,0 +1,3 @@
+main(addr:[2]) = (o:[4]) where
+  o = rom<2, 4>(addr)
+end where

@@ -9,7 +9,7 @@
 	let bool_of_char c = c = '1'
 }
 
-let comment = '\n'? '#' [^'\n']*
+let comment = ( '\n'? '#' [^'\n']* )+
 let value = ['0' '1']
 let whitespace = [' ' '\t']+
 let newline = comment? '\n'
