@@ -21,6 +21,9 @@ let tic inputs oldEnv ram rom p =
 	vector [i], the environnement [oldEnv] (for registers) and the hash tables
 	[ram] and [rom] containing RAM and ROM values and then returns the output
 	vector. *)
+	
+	let (newRam : (int, bool) Hashtbl.t) = Hashtbl.create 97 in
+	
 	let rec addInput valuation vars = match valuation, vars with
 		| [], []            -> Env.empty
 		| [], _ | _, []     -> raise (
@@ -109,14 +112,17 @@ let tic inputs oldEnv ram rom p =
 	let ramHandler addrSize wordSize rAddr writeEnable wAddr data =
 		let ra = getAddr addrSize rAddr in
 		let wa = getAddr addrSize wAddr in
-			if bool_of_value writeEnable then setWord ram wa wordSize data;
+			if bool_of_value writeEnable then setWord newRam wa wordSize data;
 			getWord ram ra wordSize
 	in
 	
-	let evalExp oldEnv env =
-		(** evalExp [oldEnv] [env] [exp] evaluates [exp] with the variables
-		bounded in [env] and the old values (values of precedent tic call) in
-		[oldEnv] *)
+	let updateRam () =
+		Hashtbl.iter (fun a v -> Hashtbl.replace ram a v) newRam
+	in
+	
+	let evalExp env =
+		(** evalExp [env] [exp] evaluates [exp] with the variables
+		bounded in [env] *)
 		let evalArg = evalArg env in
 		function
 		| Earg arg   -> evalArg arg
@@ -164,18 +170,20 @@ let tic inputs oldEnv ram rom p =
 	
 	
 	
-	let rec applyEq oldEnv env = function
+	let rec applyEq env = function
 		| []                -> env
 		| (ident, exp) :: q ->
-			let env' = Env.add ident (evalExp oldEnv env exp) env in
-				applyEq oldEnv env' q
+			let env' = Env.add ident (evalExp env exp) env in
+				applyEq env' q
 	in
 	
 	let rec getOutput env = function
 		| []     -> []
 		| o :: q -> (Env.find o env) :: (getOutput env q)
 	in
-	let env = applyEq oldEnv (addInput inputs p.p_inputs) p.p_eqs in
+	let env = applyEq (addInput inputs p.p_inputs) p.p_eqs in (
+		updateRam ();
 		env, getOutput env p.p_outputs
+		)
 
 
