@@ -143,4 +143,4 @@ fin d'itération ? Dans le premier cas, le write enable doit-il lui aussi être
 retardé (plus instinctif) ?
 Ajout d'une branche pour tester le second cas.
 
-
+Le second cas est plus convaincant, mais je conserve les deux en attendant.
