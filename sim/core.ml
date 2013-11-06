@@ -14,6 +14,73 @@ let bool_of_value = function
 		"A bit array is used as single bit"
 		)
 
+let ty_of_value = function
+	| VBit _      -> TBit
+	| VBitArray a -> TBitArray (Array.length a)
+
+let string_of_ty = function
+	| TBit        -> "TBit"
+	| TBitArray n -> "TBitArray " ^ string_of_int n
+
+let evalArg env = function
+	| Avar ident -> (
+		try Env.find ident env
+		with Not_found ->
+			raise (Sim_error ("Unknown identifier : " ^ ident))
+		)
+	| Aconst v   -> v
+
+let evalBinop a b = match a, b with
+	| VBit a, VBit b -> (function
+		| Or   -> VBit (a || b)
+		| Xor  -> VBit (a <> b)
+		| And  -> VBit (a && b)
+		| Nand -> VBit (not (a && b))
+		)
+	| _ -> raise (
+		Sim_error
+		"Binary operator can not be applied to a VBitArray"
+		)
+
+let fixSize ws d =
+	let d = match d with
+		| VBit b      -> [|b|]
+		| VBitArray a -> a
+	in
+	let diff = Array.length d - ws in
+	VBitArray (
+		if diff > 0
+		then Array.sub d diff ws (* On suppose les poids faibles à droite *)
+		else Array.append (Array.make (-diff) false) d
+	)
+
+let getWord mem addr wordSize =
+	fixSize
+		wordSize
+		(
+			try Hashtbl.find mem addr
+			with Not_found -> VBit false
+		)
+
+let setWord env mem wa wordSize data =
+	let data = fixSize wordSize (evalArg env data) in
+		Hashtbl.replace mem wa data
+
+let getAddr addrSize addr =
+	let a = array_of_value addr in
+	let addr = ref 0 in
+	let mask = ref 1 in
+	for k = 0 to addrSize - 1 do
+		(
+		try
+			if a.(k) then addr := !addr + !mask
+		with
+			Invalid_argument "index out of bounds" ->
+				raise (Sim_error "Invalid adress size")
+		);
+		mask := !mask lsl 1
+	done;
+	!addr
 
 
 let tic inputs oldEnv ram rom p =
@@ -27,10 +94,23 @@ let tic inputs oldEnv ram rom p =
 	let rec addInput valuation vars = match valuation, vars with
 		| [], []            -> Env.empty
 		| [], _ | _, []     -> raise (
-			Sim_error
-			"Given input does not match required input (bad amount of nets)"
+			Sim_error (
+				"Given input does not match required input (" ^
+				(if vars = [] then "too many" else "missing") ^
+				" values)"
+				)
 			)
-		| v :: q1, id :: q2 -> let env = addInput q1 q2 in Env.add id v env
+		| v :: q1, id :: q2 ->
+			let t1 = ty_of_value v in
+			let t2 = Env.find id p.p_vars in
+				if t1 <> t2
+				then Format.eprintf
+					"Warning: Given value for `%s` has an invalid type.\n\
+					(%s is required but %s was provided)@."
+					id
+					(string_of_ty t2)
+					(string_of_ty t1);
+				let env = addInput q1 q2 in Env.add id v env
 	in
 	
 	
@@ -43,71 +123,6 @@ let tic inputs oldEnv ram rom p =
 			raise (Sim_error ("Unknown register or memory : " ^ ident))
 	in
 	
-	let evalArg env = function
-		| Avar ident -> (
-			try Env.find ident env
-			with Not_found ->
-				raise (Sim_error ("Unknown identifier : " ^ ident))
-			)
-		| Aconst v   -> v
-	in
-	
-	let evalBinop a b = match a, b with
-		| VBit a, VBit b -> (function
-			| Or   -> VBit (a || b)
-			| Xor  -> VBit (a <> b)
-			| And  -> VBit (a && b)
-			| Nand -> VBit (not (a && b))
-			)
-		| _ -> raise (
-			Sim_error
-			"Binary operator can not be applied to a VBitArray"
-			)
-	in
-	
-	let getAddr addrSize addr =
-		let a = array_of_value addr in
-		let addr = ref 0 in
-		let mask = ref 1 in
-		for k = 0 to addrSize - 1 do
-			(
-			try
-				if a.(k) then addr := !addr + !mask
-			with
-				Invalid_argument "index out of bounds" ->
-					raise (Sim_error "Invalid adress size in ROM access")
-			);
-			mask := !mask lsl 1
-		done;
-		!addr
-	in
-	
-	let fixSize ws d =
-		let d = match d with
-			| VBit b      -> [|b|]
-			| VBitArray a -> a
-		in
-		let diff = Array.length d - ws in
-		VBitArray (
-			if diff > 0
-			then Array.sub d diff ws (* On suppose les poids faibles à droite *)
-			else Array.append (Array.make (-diff) false) d
-		)
-	in
-	
-	let getWord mem addr wordSize =
-		fixSize
-			wordSize
-			(
-				try Hashtbl.find mem addr
-				with Not_found -> VBit false
-			)
-	in
-	
-	let setWord env mem wa wordSize data =
-		let data = fixSize wordSize (evalArg env data) in
-			Hashtbl.replace mem wa data
-	in
 	
 	let oldValue ident =
 		try Env.find ident oldEnv
@@ -169,7 +184,10 @@ let tic inputs oldEnv ram rom p =
 			)
 		| Eselect (i, arg)     -> (match evalArg arg with
 			| VBitArray a -> VBit a.(i)
-			| vb          -> raise Sim_error "Selection in VBit is not allowed"
+			| vb          -> raise (
+				Sim_error
+				"Selection in VBit is not allowed"
+				)
 			(*
 				if i = 0
 				then vb

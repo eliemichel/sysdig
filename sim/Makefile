@@ -1,6 +1,7 @@
-# Makefile générant *sim*
-CMX=debug.cmx netlist_ast.cmx netlist_parser.cmx netlist_lexer.cmx netlist.cmx netlist_printer.cmx graph.cmx scheduler.cmx core.cmx sim_lexer.cmx main.cmx
+CMX=debug.cmx netlist_ast.cmx netlist_parser.cmx netlist_lexer.cmx netlist.cmx \
+netlist_printer.cmx graph.cmx scheduler.cmx core.cmx sim_lexer.cmx main.cmx
 GEN=netlist_parser.ml netlist_parser.mli netlist_lexer.ml sim_lexer.ml
+LIBS = unix.cmxa
 BIN=sim
 
 
@@ -10,17 +11,17 @@ ERROR_COLOR=\033[31;01m
 WARN_COLOR=\033[33;01m
 HIGHLIGHT_COLOR=\033[1m
 
-
-all: $(CMX)
-	@echo "Linking for $(BIN)..."
-	@ocamlopt -o $(BIN) unix.cmxa $(CMX)
-	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
-
-run: $(BIN)
+all: $(BIN)
 	@echo "$(HIGHLIGHT_COLOR)  ./$(BIN) test/ram.net$(NO_COLOR)"
 	@./$(BIN) test/ram.net
 	@echo "$(HIGHLIGHT_COLOR)  cat output.sim$(NO_COLOR)"
 	@cat output.sim
+
+
+$(BIN): $(CMX)
+	@echo "Linking for $(BIN)..."
+	@ocamlopt -o $(BIN) $(LIBS) $(CMX)
+	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
 .SUFFIXES: .mli .ml .cmi .cmx .mll .mly
 
@@ -39,6 +40,8 @@ run: $(BIN)
 .mly.mli:
 	menhir $<
 
+.PHONY: clean
+
 clean:
 	@echo "Cleaning directory..."
 	@rm -v -f .depend *.cmi *.o *.automaton *~ $(BIN) $(CMX) $(GEN)
@@ -48,5 +51,7 @@ clean:
 	rm -f .depend
 	ocamldep *.mli *.ml > .depend
 
+ifneq ($(MAKECMDGOALS),clean)
 include .depend
+endif
 

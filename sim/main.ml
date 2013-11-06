@@ -93,17 +93,26 @@ let simulate filename =
 			close_out outnet;
 	);
 	
-	print_string "Running simulation...\n";
-	let rec run n inputs = if n <> 0 then match inputs with
+	Format.eprintf "Running simulation...@.";
+	let rec run n inputs = if n <> !number_steps then match inputs with
 		| []     -> print_string "Simulation done.\n"
 		| i :: q ->
-			let env', o = Core.tic i !env ram rom p in (
+			let env', o =
+				try Core.tic i !env ram rom p
+				with Core.Sim_error s -> (
+					Format.eprintf
+						"Simulation error on line %d:\n%s@."
+						(n + 1)
+						s;
+					exit 2
+				)
+			in (
 				env := env';
 				formatedOutput o;
-				run (n - 1) q
+				run (n + 1) q
 				)
 	in
-		run !number_steps inputs;
+		run 0 inputs;
 		close_all ()
 	
 

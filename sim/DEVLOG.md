@@ -48,19 +48,21 @@ De même, la sortie est enregistrée dans le fichier indiqué par le paramètre
 `-output`.
 
 La syntaxe de ces fichiers est la suivante :
-    - Chaque ligne représente une itération
-    - Les valeurs sont inscrites dans l'ordre dans lequel les entrées (resp.
-    sorties) sont indiquées dans le fichier NET.
-    - Les valeurs peuvent être séparées par un nombre arbitraire d'espaces et de
-    tabulations et des commentaires peuvent être ajoutés en fin de ligne après
-    le caractère `#`. Si une ligne commence par le caractère `#`, elle est
-    entièrement considérée comme un commentaire et ne compte donc pas comme une
-    ligne d'itération. C'est en particulier utile pour rappeler en bas du
-    fichier la signification des différentes entrées. (Ne fonctionne pas pour la
-    première ligne pour le moment)
-    - Les valeurs peuvent être soit un bit (`0` ou `1`, les autres caractères
-    étant considérés comme des zéros), soit un groupe de bits sous la forme
-    `[0 1 0]`, les espaces étant là encore ignorés.
+
+ - Chaque ligne représente une itération
+ - Les valeurs sont inscrites dans l'ordre dans lequel les entrées (resp.
+   sorties) sont indiquées dans le fichier NET.
+ - Les valeurs peuvent être séparées par un nombre arbitraire d'espaces et de
+   tabulations et des commentaires peuvent être ajoutés en fin de ligne après
+   le caractère `#`. Si une ligne commence par le caractère `#`, elle est
+   entièrement considérée comme un commentaire et ne compte donc pas comme une
+   ligne d'itération. C'est en particulier utile pour rappeler en bas du
+   fichier la signification des différentes entrées. (Ne fonctionne pas pour la
+   première ligne pour le moment)
+ - Les valeurs peuvent être soit un bit (`0` ou `1`, les autres caractères
+   étant considérés comme des zéros), soit un groupe de bits sous la forme
+   `[0 1 0]`, les espaces étant là encore ignorés.
+
 Les valeurs doivent toujours bien correspondre au nombre d'entrées du circuit
 ainsi qu'à leur type. Aucune vérification a priori n'est faite pour le moment
 mais un mauvais format de données générera une `Sim_error`.
@@ -88,20 +90,20 @@ Dans quel sens sont notées les adresses ? J'ai pris pour convention que
 La mémoire est initialisée à 0.
 
 ### TODO
-Ajouter une commande pour utiliser plutôt des fichiers d'entrée/sortie préfixés.
+ - Ajouter une commande pour utiliser plutôt des fichiers d'entrée/sortie préfixés.
  *ok*
-Localiser et préciser les erreurs. **TODO**
-Gérer RAM et ROM. (Hash table ou Map ? -> Hash table pour la ROM qui est en
+ - Localiser et préciser les erreurs. *ok*
+ - Gérer RAM et ROM. (Hash table ou Map ? -> Hash table pour la ROM qui est en
 lue plus souvent qu'écrite) *ok*
-Gérer la possibilité d'entrer les données au clavier et de lire la sortie dans
+ - Gérer la possibilité d'entrer les données au clavier et de lire la sortie dans
 la console. *abandonné*
-Bit tricks pour les slices ? *abandonné*
-Écrire le fichier NET « schédulé ». *ok*
-Régler le problème de .depend dans make clean. **TODO**
-Ajoute une ligne make run au Makefile pour lancer un petit exemple et vérifier
-que la compilation s'est bien déroulée. **ok**
-Vérifier les données d'entrée ?
-Trouver une regexp pour matcher le début du fichier. (`_#_` semble ne pas
+ - Bit tricks pour les slices ? *abandonné*
+ - Écrire le fichier NET « schédulé ». *ok*
+ - Régler le problème de .depend dans make clean. **TODO**
+ - Ajoute une ligne make run au Makefile pour lancer un petit exemple et vérifier
+que la compilation s'est bien déroulée. *ok*
+ - Vérifier les données d'entrée ? *ok*
+ - Trouver une regexp pour matcher le début du fichier. (`_#_` semble ne pas
 fonctionner.) *abandonné au profit d'une autre solution*
 
 
@@ -138,10 +140,10 @@ valeur de `c` à la première itération est prise en compte dans la simulation 
 `ram.net`.
 Dédoublement de la table de hachage de la ram  en `ram` et `newRam` pour
 conserver l'ancienne valeur de la mémoire à la lecture.
-**Problème** : Comment la ram doit-elle être gérée ? Doit-on considérer qu'il y a un
-registre devant l'entrée de la ram ou juste que l'on fait les enregistrement en
-fin d'itération ? Dans le premier cas, le write enable doit-il lui aussi être
-retardé (plus instinctif) ?
+**Problème** : Comment la ram doit-elle être gérée ? Doit-on considérer qu'il y
+a un registre devant l'entrée de la ram ou juste que l'on fait les
+enregistrement en fin d'itération ? Dans le premier cas, le write enable doit-il
+lui aussi être retardé (plus instinctif) ?
 Ajout d'une branche pour tester le second cas.
 
 Le second cas est plus convaincant, mais je conserve les deux en attendant.
@@ -160,7 +162,8 @@ lectures de fichiers .sim.
 Les mots en mémoire sont-ils sur plusieurs adresses ou une seule ? Comment
 connaître la taille des mots a priori ?
 
-**Solution** : Faire des tables de hachage de `Netlist_ast.value` et non de `bool` !
+**Solution** : Faire des tables de hachage de `Netlist_ast.value` et non de
+`bool` !
 
 On tronque ou complète arbitrairement (on suppose les poids faibles à droite)
 les entrées et sorties de la mémoire. Ces situations ne sont censées arriver en
@@ -175,4 +178,15 @@ spécifier à `sim` les paramètres `-input`, `-output` et `-rom` en permanence.
 
 Les commentaires dans les fichiers .sim sont désormais entièrement fonctionnels.
 
+`TBitArray 1` est désormais différent de `TBit`.
+Avertissement ajouté lorsque de mauvaises données sont contenues dans
+`input.sim`.
 
+Dans `core.ml`, les procédures ne nécessitant pas d'être englobées dans `tic`
+en ont été sorties. Les erreurs dans le fichier d'input sont désormais plus
+claires et localisées.
+
+
+## 06/11/2013 (Jour 5)
+Dernières vérifications. `make sim` remplace `make all` et `make all` remplace
+`make run` (c'est visiblement plus idiomatique).
