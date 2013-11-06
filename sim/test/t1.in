@@ -1,0 +1,5 @@
+# sh:[2], arith, left, a:[4]
+  [11]    0      0     [1101]
+  [00]    0      0     [1000]
+  [11]    1      0     [0100]
+# ./sim -rom test/mem.bin -input test/t1.in test/shifters.net

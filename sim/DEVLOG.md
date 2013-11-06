@@ -190,3 +190,6 @@ claires et localisées.
 ## 06/11/2013 (Jour 5)
 Dernières vérifications. `make sim` remplace `make all` et `make all` remplace
 `make run` (c'est visiblement plus idiomatique).
+Problème de `.depend` réglé grâce à `$(MAKECMDGOALS)`.
+
+Il ne reste plus qu'à tester des exemples divers et tordus !

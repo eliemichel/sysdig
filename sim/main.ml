@@ -49,13 +49,21 @@ let simulate filename =
 		close_out out
 	in
 	
-	let inputs = Sim_lexer.read_file !input_file in
+	let inputs =
+		try Sim_lexer.read_file !input_file
+		with Sim_lexer.Sim_lexing_error s -> (
+			Format.eprintf "Input error: %s@." s;
+			close_all ();
+			exit 2
+			)
+	in
 	loadRom ();
 	
 	let p =
 		try Netlist.read_file filename
 		with Netlist.Parse_error s -> (
 			Format.eprintf "An error occurred: %s@." s;
+			close_all ();
 			exit 2
 			)
 	in
@@ -95,7 +103,7 @@ let simulate filename =
 	
 	Format.eprintf "Running simulation...@.";
 	let rec run n inputs = if n <> !number_steps then match inputs with
-		| []     -> print_string "Simulation done.\n"
+		| []     -> Format.eprintf "Simulation done.@."
 		| i :: q ->
 			let env', o =
 				try Core.tic i !env ram rom p
@@ -104,6 +112,7 @@ let simulate filename =
 						"Simulation error on line %d:\n%s@."
 						(n + 1)
 						s;
+					close_all ();
 					exit 2
 				)
 			in (

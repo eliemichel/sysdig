@@ -46,7 +46,10 @@ and bit_array = parse
 		bit_array lexbuf
 		}
 	| ']'        {
-		let a = Netlist_ast.VBitArray (Array.of_list (List.rev !current_array)) in
+		let a = Netlist_ast.VBitArray (
+			Array.of_list (List.rev !current_array)
+			)
+		in
 			current_line := a :: !current_line;
 			token lexbuf
 		}
@@ -61,7 +64,10 @@ and comment = parse
 	let read_file filename =
 		let ic =
 			try open_in filename
-			with _ -> raise (Sim_lexing_error ("No such file '" ^ filename ^ "'"))
+			with _ -> raise (
+				Sim_lexing_error
+				("No such file '" ^ filename ^ "'")
+				)
 		in
 			input := [];
 			current_line := [];
