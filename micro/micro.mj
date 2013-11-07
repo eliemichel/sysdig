@@ -1,0 +1,8 @@
+
+
+
+(* Enable register *)
+ereg()=() where
+end where
+
+
