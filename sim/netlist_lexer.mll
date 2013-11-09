@@ -1,5 +1,6 @@
 {
-(* From TD1 *)
+ (* From TD1 *)
+open Lexing
 open Netlist_parser
 exception Eof
 
@@ -26,11 +27,14 @@ let keyword_list =
 }
 
 rule token = parse
-    [' ' '\t' '\n']     { token lexbuf }     (* skip blanks *)
+    '\n'
+      { new_line lexbuf; token lexbuf }     (* skip blanks *)
+  | [' ' '\t']
+      { token lexbuf }     (* skip blanks *)
   | "="            { EQUAL }
   | ":"            { COLON }
   | ","            { COMMA }
-  | ['0'-'9']+ as lxm { INT lxm }
+  | ['0'-'9']+ as lxm { CONST lxm }
   | ('_' ? ['A'-'Z' 'a'-'z']('_' ? ['A'-'Z' 'a'-'z' ''' '0'-'9']) * as id)
       { let s = Lexing.lexeme lexbuf in
         try List.assoc s keyword_list
