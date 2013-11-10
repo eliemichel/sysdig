@@ -37,6 +37,7 @@ rule token = parse
 		bit_array lexbuf
 		}
 	| '#'        { if not !empty then handleNewline () ;  comment lexbuf }
+	| _          { raise (Sim_lexing_error "Syntax error") }
 	| eof        { () }
 
 and bit_array = parse
@@ -53,6 +54,7 @@ and bit_array = parse
 			current_line := a :: !current_line;
 			token lexbuf
 		}
+	| _
 	| eof        { raise (Sim_lexing_error "Syntax error") }
 
 and comment = parse

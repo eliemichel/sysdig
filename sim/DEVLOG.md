@@ -90,18 +90,18 @@ Dans quel sens sont notées les adresses ? J'ai pris pour convention que
 La mémoire est initialisée à 0.
 
 ### TODO
- - Ajouter une commande pour utiliser plutôt des fichiers d'entrée/sortie préfixés.
- *ok*
+ - Ajouter une commande pour utiliser plutôt des fichiers d'entrée/sortie
+   préfixés. *ok*
  - Localiser et préciser les erreurs. *ok*
  - Gérer RAM et ROM. (Hash table ou Map ? -> Hash table pour la ROM qui est en
 lue plus souvent qu'écrite) *ok*
- - Gérer la possibilité d'entrer les données au clavier et de lire la sortie dans
-la console. *abandonné*
+ - Gérer la possibilité d'entrer les données au clavier et de lire la sortie
+   dans la console. *abandonné*
  - Bit tricks pour les slices ? *abandonné*
  - Écrire le fichier NET « schédulé ». *ok*
  - Régler le problème de .depend dans make clean. **TODO**
- - Ajoute une ligne make run au Makefile pour lancer un petit exemple et vérifier
-que la compilation s'est bien déroulée. *ok*
+ - Ajoute une ligne make run au Makefile pour lancer un petit exemple et
+   vérifier que la compilation s'est bien déroulée. *ok*
  - Vérifier les données d'entrée ? *ok*
  - Trouver une regexp pour matcher le début du fichier. (`_#_` semble ne pas
 fonctionner.) *abandonné au profit d'une autre solution*
