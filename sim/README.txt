@@ -127,8 +127,9 @@ alors simulé.
 Aucun n'a été détecté pour le moment
 
 ### Historique de développement ###
-Sim a été développé dans le cadre du cours « Système digital, de l'algorithme au
-circuit » dispennsé par [Jean Vuillemin](http://www.di.ens.fr/~jv/) à l'
+Sim a été développé par Elie Michel dans le cadre du cours « Système digital, de
+l'algorithme au circuit » dispennsé par
+[Jean Vuillemin](http://www.di.ens.fr/~jv/) à l'
 [École Normale Supérieure](http://www.ens.fr).
 
 Le développement de Sim est la première partie du projet coordonné par
