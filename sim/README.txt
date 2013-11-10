@@ -17,11 +17,13 @@ paquets.
 (Testé sous Ubuntu 12.04)
 
 #### Sous Windows ####
-Pour installer make :
+Pour installer make :  
 	http://gnuwin32.sourceforge.net/packages/make.htm
-Pour installer ocaml (contenant ocamlopt et ocamldep) :
+
+Pour installer ocaml (contenant ocamlopt et ocamldep) :  
 	http://protz.github.io/ocaml-installer/
-Pour installer menhir, il faut compiler les sources se trouvant ici :
+
+Pour installer menhir, il faut compiler les sources se trouvant ici :  
 	http://gallium.inria.fr/~fpottier/menhir/menhir.html.fr
 
 (Testé sous Windows 7 avec mingw32-make au lieu de GNUmake)
@@ -45,21 +47,28 @@ Le programme `sim` ainsi créé est autonome.
 ## Utilisation ##
 ### Fonctionnement général ###
 Sim prend en entrée les fichiers suivants :
+
  * Un fichier netlist contenant la description du circuit (non ordonnée)
  * Un fichier d'entrées sur n cycles
  * Un fichier décrivant la ROM (facultatif)
 
+Le fichier ROM est facultatif. S'il n'existe pas, un avertissement est affiché
+dans la console mais la simulation est tout de même effectuée. La ROM est alors
+identiquement nulle.
+
 Le programme écrit ensuite les fichiers suivants :
+
  * Un fichier contenant les sorties sur n cycles correspondant aux entrées
    données et avec l'éventuel état de la ROM indiqué.
  * Un fichier netlist ordonné (sur demande)
 
 ### Syntaxe des différents fichiers ###
-La syntaxe de la netlist peut se trouver ici : (en seconde partie)
+La syntaxe de la netlist peut se trouver ici : (en seconde partie)  
 	http://www.di.ens.fr/~bourke/minijazz.pdf
 
 La syntaxe des fichiers d'entrée, de sortie et de description de la ROM est la
 suivante :
+
  * Les valeurs sont représentées par des caractères : `1` représente un bit
    activé tandis qu'un `0` représente un bit désactivé.
  * Les espaces et tabulations sont ignorées.
@@ -81,6 +90,7 @@ alors comme suit :
     sim [filename].net
 
 Par défaut, le Sim utilise les fichiers suivants :
+
  * `input.sim` pour les entrées
  * `rom.sim` pour la rom
  * `output.sim` pour les sorties
@@ -112,6 +122,17 @@ prévus par le fichier d'entrée, cette option est ignorée et tout le fichier e
 alors simulé.
 
 
+## Informations complémentaires ##
+### Bugs connus ###
+Aucun n'a été détecté pour le moment
+
+### Historique de développement ###
+Sim a été développé dans le cadre du cours « Système digital, de l'algorithme au
+circuit » dispennsé par [Jean Vuillemin](http://www.di.ens.fr/~jv/) à l'
+[École Normale Supérieure](http://www.ens.fr).
+
+Le développement de Sim est la première partie du projet coordonné par
+[Timothy Bourke](http://www.tbrk.org/) qui doit être rendu pour ce cours.
 
 
 
