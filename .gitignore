@@ -1,2 +1,15 @@
+# Toujours garder cette règle pour éviter de commiter des fichiers
+# de backup et fichiers temporaires.
 *~
+
+
+
+# Mettez ensuite les fichiers qui ne doivent pas être gérés par git
+# mais qui se trouvent tout de même dans le répertoire du dépôt.
+# Faites précéder de votre nom les fichiers que vous ajoutez.
+
+# -- Elie --
 instructions
+sim/Elie_Michel_sim.tar.gz
+
+
