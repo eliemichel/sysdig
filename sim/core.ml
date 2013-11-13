@@ -1,7 +1,7 @@
 open Netlist_ast
 
 exception Sim_error of string
-
+let ramUp = ref []
 
 let array_of_value = function
 	| VBit b      -> [|b|]
@@ -82,6 +82,85 @@ let getAddr addrSize addr =
 	done;
 	!addr
 
+let romHandler rom addrSize wordSize rAddr =
+	let a = getAddr addrSize rAddr in
+		getWord rom a wordSize
+
+
+let ramHandler ram addrSize wordSize rAddr writeEnable wAddr data =
+	let ra = getAddr addrSize rAddr in
+	let wa = getAddr addrSize wAddr in
+		if bool_of_value writeEnable
+		then ramUp := (wa, wordSize, data) :: !ramUp;
+		getWord ram ra wordSize
+
+
+let evalExp env oldValue ram rom =
+	(** evalExp [env] [exp] evaluates [exp] with the variables
+	bounded in [env] *)
+	let evalArg = evalArg env in
+	function
+	| Earg arg   -> evalArg arg
+	| Ereg ident -> oldValue ident
+	| Enot arg   -> (match evalArg arg with
+		| VBit b      -> VBit (not b)
+		| VBitArray a -> VBitArray (Array.map (fun b -> not b) a)
+		)
+	| Ebinop (op, arg1, arg2) -> evalBinop (evalArg arg1) (evalArg arg2) op
+	| Emux (arg1, arg2, arg3) -> (
+		match evalArg arg1, evalArg arg2, evalArg arg3 with
+		| VBit a, VBit b, VBit c -> VBit (a && c || b && (not c))
+		| _ -> raise (Sim_error "Mux can not be applied to a VBitArray")
+		)
+	| Erom (addr, ws, ra)            -> romHandler rom addr ws (evalArg ra)
+	| Eram (addr, ws, ra, we, wa, d) ->
+		ramHandler
+			ram
+			addr
+			ws
+			(evalArg ra)
+			(evalArg we)
+			(evalArg wa)
+			d
+	| Econcat (arg1, arg2) -> (match evalArg arg1, evalArg arg2 with
+		| VBitArray a, VBitArray b -> VBitArray (Array.append a b)
+		| VBitArray a, VBit b      -> VBitArray (Array.append a [|b|])
+		| VBit a, VBitArray b      -> VBitArray (Array.append [|a|] b)
+		| VBit a, VBit b           -> VBitArray [|a; b|]
+		)
+	| Eslice (i, j, arg)   -> (match evalArg arg with
+		| VBitArray a -> VBitArray (Array.sub a i (j - i + 1))
+		| _           -> raise (Sim_error "VBit can not be sliced")
+		)
+	| Eselect (i, arg)     -> (match evalArg arg with
+		| VBitArray a -> VBit a.(i)
+		| vb          -> raise (
+			Sim_error
+			"Selection in VBit is not allowed"
+			)
+		)
+
+
+let rec addInput p valuation vars = match valuation, vars with
+	| [], []            -> Env.empty
+	| [], _ | _, []     -> raise (
+		Sim_error (
+			"Given input does not match required input (" ^
+			(if vars = [] then "too many" else "missing") ^
+			" values)"
+			)
+		)
+	| v :: q1, id :: q2 ->
+		let t1 = ty_of_value v in
+		let t2 = Env.find id p.p_vars in
+			if t1 <> t2
+			then Format.eprintf
+				"Warning: Given value for `%s` has an invalid type.\n\
+				(%s is required but %s was provided)@."
+				id
+				(string_of_ty t2)
+				(string_of_ty t1);
+			let env = addInput p q1 q2 in Env.add id v env
 
 let tic inputs oldEnv ram rom p =
 	(** tic [inputs] [oldEnv] [ram] [rom] [p] computes the programm p with input
@@ -89,29 +168,7 @@ let tic inputs oldEnv ram rom p =
 	[ram] and [rom] containing RAM and ROM values and then returns the output
 	vector. *)
 	
-	let ramUp = ref [] in
-	
-	let rec addInput valuation vars = match valuation, vars with
-		| [], []            -> Env.empty
-		| [], _ | _, []     -> raise (
-			Sim_error (
-				"Given input does not match required input (" ^
-				(if vars = [] then "too many" else "missing") ^
-				" values)"
-				)
-			)
-		| v :: q1, id :: q2 ->
-			let t1 = ty_of_value v in
-			let t2 = Env.find id p.p_vars in
-				if t1 <> t2
-				then Format.eprintf
-					"Warning: Given value for `%s` has an invalid type.\n\
-					(%s is required but %s was provided)@."
-					id
-					(string_of_ty t2)
-					(string_of_ty t1);
-				let env = addInput q1 q2 in Env.add id v env
-	in
+	ramUp := [];
 	
 	
 	let evalDefault ident =
@@ -129,78 +186,14 @@ let tic inputs oldEnv ram rom p =
 		with Not_found -> evalDefault ident
 	in
 	
-	let romHandler addrSize wordSize rAddr =
-		let a = getAddr addrSize rAddr in
-			getWord rom a wordSize
-	in
-	
-	let ramHandler addrSize wordSize rAddr writeEnable wAddr data =
-		let ra = getAddr addrSize rAddr in
-		let wa = getAddr addrSize wAddr in
-			if bool_of_value writeEnable
-			then ramUp := (wa, wordSize, data) :: !ramUp;
-			getWord ram ra wordSize
-	in
-	
 	let updateRam env =
 		List.iter (fun (wa, ws, d) -> setWord env ram wa ws d) !ramUp
 	in
 	
-	let evalExp env =
-		(** evalExp [env] [exp] evaluates [exp] with the variables
-		bounded in [env] *)
-		let evalArg = evalArg env in
-		function
-		| Earg arg   -> evalArg arg
-		| Ereg ident -> oldValue ident
-		| Enot arg   -> (match evalArg arg with
-			| VBit b      -> VBit (not b)
-			| VBitArray a -> VBitArray (Array.map (fun b -> not b) a)
-			)
-		| Ebinop (op, arg1, arg2) -> evalBinop (evalArg arg1) (evalArg arg2) op
-		| Emux (arg1, arg2, arg3) -> (
-			match evalArg arg1, evalArg arg2, evalArg arg3 with
-			| VBit a, VBit b, VBit c -> VBit (a && c || b && (not c))
-			| _ -> raise (Sim_error "Mux can not be applied to a VBitArray")
-			)
-		| Erom (addr, ws, ra)            -> romHandler addr ws (evalArg ra)
-		| Eram (addr, ws, ra, we, wa, d) ->
-			ramHandler
-				addr
-				ws
-				(evalArg ra)
-				(evalArg we)
-				(evalArg wa)
-				d
-		| Econcat (arg1, arg2) -> (match evalArg arg1, evalArg arg2 with
-			| VBitArray a, VBitArray b -> VBitArray (Array.append a b)
-			| VBitArray a, VBit b      -> VBitArray (Array.append a [|b|])
-			| VBit a, VBitArray b      -> VBitArray (Array.append [|a|] b)
-			| VBit a, VBit b           -> VBitArray [|a; b|]
-			)
-		| Eslice (i, j, arg)   -> (match evalArg arg with
-			| VBitArray a -> VBitArray (Array.sub a i (j - i + 1))
-			| _           -> raise (Sim_error "VBit can not be sliced")
-			)
-		| Eselect (i, arg)     -> (match evalArg arg with
-			| VBitArray a -> VBit a.(i)
-			| vb          -> raise (
-				Sim_error
-				"Selection in VBit is not allowed"
-				)
-			(*
-				if i = 0
-				then vb
-				else raise (Invalid_argument "index out of bound")*)
-			)
-	in
-	
-	
-	
 	let rec applyEq env = function
 		| []                -> env
 		| (ident, exp) :: q ->
-			let env' = Env.add ident (evalExp env exp) env in
+			let env' = Env.add ident (evalExp env oldValue ram rom exp) env in
 				applyEq env' q
 	in
 	
@@ -208,7 +201,8 @@ let tic inputs oldEnv ram rom p =
 		| []     -> []
 		| o :: q -> (Env.find o env) :: (getOutput env q)
 	in
-	let env = applyEq (addInput inputs p.p_inputs) p.p_eqs in (
+	
+	let env = applyEq (addInput p inputs p.p_inputs) p.p_eqs in (
 		updateRam env;
 		env, getOutput env p.p_outputs
 		)
