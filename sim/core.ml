@@ -1,3 +1,5 @@
+# Ajout d'un commentaire stupide en vue d'un test... Commiter c'est très moche.
+
 open Netlist_ast
 
 exception Sim_error of string
