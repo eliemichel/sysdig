@@ -91,13 +91,20 @@ let ramHandler ram addrSize wordSize rAddr writeEnable wAddr data =
 	let ra = getAddr addrSize rAddr in
 	let wa = getAddr addrSize wAddr in
 		if bool_of_value writeEnable
-		then ramUp := (wa, wordSize, data) :: !ramUp;
+		then ramUp := (ram, wa, wordSize, data) :: !ramUp;
 		getWord ram ra wordSize
 
 
-let evalExp env oldValue ram rom =
-	(** evalExp [env] [exp] evaluates [exp] with the variables
-	bounded in [env] *)
+let rec getRamTable ram ident =
+	try Hashtbl.find ram ident
+	with Not_found -> (
+		Hashtbl.add ram ident (Hashtbl.create 97);
+		getRamTable ram ident
+		)
+
+let evalExp env oldValue ram rom ident =
+	(** evalExp [env] [oldValue] [ram] [rom] [ident] [exp] evaluates [exp] with
+	the values bounded in [env], [rom], [ram] *)
 	let evalArg = evalArg env in
 	function
 	| Earg arg   -> evalArg arg
@@ -114,8 +121,9 @@ let evalExp env oldValue ram rom =
 		)
 	| Erom (addr, ws, ra)            -> romHandler rom addr ws (evalArg ra)
 	| Eram (addr, ws, ra, we, wa, d) ->
+		let ramTable = getRamTable ram ident in
 		ramHandler
-			ram
+			ramTable
 			addr
 			ws
 			(evalArg ra)
@@ -187,13 +195,15 @@ let tic inputs oldEnv ram rom p =
 	in
 	
 	let updateRam env =
-		List.iter (fun (wa, ws, d) -> setWord env ram wa ws d) !ramUp
+		List.iter
+			(fun (ramTable, wa, ws, d) -> setWord env ramTable wa ws d)
+			!ramUp
 	in
 	
 	let rec applyEq env = function
 		| []                -> env
 		| (ident, exp) :: q ->
-			let env' = Env.add ident (evalExp env oldValue ram rom exp) env in
+			let env' = Env.add ident (evalExp env oldValue ram rom ident exp) env in
 				applyEq env' q
 	in
 	

@@ -12,7 +12,7 @@ let export_sch = ref false
 let prefix = ref false
 
 let env = ref (Env.empty)
-let (ram : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97
+let (ram : (ident, (int, Netlist_ast.value) Hashtbl.t) Hashtbl.t) = Hashtbl.create 17
 let (rom : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97
 
 let loadRom () =
