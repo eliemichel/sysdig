@@ -1,8 +1,9 @@
 
-
-
-(* Enable register *)
-ereg()=() where
+(* TODO *)
+main()=(out) where
+	out = 0
 end where
+
+
 
 

@@ -1,0 +1,12 @@
+
+
+main(curAddr:[addrInstrSize],
+     isJumping,
+     jumpSize:[wordSize])
+     :
+    (addr:[addrInstrSize])
+where
+	a = incr(curAddr);
+	b = add(
+	addr = mux(b, a, isJumping)
+end where
