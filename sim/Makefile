@@ -44,7 +44,7 @@ $(BIN): $(CMX)
 
 clean:
 	@echo "Cleaning directory..."
-	@rm -v -f .depend *.cmi *.o *.automaton *~ $(BIN) $(CMX) $(GEN)
+	@rm -v -f .depend *.cmi *.o *.automaton *~ $(CMX) $(GEN)
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
 .depend: $(GEN)
