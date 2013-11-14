@@ -28,7 +28,7 @@ let loadRom () =
 			)
 			(Sim_lexer.read_file !rom_file)
 	with Sim_lexer.Sim_lexing_error s ->
-		Format.eprintf "Error during ROM loading: %s@." s
+		Format.eprintf "Warning: No ROM loaded: %s@." s
 
 
 let simulate filename =
