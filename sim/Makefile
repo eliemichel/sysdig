@@ -40,7 +40,7 @@ $(BIN): $(CMX)
 .mly.mli:
 	menhir $<
 
-.PHONY: clean
+.PHONY: clean all
 
 clean:
 	@echo "Cleaning directory..."
