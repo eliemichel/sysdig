@@ -1,0 +1,86 @@
+const n = 2
+
+(* not_n *)
+not_n<n>(a:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (not(a[0])) . (not_n<n-1>(a[1..]))
+  end if
+end where
+
+(* or_n *)
+or_n<n>(a:[n],b:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (a[0] or b[0]) . (or_n<n-1>(a[1..],b[1..]))
+  end if
+end where
+
+(* and_n *)
+and_n<n>(a:[n],b:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (a[0] and b[0]) . (and_n<n-1>(a[1..],b[1..]))
+  end if
+end where
+
+(* eq_n(a:n,b:n)=1 ssi a=b *)
+eq(a,b)=o where
+  o = not (a xor b)
+end where
+eq_n<n>(a:[n],b:[n])=o where
+  if n=0 then
+    o = 1
+  else
+    o = (eq(a[0],b[0])) and (eq_n<n-1>(a[1..],b[1..]))
+  end if
+end where
+
+(* inf_n(a,b) = a<b
+   On passe par sup_n pour le définir *)
+inf(a,b)=o where (* inf = strict inf *)
+  o = eq_n<2>(a.b,0.1)
+end where
+sup(a,b)=o where (* sup = sup or eq *)
+  t = inf(a,b);
+  o = not(t)
+end where
+sup_n<n>(a:[n],b:[n])=(oa,ob) where
+  if n=0 then
+    oa=1;
+    ob=1
+  else
+    (ta,tb) = sup_n<n-1>(a[1..],b[1..]);
+    s = eq_n<2>(ta.tb,1.1);
+    oa = mux( sup(a[0],b[0]) , ta , s );
+    ob = mux( sup(b[0],a[0]) , tb , s )
+  end if
+end where
+inf_n<n>(a:[n],b:[n])=o where
+  (ta,tb) = sup_n<n>(a,b);
+  o = not(ta)
+end where
+
+(* add_n(a,b) = a+b *)
+fulladder(a,b,c) = (s,r) where
+  s = (a xor b) xor c;
+  r = (a and b) or ((a xor b) and c)
+end where
+add_n<n>(a:[n],n:[n],c_in) = (o:[n],c_out) where
+  if n = 0 then
+    o = [];
+    c_out = 0
+  else
+    (s_n1,c_n1) = add_n<n-1>(a[1..],b[1..],c_in);
+    (s_0,c_out) = fulladder(a[0],b[0],c_n1);
+    o = s_n . s_n1
+  end if
+end where
+
+(* TESTS NOW *)
+main(a:[n],b:[n])=(o) where
+  o = inf_n<n>(a,b)
+end where
