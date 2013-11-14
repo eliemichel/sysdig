@@ -142,10 +142,11 @@ let evalExp env oldValue ram rom ident =
 		)
 	| Eselect (i, arg)     -> (match evalArg arg with
 		| VBitArray a -> VBit a.(i)
-		| vb          -> raise (
+		| vb          -> (*raise (
 			Sim_error
 			"Selection in VBit is not allowed"
-			)
+			)*)
+			if i = 0 then vb else raise (Invalid_argument "index out of bound")
 		)
 
 
