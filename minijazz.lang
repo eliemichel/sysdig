@@ -72,6 +72,7 @@
 	  <keyword>nand</keyword>
 	  <keyword>or</keyword>
 	  <keyword>xor</keyword>
+	  <keyword>mux</keyword>
 	</context>
       </include>
     </context>
