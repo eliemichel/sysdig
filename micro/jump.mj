@@ -1,12 +1,74 @@
+const addrInstrSize = 16
+const wordSize = 8
+
+(* empty<n>() = [0..0] avec n 0 *)
+empty<n>() = (o:[n]) where
+	if n = 0 then
+		o = []
+	else
+		o = 0.empty<n-1>()
+	end if
+end where
 
 
-main(curAddr:[addrInstrSize],
-     isJumping,
-     jumpSize:[wordSize])
-     :
-    (addr:[addrInstrSize])
+(* mux_n(a, b, c) = a si c = 1, b sinon *)
+mux_n<n>(a:[n], b:[n], c) = (o:[n]) where
+	if n = 0 then
+		o = []
+	else
+		o = mux(a[0], b[0], c).mux_n<n-1>(a[1..], b[1..], c)
+	end if
+end where
+
+(* reg_n(a) = reg a *)
+reg_n<n>(a:[n]) = (o:[n]) where
+	if n = 0 then
+		o = []
+	else
+		o = (reg a[0]).reg_n<n-1>(a[1..])
+	end if
+end where
+
+
+(* incr_n(a) = a+1 *)
+incr_n<n>(a:[n]) = (o:[n]) where
+	if n = 0 then
+		o = []
+	else
+		b = incr_n<n-1>(a[1..]);
+		o = mux_n<n>(0.b, 1.a[1..], a[0])
+	end if
+end where
+
+(* fulladder *)
+fulladder(a,b,c) = (s, r) where
+  s = (a xor b) xor c;
+  r = (a and b) or ((a xor b) and c);
+end where
+
+(* add_r_n(a, b, r) = a + b + r mod n *)
+add_r_n<n>(a:[n], b:[n], r_in) = (c:[n]) where
+	if n = 0 then
+		c = []
+	else
+		(s, r) = fulladder(a[0], b[0], r_in);
+		c = s.add_r_n<n-1>(a[1..], b[1..], r)
+	end if
+end where
+
+(* add_n(a, b) = a + b mod n *)
+add_n<n>(a:[n], b:[n]) = (c:[n]) where
+	c = add_r_n<n>(a, b, 0)
+end where
+
+main(isJumping, jumpSize:[wordSize]) = (addr:[addrInstrSize])
 where
-	a = incr(curAddr);
-	b = add(
-	addr = mux(b, a, isJumping)
+	curAddr = reg_n<addrInstrSize>(addr);
+	a = incr_n<addrInstrSize>(curAddr);
+	vide = empty<addrInstrSize-wordSize>();
+	b = add_n<addrInstrSize>(
+		curAddr,
+		jumpSize.vide
+	);
+	addr = mux_n<addrInstrSize>(b, a, isJumping)
 end where

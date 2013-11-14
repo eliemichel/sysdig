@@ -203,7 +203,14 @@ let tic inputs oldEnv ram rom p =
 	let rec applyEq env = function
 		| []                -> env
 		| (ident, exp) :: q ->
-			let env' = Env.add ident (evalExp env oldValue ram rom ident exp) env in
+			let eval = (
+				try evalExp env oldValue ram rom ident exp
+				with Sim_error s -> raise (
+					Sim_error
+					(s ^ " (in definition of " ^ ident ^ ")")
+					)
+			) in
+			let env' = Env.add ident eval env in
 				applyEq env' q
 	in
 	
