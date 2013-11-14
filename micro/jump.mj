@@ -35,8 +35,8 @@ incr_n<n>(a:[n]) = (o:[n]) where
 	if n = 0 then
 		o = []
 	else
-		b = incr_n<n-1>(a[1..]);
-		o = mux_n<n>(0.b, 1.a[1..], a[0])
+		b = incr_n<n-1>(a[..n-2]);
+		o = mux_n<n>(b . 0, a[..n-2] . 1, a[n-1])
 	end if
 end where
 
@@ -51,8 +51,8 @@ add_r_n<n>(a:[n], b:[n], r_in) = (c:[n]) where
 	if n = 0 then
 		c = []
 	else
-		(s, r) = fulladder(a[0], b[0], r_in);
-		c = s.add_r_n<n-1>(a[1..], b[1..], r)
+		(s, r) = fulladder(a[n-1], b[n-1], r_in);
+		c = add_r_n<n-1>(a[..n-2], b[..n-2], r) . s
 	end if
 end where
 
@@ -68,7 +68,8 @@ where
 	vide = empty<addrInstrSize-wordSize>();
 	b = add_n<addrInstrSize>(
 		curAddr,
-		jumpSize.vide
+		vide . jumpSize
 	);
 	addr = mux_n<addrInstrSize>(b, a, isJumping)
 end where
+
