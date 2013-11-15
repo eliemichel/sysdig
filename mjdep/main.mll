@@ -1,6 +1,9 @@
 {
+	module SSet = Set.Make(String)
+	
 	let output_file = ref "fullmain.mj"
 	let root = ref ""
+	let loaded = ref SSet.empty
 	
 	let fix_name f =
 		if Filename.check_suffix f ".mj"
@@ -9,21 +12,29 @@
 	
 	let include_file lexer write f =
 		let filename = fix_name f in
-		try
-			let i = open_in (Filename.concat !root filename) in
-				Printf.eprintf "Include '%s'\n" filename;
-				write ("(* mjdep: Begin file '" ^ filename ^ "' *)\n");
-				lexer write (Lexing.from_channel i);
-				write ("(* mjdep: End file '" ^ filename ^ "' *)");
-				close_in i
-		with Sys_error s -> (
-			Printf.eprintf "Warning: file '%s' not found\n" filename;
-			write (
-				"(* mjdep: unable to #require(" ^
-				f ^
-				") (file not found) *)"
+		if SSet.mem filename !loaded
+		then (
+			Printf.eprintf "Warning: file '%s' already read\n" filename;
+			write ("(* mjdep: cyclic requirement : " ^ f ^ " *)")
+		)
+		else (
+			loaded := SSet.add filename !loaded;
+			try
+				let i = open_in (Filename.concat !root filename) in
+					Printf.eprintf "Include '%s'\n" filename;
+					write ("(* mjdep: Begin file '" ^ filename ^ "' *)\n");
+					lexer write (Lexing.from_channel i);
+					write ("(* mjdep: End file '" ^ filename ^ "' *)");
+					close_in i
+			with Sys_error s -> (
+				Printf.eprintf "Warning: file '%s' not found\n" filename;
+				write (
+					"(* mjdep: unable to #require(" ^
+					f ^
+					") (file not found) *)"
+					)
 				)
-			)
+		)
 }
 
 let filename = ['0'-'9' 'a'-'z' 'A'-'Z' '_']+
