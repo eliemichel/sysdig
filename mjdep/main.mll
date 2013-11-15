@@ -12,7 +12,9 @@
 		try
 			let i = open_in (Filename.concat !root filename) in
 				Printf.eprintf "Include '%s'\n" filename;
+				write ("(* mjdep: Begin file '" ^ filename ^ "' *)\n");
 				lexer write (Lexing.from_channel i);
+				write ("(* mjdep: End file '" ^ filename ^ "' *)");
 				close_in i
 		with Sys_error s -> (
 			Printf.eprintf "Warning: file '%s' not found\n" filename;
