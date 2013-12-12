@@ -9,13 +9,13 @@ let read_exp eq =
 	in
 	let aux l = function
 		| Earg a -> read_arg l a
-		| Ereg id -> id::l
+		| Ereg _ -> l
 		| Enot a -> read_arg l a
 		| Ebinop (_, a, b) -> read_arg (read_arg l a) b
 		| Emux (a, b, c) -> read_arg (read_arg (read_arg l a) b) c
 		| Erom (_, _, a) -> read_arg l a
-		| Eram (_, _, a, b, c, d) ->
-			read_arg (read_arg (read_arg (read_arg l a) b) c) d
+		| Eram (_, _, a, b, c, _) ->
+			read_arg (read_arg (read_arg l a) b) c
 		| Econcat (a, b) -> read_arg (read_arg l a) b
 		| Eslice (_, _, a) -> read_arg l a
 		| Eselect (_, a) -> read_arg l a
@@ -25,9 +25,7 @@ let read_exp eq =
 
 let schedule p =
 	let g = mk_graph () in
-	let add_edges eq = match snd eq with
-		| Ereg _ | Eram _ | Erom _ -> ()
-		| _ -> List.iter (add_edge g (fst eq)) (read_exp eq)
+	let add_edges eq = List.iter (add_edge g (fst eq)) (read_exp eq)
 	in
 	List.iter (fun eq -> add_node g (fst eq)) p.p_eqs;
 	List.iter (add_node g) p.p_inputs;
