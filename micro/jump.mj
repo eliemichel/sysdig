@@ -1,17 +1,23 @@
-const addrInstrSize = 16
+const instrAddrSize = 16
 const wordSize = 8
 
 (* #require(utils) *)
 
-main(isJumping, jumpSize:[wordSize]) = (addr:[addrInstrSize])
+main(isJumping, isSetting, jumpSize:[wordSize], absAddr:[instrAddrSize], addOrSub) = (addr:[instrAddrSize])
 where
-	curAddr = reg_n<addrInstrSize>(addr);
-	a = incr_n<addrInstrSize>(curAddr);
-	vide = empty<addrInstrSize-wordSize>();
-	b = add_n<addrInstrSize>(
+	curAddr = reg_n<instrAddrSize>(addr);
+	a = incr_n<instrAddrSize>(curAddr);
+	vide = empty<instrAddrSize-wordSize>();
+	b = add_n<instrAddrSize>(
 		curAddr,
 		vide . jumpSize
 	);
-	addr = mux_n<addrInstrSize>(b, a, isJumping)
+	c = sub_n<instrAddrSize>(
+		curAddr,
+		vide . jumpSize
+	);
+	d = mux_n<instrAddrSize>(b, c, (addOrSub)
+	e = mux_n<instrAddrSize>(d, a, isJumping)
+	addr = mux_n<instrAddrSize>(absAddr, e, isSetting)
 end where
 
