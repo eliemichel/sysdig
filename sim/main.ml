@@ -81,14 +81,14 @@ let simulate filename =
 		let aux_array a =
 			output out "[" 0 1;
 			for k = 0 to Array.length a - 1 do
-				output out (if a.(k) then "1 " else "0 ") 0 2
+				output out (if a.(k) then "1" else "0") 0 1
 			done;
-			output out "] " 0 2
+			output out "]" 0 1
 		in
 		let rec aux = function
 			| []                 -> output out "\n" 0 1
 			| (VBit b) :: q      -> (
-				output out (if b then "1 " else "0 ") 0 2;
+				output out (if b then "1" else "0") 0 1;
 				aux q
 				)
 			| (VBitArray a) :: q -> (aux_array a ; aux q)

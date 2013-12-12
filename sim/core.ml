@@ -70,7 +70,7 @@ let getAddr addrSize addr =
 	let a = array_of_value addr in
 	let addr = ref 0 in
 	let mask = ref 1 in
-	for k = 0 to addrSize - 1 do
+	for k = addrSize - 1 downto 0 do (* for k = 0 to addrSize - 1 do *)
 		(
 		try
 			if a.(k) then addr := !addr + !mask
