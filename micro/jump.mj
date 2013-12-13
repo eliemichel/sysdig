@@ -3,7 +3,7 @@ const wordSize = 8
 
 (* #require(utils) *)
 
-main(isJumping, isSetting, jumpSize:[wordSize], absAddr:[instrAddrSize], addOrSub) = (addr:[instrAddrSize])
+main (isJumping, isSetting, jumpSize:[wordSize], absAddr:[instrAddrSize], addOrSub) = (addr:[instrAddrSize])
 where
 	curAddr = reg_n<instrAddrSize>(addr);
 	a = incr_n<instrAddrSize>(curAddr);

@@ -45,8 +45,8 @@ big_mux_8(d:[8],c:[3]) = o where
 end where
 big_mux_16(d:[16],c:[4]) = o where
   o = mux(
-    big_mux_16(d[8..15],c[0..2]),
-    big_mux_16(d[0..7],c[0..2]),
+    big_mux_8(d[8..15],c[0..2]),
+    big_mux_8(d[0..7],c[0..2]),
     c[3])
 end where
 
@@ -68,6 +68,27 @@ incr_n<n>(a:[n]) = (o:[n]) where
   else
     b = incr_n<n-1>(a[..n-2]);
     o = mux_n<n>(b . 0, a[..n-2] . 1, a[n-1])
+  end if
+end where
+
+(**********************************************************)
+(* decr_n(a) = a-1 *)
+decr_n<n>(a:[n]) = (o:[n]) where
+  if n = 0 then
+    o = []
+  else
+    b = decr_n<n-1>(a[..n-2]);
+    o = mux_n<n>(a[..n-2] . 0, b . 1, a[n-1])
+  end if
+end where
+
+(**********************************************************)
+(* null_n(a) = a == 00...0 *)
+null_n<n>(a:[n]) = (o) where
+  if n = 0 then
+    o = 1
+  else
+    o = not(a[0]) and null_n<n-1>(a[1..]);
   end if
 end where
 
