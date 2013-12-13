@@ -68,6 +68,8 @@ let simulate filename =
 			)
 	in
 	
+	Format.eprintf "File loaded@.";
+	
 	let p =
 		try Scheduler.schedule p
 		with Scheduler.Combinational_cycle -> (
@@ -76,6 +78,8 @@ let simulate filename =
 			exit 2
 			)
 	in
+	
+	Format.eprintf "Netlist scheduled@.";
 	
 	let formatedOutput o =
 		let aux_array a =
