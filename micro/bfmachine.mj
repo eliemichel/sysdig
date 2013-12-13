@@ -1,0 +1,88 @@
+(*
+ *  Brainfuck Machine
+ *  Test de processeur ultra-simple pour travailler la gestion des entrées/sorties.
+ *)
+
+const ws = 8
+const ramSize = 8
+const romSize = 16
+const maxNestSize = 8
+
+(* #require(utils) *)
+
+
+main () = (instr:[3], disp, val:[ws], p:[ramSize], addr:[romSize], usual_mode, open_bracket:[maxNestSize]) where
+	
+	(************)
+	instr = rom<romSize, 3>(addr);
+	i0 = instr[0];
+	i1 = instr[1];
+	i2 = instr[2];
+	val = ram<ramSize, ws>(p, isChanging, p, new_val);
+	
+	
+	(************)
+	isMoving = not(i0) and not(i1) and usual_mode;
+	
+	incr_p = incr_n<ramSize>(p);
+	decr_p = decr_n<ramSize>(p);
+	
+	move_p = mux_n<ramSize>(decr_p, incr_p, i2);
+	p = reg_n<ramSize>(mux_n<ramSize>(move_p, p, isMoving));
+	
+	
+	(************)
+	isChanging = not(i0) and i1 and usual_mode;
+	
+	incr_val = incr_n<ramSize>(val);
+	decr_val = decr_n<ramSize>(val);
+	
+	new_val = mux_n<ws>(decr_val, incr_val, i2);
+	
+	
+	(************)
+	disp = i0 and not(i1 or i2) and usual_mode;
+	
+	
+	(************)
+	isJumping = i0 and i1 and (null_n<ws>(val) xor i2) and usual_mode;
+	
+	old_jump_mode = reg(jump_mode);
+	usual_mode = not(old_jump_mode);
+	jump_mode = isJumping or (old_jump_mode and not(null_n<maxNestSize>(open_bracket)));
+	old_dir = reg(dir);
+	dir = mux(i2, old_dir, isJumping);
+	
+	
+	(************)
+	old_addr = reg_n<romSize>(addr);
+	incr_addr = incr_n<romSize>(old_addr);
+	
+	decr_addr = decr_n<romSize>(old_addr);
+	
+	addr = mux_n<romSize>(decr_addr, incr_addr, old_jump_mode and old_dir);
+	
+	
+	(************)
+	isBracket = i0 and i1 and not(usual_mode);
+	
+	old_open_bracket = reg_n<maxNestSize>(open_bracket);
+	incr_old_open_bracket = incr_n<maxNestSize>(old_open_bracket);
+	decr_old_open_bracket = decr_n<maxNestSize>(old_open_bracket);
+	change_open_bracket = mux_n<maxNestSize>(decr_old_open_bracket, incr_old_open_bracket, i2 xor old_dir);
+	new_open_bracket = mux_n<maxNestSize>(change_open_bracket, old_open_bracket, isBracket);
+	open_bracket = mux_n<maxNestSize>(empty<maxNestSize-1>().1, new_open_bracket, isJumping);
+	
+end where
+
+(*
+	> 000
+	< 001
+	+ 010
+	- 011
+	. 100
+	, 101 --> Pas implémenté
+	[ 110
+	] 111
+*)
+
