@@ -1,0 +1,71 @@
+(* #require(utils) *)
+
+
+fulladder(a,b,c) = (s, r) where
+  s = (a ^ b) ^ c;
+  r = (a & b) + ((a ^ b) & c);
+end where
+
+adder<n>(a:[n], b:[n], c_in) = (o:[n], c_out) where
+  if n = 0 then
+    o = [];
+    c_out = 0
+  else
+    (s_n1, c_n1) = adder<n-1>(a[1..], b[1..], c_in);
+    (s_n, c_out) = fulladder(a[0], b[0], c_n1);
+    o = s_n . s_n1
+  end if
+end where
+
+main(a:[2], b:[2]) = (o:[2], c) where
+  (o, c) = adder<2>(a,b,0)
+end where
+
+00/00/0000 00:00:00
+
+(* add_n(a, b) = a + b mod n *)
+
+div_eucl(a:[8], b:[8]) =(q:[8], r:[8]) where
+
+
+end where
+
+
+seg(a:[8])=(o:[7]) where
+	o[1] = (not(a[1]) and a[3]) or (a[1] and not(a[4])) or (a[2] and a[3]) or not(a[2] or a[4]) or (a[1] and not(a[2]) and not(a[3])) or (not(a[1]) and a[2] and a[4])
+	o[2] = not(a[1] or a[2]) or not(a[2] or a[3]) or not(a[2] or a[4]) or (not(a[1]) and not(a[3] xor a[4])) or (a[1] and not(a[3]) and a[4])
+	o[3] = (a[1] xor a[2]) or (not(a[3]) and a[4]) or (not(a[3] xor a[4]) and not(a[2]))
+	o[4] = (a[1] and not(a[3])) or not(a[1] or a[2] or a[4]) or (a[2] and (a[3] xor a[4])) or (not(a[2]) and a[3] and a[4])
+	o[5] = not(a[2] or a[4]) or (a[3] and not(a[4])) or (a[1] and a[2]) or (a[1] and a[3])
+	o[6] = (a[1] and not(a[2])) or not(a[3] or a[4]) or (not(a[3]) and (a[1] xor a[2])) or (a[1] and a[3]) or (a[2] and not(a[4]))
+	o[7] = (a[3] and (a[1] or not(a[2]) or not(a[4]))) or (a[1] and a[4]) or (not(a[3]) and (a[1] xor a[2]))
+end where
+
+gpu(j:[8], m:[8], a1:[8], a2:[8], h:[8], min:[8], s:[8]) = (j1:[7], j2:[7], m1:[7], m2:[7], a1:[7], a2:[7], a3:[7], a4:[7], h1:[7], h2:[7], min1:[7], min2:[7], s1[7], s2[7]) where
+	s1_ = s:[8] MOD 10   (* numéro représenté *)
+
+
+
+	s = 10*s2_+s1_ (* 0<s<60 *)
+	min = 10*min2_+min1_
+	h = 10*min2_+min1_
+	j = 10*j2_+j1_
+	m = 10*m2_+m1_
+	m = 10*m2_+m1_
+	a1 = 2 (00010)
+	a = 100*a3_+10*a2_+a1_
+
+	s1 = seg(s1_)
+	s2 = seg(s2_)
+	min1 = seg(min1_)
+	min2 = seg(min2_)
+	h1 = seg(h1_)
+	h2 = seg(h2_)
+	j1 = seg(j1_)
+	j2 = seg(j2_)
+	m1 = seg(m1_)
+	m2 = seg(m2_)
+	a1 = seg(a1_)
+	a2 = seg(a2_)
+	a3 = seg(a3_)
+end where
