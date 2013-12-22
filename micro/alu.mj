@@ -1,4 +1,7 @@
-(* not_n *)
+(* Représentation des entiers : [a0...an] : an..a0(2) *)
+
+
+(* not_n ENDIAN OK *)
 not_n<n>(a:[n])=(o:[n]) where
   if n=0 then
     o = []
@@ -7,7 +10,7 @@ not_n<n>(a:[n])=(o:[n]) where
   end if
 end where
 
-(* or_n *)
+(* or_n ENDIAN OK *)
 or_n<n>(a:[n],b:[n])=(o:[n]) where
   if n=0 then
     o = []
@@ -16,7 +19,7 @@ or_n<n>(a:[n],b:[n])=(o:[n]) where
   end if
 end where
 
-(* and_n *)
+(* and_n ENDIAN OK *)
 and_n<n>(a:[n],b:[n])=(o:[n]) where
   if n=0 then
     o = []
@@ -25,7 +28,7 @@ and_n<n>(a:[n],b:[n])=(o:[n]) where
   end if
 end where
 
-(* eq_n(a:n,b:n)=1 ssi a=b *)
+(* eq_n(a:n,b:n)=1 ssi a=b ENDIAN OK *)
 eq(a,b)=o where
   o = not (a xor b)
 end where
