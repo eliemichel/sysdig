@@ -95,8 +95,8 @@ sub<n>(a:[n], b:[n]) = (o:[n], r) where
   (o, r) = nsubber<n>(a, b, 0)
 end where
 
-(**********************************************************)
-(* Division euclidienne                                   *)
+(******************************************************************************)
+(* Division euclidienne                                                       *)
 div_mn<n,m>(a:[n],b:[n]) = (q:[m],r:[n]) where
   if m=0 then
     q = [];
@@ -104,12 +104,16 @@ div_mn<n,m>(a:[n],b:[n]) = (q:[m],r:[n]) where
   else
     a' = a[m-1..] . empty<m-1>();
     (res, con) = sub<n>(a', b);
+    res' = a[..m-2] . res[..n-m];      (* On recompose le résultat *)
 
-    (q1, r1) = div_mn<n,m-1>(a, b); (* Si con=1 *)
-    (q0, r0) = div_mn<n,m-1>(res, b); (* Si con=0 *)
+    (* Les deux lignes suivantes créaient 2^n divisions... C'est beaucoup. *)
+    (* (q1, r1) = div_mn<n,m-1>(a, b);      (* Si con=1 *) *)
+    (* (q0, r0) = div_mn<n,m-1>(res', b);   (* Si con=0 *) *)
+    (* Donc on va corriger ça par la ligne suivante : *)
 
-    q = mux_n<m>( q1.0 , q0.1 , con );
-    r = mux_n<n>( r1 , r0 , con )
+    a'' = mux_n<n>( a , res' , con );
+    (q', r) = div_mn<n,m-1>( a'', b);
+    q = q' . (not(con));
   end if
 end where
 div<n>(a:[n],b:[n]) = (q:[n],r:[n]) where
@@ -117,8 +121,7 @@ div<n>(a:[n],b:[n]) = (q:[n],r:[n]) where
 end where
 
 (* L'HEURE DU TEST *)
-main(a,b,c) = (s,r) where
-  (s,r) = fullsubber(a,b,c)
+main(a:[16],b:[16]) = (q:[16],r:[16]) where
+  (q,r) = div<16>(a,b)
 end where
-
 
