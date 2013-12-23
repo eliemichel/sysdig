@@ -1,66 +1,56 @@
 (* Représentation des entiers : [a0...an] : an..a0(2) *)
+(* require(utils) *)
 
-
-(* not_n ENDIAN OK *)
-not_n<n>(a:[n])=(o:[n]) where
-  if n=0 then
-    o = []
-  else
-    o = (not(a[0])) . (not_n<n-1>(a[1..]))
-  end if
+addsub <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) = add<n>(a0,a1);
+  (r0s,r1s) = sub<n>(a0,a1);
+  r0 = mux_n( r0s , r0a , con );
+  r1 = mux( r1s , r1a , con ) . empty<n-1>()
 end where
 
-(* or_n ENDIAN OK *)
-or_n<n>(a:[n],b:[n])=(o:[n]) where
-  if n=0 then
-    o = []
-  else
-    o = (a[0] or b[0]) . (or_n<n-1>(a[1..],b[1..]))
-  end if
+multdiv <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) = mult<n>(a0,a1);
+  (r0s,r1s) =  div<n>(a0,a1);
+  r0 = mux_n( r0s , r0a , con );
+  r1 = mux_n( r1s , r1a , con )
 end where
 
-(* and_n ENDIAN OK *)
-and_n<n>(a:[n],b:[n])=(o:[n]) where
-  if n=0 then
-    o = []
-  else
-    o = (a[0] and b[0]) . (and_n<n-1>(a[1..],b[1..]))
-  end if
+alu_arith <n> ( a0:[n] , a1:[n] , con , con' ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) =  addsub<n>(a0,a1,con');
+  (r0b,r1b) = multdiv<n>(a0,a1,con');
+  r0 = mux_n( r0b , r0a , con );
+  r1 = mux_n( r1b , r1a , con )
 end where
 
-(* eq_n(a:n,b:n)=1 ssi a=b ENDIAN OK *)
-eq(a,b)=o where
-  o = not (a xor b)
-end where
-eq_n<n>(a:[n],b:[n])=o where
-  if n=0 then
-    o = 1
-  else
-    o = (eq(a[0],b[0])) and (eq_n<n-1>(a[1..],b[1..]))
-  end if
+andor <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+  r0a = and_n<n>(a0,a1);
+  r0s = or_n<n>(a0,a1);
+  r0 = mux_n( r0s , r0a , con );
+  r1 = empty<n>()
 end where
 
-(* inf_n(a,b) = a<b
-   On passe par sup_n pour le définir *)
-inf(a,b)=o where (* inf = strict inf *)
-  o = eq_n<2>(a.b,0.1)
+notshift <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+  r0a = not_n<n>(a0,a1);
+  (r0s,r1s) = shift<n>(a0,a1);
+  r0 = mux_n( r0s , r0a , con );
+  r1 = mux_n( r1s , empty<n>() , con )
 end where
-sup(a,b)=o where (* sup = sup or eq *)
-  t = inf(a,b);
-  o = not(t)
+
+alu_logique <n> ( a0:[n] , a1:[n] , con , con' ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) =    andor<n>(a0,a1,con');
+  (r0b,r1b) = notshift<n>(a0,a1,con');
+  r0 = mux_n( r0b , r0a , con );
+  r1 = mux_n( r1b , r1a , con )
 end where
-sup_n<n>(a:[n],b:[n])=(oa,ob) where
-  if n=0 then
-    oa=1;
-    ob=1
-  else
-    (ta,tb) = sup_n<n-1>(a[1..],b[1..]);
-    s = eq_n<2>(ta.tb,1.1);
-    oa = mux( sup(a[0],b[0]) , ta , s );
-    ob = mux( sup(b[0],a[0]) , tb , s )
-  end if
-end where
-inf_n<n>(a:[n],b:[n])=o where
-  (ta,tb) = sup_n<n>(a,b);
-  o = not(ta)
+
+(******************************************************************************)
+(* Et la voila, la belle, l'ALU !                                             *)
+(* alu prend deux paramètres (deux registres a0 et a1) et une valeur de       *)
+(* contrôle con, et renvoit des valeurs (r0 et r1)                            *)
+(* La nappe de fils con doit représenter ce qu'on voit dans Cheat sheet       *)
+alu <n,m> ( a0:[n] , a1:[n] , con:[m] ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) =   alu_arith<n>( a0, a1, con[m-2], con[m-1] );
+  (r0b,r1b) = alu_logique<n>( a0, a1, con[m-2], con[m-1] );
+  r0 = mux_n( r0b , r0a , con[m-3] );
+  r1 = mux_n( r1b , r1a , con[m-3] )
 end where

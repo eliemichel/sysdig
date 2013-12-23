@@ -61,6 +61,28 @@ add<n>(a:[n], b:[n]) = (o:[n], r) where
 end where
 
 (******************************************************************************)
+(* Multiplication                                                             *)
+(* Le résultat est renvoyé dans r[0]...r[n-1].q[0]...q[n-1]                   *)
+(* PROBLEME DE COMPATILIBILITE DES ARGUMENTS A TROUVER...                     *)
+mult_nm<n,m>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
+  if m=0 then
+    q = empty<n>();
+    r = empty<n>()
+  else
+    (q', r') = mult_nm<n,m-1>( a , b );
+
+    qp = mux_n<n>( b[n-m+1..] . empty<n-m+1>() , empty<n>() , a[m-1] );
+    rp = mux_n<n>( empty<m-1>() . b[..n-m] , empty<n>(), a[m-1] );
+    
+    (r, b) = add<n>( rp , r');
+    (q, pb) = nadder<n>( qp , q' , b ); (* pb = pointless bit (pas de dép.) *)
+  end if
+end where
+mult<n>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
+  (q,r) = mult_nm<n,n>(a,b)
+end where
+
+(******************************************************************************)
 (* fullsubber                                                                 *)
 (* Il faudrait trouver une autre orthographe, c'est moche.                    *)
 (* Fait la soustraction a-b-c, et mets son bit r à 1 si le résultat entraine  *)
@@ -89,8 +111,6 @@ nsubber<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
     r_out = r'
   end if
 end where
-
-(******************************************************************************)
 sub<n>(a:[n], b:[n]) = (o:[n], r) where
   (o, r) = nsubber<n>(a, b, 0)
 end where
@@ -109,19 +129,67 @@ div_mn<n,m>(a:[n],b:[n]) = (q:[m],r:[n]) where
     (* Les deux lignes suivantes créaient 2^n divisions... C'est beaucoup. *)
     (* (q1, r1) = div_mn<n,m-1>(a, b);      (* Si con=1 *) *)
     (* (q0, r0) = div_mn<n,m-1>(res', b);   (* Si con=0 *) *)
-    (* Donc on va corriger ça par la ligne suivante : *)
+    (* Donc on va corriger ça par les lignes suivantes. *)
 
     a'' = mux_n<n>( a , res' , con );
     (q', r) = div_mn<n,m-1>( a'', b);
-    q = q' . (not(con));
+    q = q' . (not con);
   end if
 end where
 div<n>(a:[n],b:[n]) = (q:[n],r:[n]) where
   (q,r) = div_mn<n,n>(a,b)
 end where
 
-(* L'HEURE DU TEST *)
-main(a:[16],b:[16]) = (q:[16],r:[16]) where
-  (q,r) = div<16>(a,b)
+(******************************************************************************)
+(* not_n                                                                      *)
+not_n<n>(a:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (not a[0]) . (not_n<n-1>(a[1..]))
+  end if
 end where
 
+(******************************************************************************)
+(* or_n                                                                       *)
+or_n<n>(a:[n],b:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (a[0] or b[0]) . (or_n<n-1>(a[1..],b[1..]))
+  end if
+end where
+
+(******************************************************************************)
+(* and_n                                                                      *)
+and_n<n>(a:[n],b:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (a[0] and b[0]) . (and_n<n-1>(a[1..],b[1..]))
+  end if
+end where
+
+(******************************************************************************)
+(* eq_n                                                                       *)
+(* Pas besoin non plus, soustraction le fait aussi !                          *)
+
+(******************************************************************************)
+(* inf_n(a,b) = a<b                                                           *)
+(* Finalement, on a pas besoin de l'inf, puisque la soustraction le fait.     *)
+
+(******************************************************************************)
+(* shift                                                                      *)
+(* ATTENTION. Le "left" et "right" est au sens gauche et droite des nombres   *)
+(* binaires qu'on regarde ! left(01(2)) = 0|10(2), right(01(2)) = 00|1(2)     *)
+shift<n>( a:[n] , b:[n] ) = ( left_a:[n] , right_b:[n] ) where
+  left_a  = 0 . a[..n-2];
+  right_b = b[1..] . 0
+end where
+
+
+
+(* test *)
+main( a:[8] , b:[8] ) = ( q:[8] , r:[8] ) where
+  (q,r) = mult<8>(a,b)
+end where
