@@ -1,46 +1,47 @@
 (* Représentation des entiers : [a0...an] : an..a0(2) *)
-(* require(utils) *)
+(* #require(utils) *)
 
 addsub <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
   (r0a,r1a) = add<n>(a0,a1);
-  (r0s,r1s) = sub<n>(a0,a1);
-  r0 = mux_n( r0s , r0a , con );
-  r1 = mux( r1s , r1a , con ) . empty<n-1>()
+  (r0b,r1b) = sub<n>(a0,a1);
+  r0 = mux_n<n>( r0b , r0a , con );
+  r1 = mux( r1b , r1a , con ) . empty<n-1>()
 end where
 
 multdiv <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
   (r0a,r1a) = mult<n>(a0,a1);
-  (r0s,r1s) =  div<n>(a0,a1);
-  r0 = mux_n( r0s , r0a , con );
-  r1 = mux_n( r1s , r1a , con )
+  (r0b,r1b) =  div<n>(a0,a1);
+  r0 = mux_n<n>( r0b , r0a , con );
+  r1 = mux_n<n>( r1b , r1a , con )
 end where
 
 alu_arith <n> ( a0:[n] , a1:[n] , con , con' ) = ( r0:[n] , r1:[n] ) where
   (r0a,r1a) =  addsub<n>(a0,a1,con');
   (r0b,r1b) = multdiv<n>(a0,a1,con');
-  r0 = mux_n( r0b , r0a , con );
-  r1 = mux_n( r1b , r1a , con )
+  r0 = mux_n<n>( r0b , r0a , con );
+  r1 = mux_n<n>( r1b , r1a , con )
 end where
 
 andor <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
   r0a = and_n<n>(a0,a1);
-  r0s = or_n<n>(a0,a1);
-  r0 = mux_n( r0s , r0a , con );
+  r0b = or_n<n>(a0,a1);
+  r0 = mux_n<n>( r0b , r0a , con );
   r1 = empty<n>()
 end where
 
 notshift <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
-  r0a = not_n<n>(a0,a1);
-  (r0s,r1s) = shift<n>(a0,a1);
-  r0 = mux_n( r0s , r0a , con );
-  r1 = mux_n( r1s , empty<n>() , con )
+  r0a = not_n<n>(a0);
+  r1a = not_n<n>(a1);
+  (r0b,r1b) = shift<n>(a0,a1);
+  r0 = mux_n<n>( r0b , r0a , con );
+  r1 = mux_n<n>( r1b , r1a , con )
 end where
 
 alu_logique <n> ( a0:[n] , a1:[n] , con , con' ) = ( r0:[n] , r1:[n] ) where
   (r0a,r1a) =    andor<n>(a0,a1,con');
   (r0b,r1b) = notshift<n>(a0,a1,con');
-  r0 = mux_n( r0b , r0a , con );
-  r1 = mux_n( r1b , r1a , con )
+  r0 = mux_n<n>( r0b , r0a , con );
+  r1 = mux_n<n>( r1b , r1a , con )
 end where
 
 (******************************************************************************)
@@ -49,8 +50,14 @@ end where
 (* contrôle con, et renvoit des valeurs (r0 et r1)                            *)
 (* La nappe de fils con doit représenter ce qu'on voit dans Cheat sheet       *)
 alu <n,m> ( a0:[n] , a1:[n] , con:[m] ) = ( r0:[n] , r1:[n] ) where
-  (r0a,r1a) =   alu_arith<n>( a0, a1, con[m-2], con[m-1] );
-  (r0b,r1b) = alu_logique<n>( a0, a1, con[m-2], con[m-1] );
-  r0 = mux_n( r0b , r0a , con[m-3] );
-  r1 = mux_n( r1b , r1a , con[m-3] )
+  (r0a,r1a) =   alu_arith<n>( a0, a1, con[1], con[0] );
+  (r0b,r1b) = alu_logique<n>( a0, a1, con[1], con[0] );
+  r0 = mux_n<n>( r0b , r0a , con[2] );
+  r1 = mux_n<n>( r1b , r1a , con[2] )
+end where
+
+
+(* Heure des tests *)
+main( a0:[8] , a1:[8] , con:[6] ) = ( r0:[8] , r1:[8] ) where
+  (r0,r1) = alu<8,6>(a0,a1,con)
 end where

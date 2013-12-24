@@ -60,7 +60,7 @@ end where
 (* Multiplication                                                             *)
 (* Le résultat est renvoyé dans r[0]...r[n-1].q[0]...q[n-1]                   *)
 (* PROBLEME DE COMPATILIBILITE DES ARGUMENTS A TROUVER...                     *)
-mult_nm<n,m>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
+mult_nm<n,m>( a:[n] , b:[n] ) = ( r:[n] , q:[n] ) where
   if m=0 then
     q = empty<n>();
     r = empty<n>()
