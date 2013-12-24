@@ -39,7 +39,7 @@ fulladder(a, b, c) = (s, r) where
 end where
 
 (******************************************************************************)
-(* nadder                                                                     *)
+(* add                                                                        *)
 (* Endian CHECK                                                               *)
 nadder<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
   if n=0 then
@@ -52,10 +52,6 @@ nadder<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
     r_out = r'
   end if
 end where
-
-(******************************************************************************)
-(* add                                                                        *)
-(* add<n>(a,b) = o + 2^n.r                                                    *)
 add<n>(a:[n], b:[n]) = (o:[n], r) where
   (o, r) = nadder<n>(a, b, 0)
 end where
@@ -74,8 +70,8 @@ mult_nm<n,m>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
     qp = mux_n<n>( b[n-m+1..] . empty<n-m+1>() , empty<n>() , a[m-1] );
     rp = mux_n<n>( empty<m-1>() . b[..n-m] , empty<n>(), a[m-1] );
     
-    (r, b) = add<n>( rp , r');
-    (q, pb) = nadder<n>( qp , q' , b ); (* pb = pointless bit (pas de dép.) *)
+    (r, bit) = add<n>( rp , r');
+    (q, pbit) = nadder<n>( qp , q' , bit ); (* pointless bit (pas de dép.) *)
   end if
 end where
 mult<n>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
@@ -187,9 +183,3 @@ shift<n>( a:[n] , b:[n] ) = ( left_a:[n] , right_b:[n] ) where
   right_b = b[1..] . 0
 end where
 
-
-
-(* test *)
-main( a:[8] , b:[8] ) = ( q:[8] , r:[8] ) where
-  (q,r) = mult<8>(a,b)
-end where
