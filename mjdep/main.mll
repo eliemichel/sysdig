@@ -10,7 +10,7 @@
 		then f
 		else f ^ ".mj"
 	
-	let include_file lexer write f =
+	let include_file lexer write replace_main f =
 		let filename = fix_name f in
 		if SSet.mem filename !loaded
 		then (
@@ -23,7 +23,7 @@
 				let i = open_in (Filename.concat !root filename) in
 					Printf.eprintf "Include '%s'\n" filename;
 					write ("(* mjdep: Begin file '" ^ filename ^ "' *)\n");
-					lexer write (Lexing.from_channel i);
+					lexer write replace_main (Lexing.from_channel i);
 					write ("(* mjdep: End file '" ^ filename ^ "' *)");
 					close_in i
 			with Sys_error s -> (
@@ -39,36 +39,37 @@
 
 let filename = ['0'-'9' 'a'-'z' 'A'-'Z' '_']+
 
-rule token write = parse
-	| "(*"   { write "(*" ; comment write lexbuf; token write lexbuf }
-	| _ as c { write (String.make 1 c) ; token write lexbuf }
-	| eof    { () }
+rule token write rm = parse
+	| "(*"    { write "(*" ; comment write rm lexbuf ; token write rm lexbuf }
+	| "main" { write (if rm then "main_protected" else "main") ; token write rm lexbuf }
+	| _ as c  { write (String.make 1 c) ; token write rm lexbuf }
+	| eof     { () }
 
-and comment write = parse
-	| '"'    { write "\"" ; str write lexbuf; comment write lexbuf }
+and comment write rm = parse
+	| '"'    { write "\"" ; str write rm lexbuf; comment write rm lexbuf }
 	| "*)"   { write "*)" }
 	| "#require" ' '* '(' {
 			write "*)\n";
-			require write lexbuf;
+			require write rm lexbuf;
 			write "\n(*";
-			comment write lexbuf
+			comment write rm lexbuf
 		}
-	| _ as c { write (String.make 1 c) ; comment write lexbuf }
+	| _ as c { write (String.make 1 c) ; comment write rm lexbuf }
 	| eof    { () }
 
-and str write = parse
-	| "\\\"" { write "\\\"" ; str write lexbuf }
+and str write rm = parse
+	| "\\\"" { write "\\\"" ; str write rm lexbuf }
 	| '"'    { write "\"" }
-	| _ as c { write (String.make 1 c) ; str write lexbuf }
+	| _ as c { write (String.make 1 c) ; str write rm lexbuf }
 	| eof    { () }
 
-and require write = parse
+and require write rm = parse
 	| ' '* ','? ' '* (filename as f) {
-			include_file token write f;
-			require write lexbuf
+			include_file token write true f;
+			require write rm lexbuf
 		}
 	| ')'  { () }
-	| _    { require write lexbuf }
+	| _    { require write rm lexbuf }
 	| eof  { () }
 
 {
@@ -78,7 +79,7 @@ and require write = parse
 		let basename = Filename.basename filename in
 			root := Filename.dirname filename;
 			Printf.eprintf "mjdep: Working in directory '%s'\n" !root;
-			include_file token write basename;
+			include_file token write false basename;
 			close_out o
 	
 	

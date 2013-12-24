@@ -35,5 +35,9 @@ n'arrête pas pour autant la compilation. Ainsi si deux fichiers requierent tous
 le même fichier tiers, ce dernier est inclu une seule fois sans poser de problème
 pour la suite.
 
+Afin d'éviter que plusieurs fonctions `main` se trouvent dans le fichier final,
+les occurences du mot `main` se trouvant dans les fichiers inclus sont toutes
+remplacées par `main_protected`. Attention cependant : ce mot est remplacé quelque
+soit son rôle dans le code et pas uniquement pour la déclaration de fonction.
 
 
