@@ -3,21 +3,23 @@
  *  Test de processeur ultra-simple pour travailler la gestion des entrées/sorties.
  *)
 
-const ws = 8
-const ramSize = 8
-const romSize = 16
-const maxNestSize = 8
+const ws          =  8
+const instrSize   =  4
+const ramSize     =  8
+const romSize     = 16
+const maxNestSize =  8
 
 (* #require(utils) *)
 
 
-main () = (instr:[3], disp, val:[ws], p:[ramSize], addr:[romSize], usual_mode, open_bracket:[maxNestSize]) where
+main () = (power, instr:[instrSize], disp, val:[ws], p:[ramSize], addr:[romSize], usual_mode, open_bracket:[maxNestSize]) where
 	
 	(************)
-	instr = rom<romSize, 3>(addr);
+	instr = rom<romSize, instrSize>(addr);
 	i0 = instr[0];
 	i1 = instr[1];
 	i2 = instr[2];
+	power = instr[3];
 	val = ram<ramSize, ws>(p, isChanging, p, new_val);
 	
 	

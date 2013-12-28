@@ -17,4 +17,4 @@ clean:
 %: %.mj
 	./mjdep -o $@_${POSTFIX}.mj $<
 	./mjc.byte $@_${POSTFIX}.mj
-	./sim -input $@_input.sim -output $@_output.sim -rom $@_rom.sim $@_${POSTFIX}.net
+	./sim -rom $@.bin $@_${POSTFIX}.net
