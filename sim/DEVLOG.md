@@ -221,4 +221,10 @@ code annoté.
 ## 28/12/2013
 Pour le piping, j'utilise et découvre le module `Stream` avec `stdin`.
 
+**Problème** : Le piping ne convient pas à notre problème car attend que la
+première application s'arrête avant de lancer la seconde ! Il faut impérativement
+trouver un nouveau protocole de communication.
+
+
+
 

@@ -3,15 +3,17 @@
 	exception Sim_lexing_error of string
 	
 	let input = ref []
-	let current_line = ref []
 	let current_array = ref []
 	let empty = ref true
 	
 	let bool_of_char c = c = '1'
 	
 	let handleNewline () =
-		input := (List.rev !current_line) :: !input;
-		current_line := [];
+		let line =
+			Netlist_ast.VBitArray (Array.of_list (List.rev !current_array))
+		in
+		input := line :: !input;
+		current_array := [];
 		empty := true
 }
 
@@ -28,34 +30,13 @@ rule token = parse
 		}
 	| value as v {
 		empty := false;
-		current_line := (Netlist_ast.VBit (bool_of_char v)) :: !current_line;
+		current_array := (bool_of_char v) :: !current_array;
 		token lexbuf
 		}
-	| '['        {
-		empty := false;
-		current_array := [];
-		bit_array lexbuf
-		}
-	| '#'        { if not !empty then handleNewline () ;  comment lexbuf }
+	| '#'        { if not !empty then handleNewline () ; comment lexbuf }
 	| _          { raise (Sim_lexing_error "Syntax error") }
 	| eof        { () }
 
-and bit_array = parse
-	| whitespace { bit_array lexbuf }
-	| value as v {
-		current_array := (bool_of_char v) :: !current_array;
-		bit_array lexbuf
-		}
-	| ']'        {
-		let a = Netlist_ast.VBitArray (
-			Array.of_list (List.rev !current_array)
-			)
-		in
-			current_line := a :: !current_line;
-			token lexbuf
-		}
-	| _
-	| eof        { raise (Sim_lexing_error "Syntax error") }
 
 and comment = parse
 	| newline { empty := true ; token lexbuf }
@@ -72,7 +53,6 @@ and comment = parse
 				)
 		in
 			input := [];
-			current_line := [];
 			current_array := [];
 			token (Lexing.from_channel ic);
 			List.rev !input

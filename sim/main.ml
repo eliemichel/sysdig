@@ -14,12 +14,9 @@ let loadRom () =
 	try
 		let addr = ref 0 in
 		List.iter
-			(fun l -> List.iter
-				(fun v ->
-					Hashtbl.add rom !addr v;
-					incr addr
-				)
-				l
+			(fun v ->
+				Hashtbl.add rom !addr v;
+				incr addr
 			)
 			(Sim_lexer.read_file !rom_file)
 	with Sim_lexer.Sim_lexing_error s ->
