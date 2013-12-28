@@ -193,3 +193,32 @@ Dernières vérifications. `make sim` remplace `make all` et `make all` remplace
 Problème de `.depend` réglé grâce à `$(MAKECMDGOALS)`.
 
 Il ne reste plus qu'à tester des exemples divers et tordus !
+
+
+
+## 26/12/2013 (et résumé des jours précédents)
+Il y a eu divers problèmes depuis le dernier rendu. Le premier est un problème
+de détection des cycles en présence de registres et de mémoires. Le scheduler
+était resté à une ancienne version et le détecteur de cycles était bogué.
+
+D'autre part, étant donné que l'on va utiliser le piping pour faire communiquer
+les différentes parties du projet (acquisition de données de l'horloge, simuation
+du processeur et sortie de données. On a pour cela besoin de modifier le simulateur
+afin qu'il utilise l'entrée et la sortie standards pour communiquer. Il y a donc
+plein de paramètres à retirer (choix des fichiers d'entrée et de sortie, de l'export
+ou non du fichier schedulé, etc. De plus, on ne veut plus gérer la simulation en
+nombre de cycles mais plutôt faire tourner l'application jusqu'à ce que le programme
+termine. On utilise alors une sortie spéciale pour indiquer si la machine doit
+être éteinte.
+
+Le format .sim n'étant plus utilisé que pour la rom, on peut le simplifier.
+En effet, il était à l'origine prévu pour l'entrée de donnée et utilisé par la rom
+pour éviter d'avoir à refaire un nouveau parseur mais n'était alors pas utilisé
+au maximum de ses capacités et les crochets par exemples peuvent être retirés.
+On conserve tout de même les commentaires afin de générer avec l'assembleur un
+code annoté.
+
+## 28/12/2013
+Pour le piping, j'utilise et découvre le module `Stream` avec `stdin`.
+
+

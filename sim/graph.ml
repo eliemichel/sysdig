@@ -48,22 +48,15 @@ let has_cycle g =
 	with Cycle -> true
 *)
 
-let string_of_mark = function
-	| NotVisited -> "NotVisited"
-	| InProgress -> "InProgress"
-	| Visited -> "Visited"
-
 let has_cycle g =
 	clear_marks g;
 	let rec aux = function
 		| [] -> true
 		| n::q ->
-			n.n_mark <> InProgress &&
-			(n.n_mark = Visited ||
-				(
-					(n.n_mark <- InProgress ; aux n.n_link_to) &&
-					(n.n_mark <- Visited ; aux q)
-				)
+			n.n_mark = Visited || (
+				n.n_mark = NotVisited &&
+				(n.n_mark <- InProgress ; aux n.n_link_to) &&
+				(n.n_mark <- Visited ; aux q)
 			)
 	in not (aux g.g_nodes)
 
@@ -73,7 +66,6 @@ let has_cycle g =
 let topological g =
 	if has_cycle g then raise Cycle
 	else
-		Format.eprintf "No cycle detected@.";
 		clear_marks g;
 		let rec aux l = function
 			| []   -> l

@@ -1,8 +1,7 @@
-INPUT a, b
+INPUT i
 OUTPUT o
 VAR
-  a, b, c, o
+  i
 IN
-o = REG c
-c = AND o a
+o = NOT i
 

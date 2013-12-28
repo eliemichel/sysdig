@@ -1,8 +1,0 @@
-INPUT a, b
-OUTPUT o
-VAR
-  a, b, c, o
-IN
-o = REG c
-c = AND o c
-

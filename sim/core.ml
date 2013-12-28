@@ -150,32 +150,50 @@ let evalExp env oldValue ram rom ident =
 		)
 
 
-let rec addInput p valuation vars = match valuation, vars with
-	| [], []            -> Env.empty
-	| [], _ | _, []     -> raise (
-		Sim_error (
-			"Given input does not match required input (" ^
-			(if vars = [] then "too many" else "missing") ^
-			" values)"
-			)
+let rec var_list_length p = function
+	| [] -> 0
+	| var :: q -> var_list_length p q + (
+		match Env.find var p.p_vars with
+			| TBit        -> 1
+			| TBitArray n -> n
 		)
-	| v :: q1, id :: q2 ->
-		let t1 = ty_of_value v in
-		let t2 = Env.find id p.p_vars in
-			if t1 <> t2
-			then Format.eprintf
-				"Warning: Given value for `%s` has an invalid type.\n\
-				(%s is required but %s was provided)@."
-				id
-				(string_of_ty t2)
-				(string_of_ty t1);
-			let env = addInput p q1 q2 in Env.add id v env
 
-let tic inputs oldEnv ram rom p =
-	(** tic [inputs] [oldEnv] [ram] [rom] [p] computes the programm p with input
-	vector [i], the environnement [oldEnv] (for registers) and the hash tables
-	[ram] and [rom] containing RAM and ROM values and then returns the output
-	vector. *)
+let addInput p stream vars =
+	let rec aux_array next a k =
+		if k < Array.length a
+		then (
+			a.(k) <- next ();
+			aux_array next a (k + 1)
+		)
+	in
+	let rec aux next env = function
+		| [] -> env
+		| var :: q ->
+			let value = match Env.find var p.p_vars with
+				| TBit        -> VBit (next ())
+				| TBitArray n ->
+					let a  = Array.make n false in (
+						aux_array next a 0;
+						VBitArray a
+					)
+			in
+			let env' =  Env.add var value env in
+				aux next env' q
+	in
+	let next =
+		let l = 1 + var_list_length p vars in
+			if (List.length (Stream.npeek l stream)) = l
+			then function () -> Stream.next stream = '1'
+			else (Printf.printf "Use default: " ; function () -> false)
+	in
+		aux next Env.empty vars
+
+
+let tic in_stream oldEnv ram rom p =
+	(** tic [in_stream] [oldEnv] [ram] [rom] [p] computes the programm p with
+	input stream [in_stream], the environnement [oldEnv] (for registers) and the
+	hash tables [ram] and [rom] containing RAM and ROM values and then returns
+	the output vector. *)
 	
 	ramUp := [];
 	
@@ -220,7 +238,7 @@ let tic inputs oldEnv ram rom p =
 		| o :: q -> (Env.find o env) :: (getOutput env q)
 	in
 	
-	let env = applyEq (addInput p inputs p.p_inputs) p.p_eqs in (
+	let env = applyEq (addInput p in_stream p.p_inputs) p.p_eqs in (
 		updateRam env;
 		env, getOutput env p.p_outputs
 		)

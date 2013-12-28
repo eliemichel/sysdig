@@ -12,11 +12,8 @@ WARN_COLOR=\033[33;01m
 HIGHLIGHT_COLOR=\033[1m
 
 all: $(BIN)
-	@echo "$(HIGHLIGHT_COLOR)  ./$(BIN) test/ram.net$(NO_COLOR)"
-	@./$(BIN) test/ram.net
-	@echo "$(HIGHLIGHT_COLOR)  cat output.sim$(NO_COLOR)"
-	@cat output.sim
-
+	@echo "$(HIGHLIGHT_COLOR)  ./$(BIN) test/test.net$(NO_COLOR)"
+	@./$(BIN) test/test.net
 
 $(BIN): $(CMX)
 	@echo "Linking for $(BIN)..."
