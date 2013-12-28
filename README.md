@@ -1,15 +1,17 @@
-sysdig
-======
+# sysdig #
 
 Projet de Système Digital 2013
-
-
 par Louis Garrigue, Nicolas Jeannerod, Aurélien Delobelle et Elie Michel
+dans le cadre du cours « Système digital, de l'algorithme au circuit »
+dispennsé par
+[Jean Vuillemin](http://www.di.ens.fr/~jv/) à l'
+[École Normale Supérieure](http://www.ens.fr).
+
+Projet coordonné par
+[Timothy Bourke](http://www.tbrk.org/)
 
 
-
-Première étape : Simulateur de circuits
----------------------------------------
+## Première étape : Simulateur de circuits ##
 
 Les sources du simulateur de circuit ainsi que les informations nécessaires à
 son utilisation se trouvent dans le dossier `/sim` visible
@@ -17,8 +19,7 @@ son utilisation se trouvent dans le dossier `/sim` visible
 
 
 
-Deuxième étape : Microprocesseur
---------------------------------
+## Deuxième étape : Microprocesseur ##
 
 Le microprocesseur se décompose en plusieurs fichiers minijazz se trouvant dans
 le dossier `/micro`. La décomposition en fichiers n'étant pas comprise dans les
@@ -29,10 +30,11 @@ commentaires.
 Les fichiers minijazz sont ensuite compilés en netlist par le programme `mjc.byte` fourni
 par T. Bourke (dossier `/minijazz`) afin de pouvoir être simulés.
 
-Troisième étape : Horloge
--------------------------
+
+## Troisième étape : Horloge ##
 
 Le programme de démonstration du microprocesseur doit être une horloge.
 Les informations relatives à cette partie du projet se trouvent dans le dossier
 `/horloge`.
+
 
