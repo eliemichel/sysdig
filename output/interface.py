@@ -5,22 +5,8 @@ frame = tk.Frame(window)
 frame.pack()
 
 # 00/00/0000 00:00:00
-inp = "0001001 0010100 0001110 0000100 0010001 0000011 0100111 0001001 0001010 1001000 0001001 0001111 0100101 0011001"
-
-j1 = inp[0:7]
-j2 = inp[8:15]
-m1 = inp[16:23]
-m2 = inp[24:31]
-a1 = inp[32:39]
-a2 = inp[40:47]
-a3 = inp[48:55]
-a4 = inp[56:63]
-h1 = inp[64:71]
-h2 = inp[72:79]
-mn1 = inp[80:87]
-mn2 = inp[88:95]
-s1 = inp[96:103]
-s2 = inp[104:111]
+inp1 = "0001001 0010100 0001110 0000100 0010001 0000011 0100111 0001001 0001010 1001000 0001001 0001111 0100101 0011001"
+inp2 = "0101001 0011100 0100000 0000000 0000100 0111000 0111000 0001001 1111010 1001111 0001001 0111111 0100101 1011001"
 
 pan = tk.PanedWindow()
 pan.pack( expand=1)
@@ -41,6 +27,7 @@ L6 = tk.Label(window, text=":")
 S = tk.Entry(window, width = 2)
 
 L0 = tk.Label(frame, text="Date/Heure impossible", fg = "red")
+
 
 def GET():
 	if (J.get() == "") : 
@@ -80,29 +67,21 @@ def GET():
 
 submit = tk.Button(window, text="Fixer", width=5, command=GET )
 
-pan.add(L1)
-pan.add(J)
-pan.add(L2)
-pan.add(M)
-pan.add(L3)
-pan.add(An)
-pan.add(L4)
-pan.add(H)
-pan.add(L5)
-pan.add(Mn)
-pan.add(L6)
-pan.add(S)
-pan.add(submit)
-
+# pan.add(L1)
+# pan.add(J)
+# pan.add(L2)
+# pan.add(M)
+# pan.add(L3)
+# pan.add(An)
+# pan.add(L4)
+# pan.add(H)
+# pan.add(L5)
+# pan.add(Mn)
+# pan.add(L6)
+# pan.add(S)
+# pan.add(submit)
 
 Can = tk.Canvas ( window, width = 1000, height = 400 )
-
-l = 60
-e = 12
-s = 100
-asl = 60
-ix2 = 150
-colon = 30
 
 
 def disp_int(ix, iy, mask) :
@@ -137,50 +116,75 @@ def disp_slash(ix, iy) :
 	Can.create_polygon(ix,iy+3*e+2*l, ix+asl,iy, ix+asl+e,iy, ix+e,iy+3*e+2*l)
 
 # Affichage
+l = 60
+e = 12
+s = 100
+asl = 60
+ix2 = 150
+colon = 30
 
-ix = 40
-iy = 10
-disp_int(ix, iy, j1)
-ix += s
-disp_int(ix, iy, j2)
-ix += 90
-aslash1 = disp_slash(ix, iy)
-ix += s-e
-disp_int(ix, iy, m1)
-ix += s
-disp_int(ix, iy, m2)
-ix += 90
-aslash2 = disp_slash(ix, iy)
-ix += s-e
-disp_int(ix, iy, a1)
-ix += s
-disp_int(ix, iy, a2)
-ix += s
-disp_int(ix, iy, a3)
-ix += s
-disp_int(ix, iy, a4)
-iy += 3*l
-ix = ix2
-disp_int(ix, iy, h1)
-ix += s
-disp_int(ix, iy, h2)
-ix += s
-colon11 = disp_colon(ix, iy)
-colon12 = disp_colon(ix, iy)
-ix += colon
-disp_int(ix, iy, mn1)
-ix += s
-disp_int(ix, iy, mn2)
-ix += s
-colon21 = disp_colon(ix, iy)
-colon22 = disp_colon(ix, iy)
-ix += colon
-disp_int(ix, iy, s1)
-ix += s
-disp_int(ix, iy, s2)
+def draw(inp):
+	global Can, l, e, s, asl, colon, ix2
+	Can.delete("all")
 
+	j1 = inp[0:7]
+	j2 = inp[8:15]
+	m1 = inp[16:23]
+	m2 = inp[24:31]
+	a1 = inp[32:39]
+	a2 = inp[40:47]
+	a3 = inp[48:55]
+	a4 = inp[56:63]
+	h1 = inp[64:71]
+	h2 = inp[72:79]
+	mn1 = inp[80:87]
+	mn2 = inp[88:95]
+	s1 = inp[96:103]
+	s2 = inp[104:111]
+
+	ix = 40
+	iy = 10
+	disp_int(ix, iy, j1)
+	ix += s
+	disp_int(ix, iy, j2)
+	ix += 90
+	aslash1 = disp_slash(ix, iy)
+	ix += s-e
+	disp_int(ix, iy, m1)
+	ix += s
+	disp_int(ix, iy, m2)
+	ix += 90
+	aslash2 = disp_slash(ix, iy)
+	ix += s-e
+	disp_int(ix, iy, a1)
+	ix += s
+	disp_int(ix, iy, a2)
+	ix += s
+	disp_int(ix, iy, a3)
+	ix += s
+	disp_int(ix, iy, a4)
+	iy += 3*l
+	ix = ix2
+	disp_int(ix, iy, h1)
+	ix += s
+	disp_int(ix, iy, h2)
+	ix += s
+	colon11 = disp_colon(ix, iy)
+	colon12 = disp_colon(ix, iy)
+	ix += colon
+	disp_int(ix, iy, mn1)
+	ix += s
+	disp_int(ix, iy, mn2)
+	ix += s
+	colon21 = disp_colon(ix, iy)
+	colon22 = disp_colon(ix, iy)
+	ix += colon
+	disp_int(ix, iy, s1)
+	ix += s
+	disp_int(ix, iy, s2)
 
 Can.pack()
+
 But = tk.Button(window, text ="Quit", command = window.quit)
 But.pack()
 
