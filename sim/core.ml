@@ -157,7 +157,7 @@ let rec var_list_length p = function
 			| TBit        -> 1
 			| TBitArray n -> n
 		)
-
+(*
 let addInput p stream vars =
 	let rec aux_array next a k =
 		if k < Array.length a
@@ -187,9 +187,46 @@ let addInput p stream vars =
 			else (Printf.printf "Use default: " ; function () -> false)
 	in
 		aux next Env.empty vars
+*)
 
+let addInput p vars =
+	let rec aux_array next a k =
+		if k < Array.length a
+		then (
+			a.(k) <- next ();
+			aux_array next a (k + 1)
+		)
+	in
+	let rec aux next env = function
+		| [] -> env
+		| var :: q ->
+			let value = match Env.find var p.p_vars with
+				| TBit        -> VBit (next ())
+				| TBitArray n ->
+					let a  = Array.make n false in (
+						aux_array next a 0;
+						VBitArray a
+					)
+			in
+			let env' =  Env.add var value env in
+				aux next env' q
+	in
+	let next =
+		let l = var_list_length p vars in
+		let cur = ref 0 in
+		let input =
+			let s = ref "" in
+			let buff = String.create 5 in
+			while String.length !s < l do
+				match Unix.read Unix.stdin buff 0 5 with
+					| 0 -> raise (Sim_error "End of pipe")
+					| n -> s := !s ^ (String.sub buff 0 n) ^ "."
+			done; !s
+		in fun () -> let c = input.[!cur] in incr cur ; c = '1'
+	in
+		aux next Env.empty vars
 
-let tic in_stream oldEnv ram rom p =
+let tic oldEnv ram rom p =
 	(** tic [in_stream] [oldEnv] [ram] [rom] [p] computes the programm p with
 	input stream [in_stream], the environnement [oldEnv] (for registers) and the
 	hash tables [ram] and [rom] containing RAM and ROM values and then returns
@@ -238,7 +275,7 @@ let tic in_stream oldEnv ram rom p =
 		| o :: q -> (Env.find o env) :: (getOutput env q)
 	in
 	
-	let env = applyEq (addInput p in_stream p.p_inputs) p.p_eqs in (
+	let env = applyEq (addInput p p.p_inputs) p.p_eqs in (
 		updateRam env;
 		env, getOutput env p.p_outputs
 		)

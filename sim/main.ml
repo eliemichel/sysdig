@@ -20,7 +20,7 @@ let loadRom () =
 			)
 			(Sim_lexer.read_file !rom_file)
 	with Sim_lexer.Sim_lexing_error s ->
-		Format.eprintf "Warning: No ROM loaded: %s@." s
+		Printf.eprintf "Warning: No ROM loaded: %s\n" s
 
 
 let simulate filename =
@@ -29,7 +29,7 @@ let simulate filename =
 	let p =
 		try Netlist.read_file filename
 		with Netlist.Parse_error s -> (
-			Format.eprintf "An error occurred: %s@." s;
+			Printf.eprintf "An error occurred: %s\n" s;
 			exit 1
 			)
 	in
@@ -37,21 +37,22 @@ let simulate filename =
 	let p =
 		try Scheduler.schedule p
 		with Scheduler.Combinational_cycle -> (
-			Format.eprintf "The netlist has a combinatory cycle.@.";
+			Printf.eprintf "The netlist has a combinatory cycle.\n";
 			exit 1
 			)
 	in
 	
 	
 	let output o =
-		let aux b = Printf.printf "%s" (if b then "1" else "0") in
+		let aux b =
+			ignore (Unix.write Unix.stdout (if b then "1" else "0") 0 1)
+		in
 		List.iter
 			(function
 				| VBit      b -> aux b
 				| VBitArray a -> Array.iter aux a
 			)
 			o;
-		Printf.printf "%s" separateur
 	in
 	
 	
@@ -65,12 +66,10 @@ let simulate filename =
 			| o -> ()
 	in
 	
-	let s = Stream.of_channel stdin in
-	
-	Format.eprintf "Running simulation...@.";
+	Printf.eprintf "Running simulation...\n";
 	let rec run env =
 		let new_env, o =
-			Core.tic s env ram rom p
+			Core.tic env ram rom p
 		in (
 			check_power o;
 			run new_env
@@ -79,11 +78,11 @@ let simulate filename =
 	try run Env.empty
 	with
 		| Exit -> (
-			Format.eprintf "Simulation done.@.";
+			Printf.eprintf "Simulation done.\n";
 			exit 0
 			)
 		| Core.Sim_error s -> (
-			Format.eprintf "Simulation error:\n%s@." s;
+			Printf.eprintf "Simulation error:\n%s\n" s;
 			exit 1
 			)
 

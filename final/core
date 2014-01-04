@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+../sim/sim ../sim/test/test.net 2> /dev/null
