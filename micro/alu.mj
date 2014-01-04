@@ -1,63 +1,65 @@
 (* Représentation des entiers : [a0...an] : an..a0(2) *)
-(* #require(utils) *)
+(* #require(param utils) *)
 
-addsub <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+addsub <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
   (r0a,r1a) = add<n>(a0,a1);
   (r0b,r1b) = sub<n>(a0,a1);
-  r0 = mux_n<n>( r0b , r0a , con );
-  r1 = mux( r1b , r1a , con ) . empty<n-1>()
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux( r1b , r1a , op ) . empty<n-1>()
 end where
 
-multdiv <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+multdiv <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
   (r0a,r1a) = mult<n>(a0,a1);
   (r0b,r1b) =  div<n>(a0,a1);
-  r0 = mux_n<n>( r0b , r0a , con );
-  r1 = mux_n<n>( r1b , r1a , con )
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
 end where
 
-alu_arith <n> ( a0:[n] , a1:[n] , con , con' ) = ( r0:[n] , r1:[n] ) where
-  (r0a,r1a) =  addsub<n>(a0,a1,con');
-  (r0b,r1b) = multdiv<n>(a0,a1,con');
-  r0 = mux_n<n>( r0b , r0a , con );
-  r1 = mux_n<n>( r1b , r1a , con )
+alu_arith <n> ( a0:[n] , a1:[n] , op , op' ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) =  addsub<n>(a0,a1,op');
+  (r0b,r1b) = multdiv<n>(a0,a1,op');
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
 end where
 
-andor <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+andor <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
   r0a = and_n<n>(a0,a1);
   r0b = or_n<n>(a0,a1);
-  r0 = mux_n<n>( r0b , r0a , con );
+  r0 = mux_n<n>( r0b , r0a , op );
   r1 = empty<n>()
 end where
 
-notshift <n> ( a0:[n] , a1:[n] , con ) = ( r0:[n] , r1:[n] ) where
+notshift <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
   r0a = not_n<n>(a0);
   r1a = not_n<n>(a1);
   (r0b,r1b) = shift<n>(a0,a1);
-  r0 = mux_n<n>( r0b , r0a , con );
-  r1 = mux_n<n>( r1b , r1a , con )
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
 end where
 
-alu_logique <n> ( a0:[n] , a1:[n] , con , con' ) = ( r0:[n] , r1:[n] ) where
-  (r0a,r1a) =    andor<n>(a0,a1,con');
-  (r0b,r1b) = notshift<n>(a0,a1,con');
-  r0 = mux_n<n>( r0b , r0a , con );
-  r1 = mux_n<n>( r1b , r1a , con )
+alu_logique <n> ( a0:[n] , a1:[n] , op , op' ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) =    andor<n>(a0,a1,op');
+  (r0b,r1b) = notshift<n>(a0,a1,op');
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
 end where
 
 (******************************************************************************)
 (* Et la voila, la belle, l'ALU !                                             *)
-(* alu prend deux paramètres (deux registres a0 et a1) et une valeur de       *)
-(* contrôle con, et renvoit des valeurs (r0 et r1)                            *)
-(* La nappe de fils con doit représenter ce qu'on voit dans Cheat sheet       *)
-alu <n,m> ( a0:[n] , a1:[n] , con:[m] ) = ( r0:[n] , r1:[n] ) where
-  (r0a,r1a) =   alu_arith<n>( a0, a1, con[1], con[0] );
-  (r0b,r1b) = alu_logique<n>( a0, a1, con[1], con[0] );
-  r0 = mux_n<n>( r0b , r0a , con[2] );
-  r1 = mux_n<n>( r1b , r1a , con[2] )
+(* alu prend deux valeurs (celles des registres a0 et a1) et un code          *)
+(* d'opération `op`, et renvoit des valeurs (r0 et r1)                        *)
+(* La nappe de fils op doit représenter ce qu'on voit dans Cheat sheet        *)
+alu ( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
+    ( r0:[wordSize] , r1:[wordSize] ) where
+  (r0a,r1a) =   alu_arith<wordSize>( a0, a1, op[1], op[0] );
+  (r0b,r1b) = alu_logique<wordSize>( a0, a1, op[1], op[0] );
+  r0 = mux_n<wordSize>( r0b , r0a , op[2] );
+  r1 = mux_n<wordSize>( r1b , r1a , op[2] )
 end where
 
 
 (* Heure des tests *)
-main( a0:[8] , a1:[8] , con:[6] ) = ( r0:[8] , r1:[8] ) where
-  (r0,r1) = alu<8,6>(a0,a1,con)
+main( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
+    ( r0:[wordSize] , r1:[wordSize] ) where
+  (r0,r1) = alu<wordSize,instrSize-2>(a0,a1,op)
 end where

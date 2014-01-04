@@ -1,0 +1,8 @@
+(* Paramètre généraux du microprocesseur
+ *   *à charger dans tous les modules pour éviter les conflits de déclarations*
+ *)
+
+const instrAddrSize = 16
+const wordSize = 8
+const instrSize = 6
+

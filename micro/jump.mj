@@ -1,10 +1,10 @@
 const instrAddrSize = 16
 const wordSize = 8
 
-(* #require(utils) *)
+(* #require(param utils) *)
 
-main (isJumping, isSetting, jumpSize:[wordSize], absAddr:[instrAddrSize], addOrSub) = (addr:[instrAddrSize])
-where
+makeJump (isJumping, isSetting, jumpSize:[wordSize], absAddr:[instrAddrSize], addOrSub) =
+		(addr:[instrAddrSize]) where
 	curAddr = reg_n<instrAddrSize>(addr);
 	a = incr_n<instrAddrSize>(curAddr);
 	vide = empty<instrAddrSize-wordSize>();

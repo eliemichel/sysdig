@@ -1,20 +1,22 @@
-const instrAddrSize = 16
-const wordSize = 8
-const instrSize = 6
 
-(* #require(jump utils) *)
+(* #require(param jump utils) *)
 
+(* Registre à enable de taille n *)
 enableReg<n> (writeVal[n], enable) = (val[n]) where
 	newVal = mux_n<n>(writeVal, val, enable);
 	val = reg_n<n>(newVal);
 end where
 
 (*
-	writeAddr :
-	 - 0rr -> (rr) register
+	writeAddr : Détermine les write enables
+	 - 0** -> (**) register
 	 - 100 -> (a0 a1)
 	 - 110 -> (r0 r1)
 	 - 111 -> writeDisable
+	
+	**r : valeur lue
+	**e : write enable
+	**w : valeur à écrire
 *)
 registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], writeAddr[3]) =
 		(a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize]) where
@@ -33,9 +35,30 @@ registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], write
 end where
 
 
+mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSize-2]) =
+		(toBeWritten:[wordSize], regAddrMem:[3]) where
+	op0 = op[0];
+	op1 = op[1];
+	isMOVEright = not(op0) and not(op1);
+	isMOVEleft  = not(op0) and     op1;
+	isLOAD      =     op0  and not(op1);
+	isSAVE      =     op0  and     op1;
+	
+	op2 = op[2];
+	op3 = op[3];
+	fromRegA = mux_n<wordSize>(a1r, a0r, op3); (* MOVEleft ou isLOAD ou isMOVE *)
+	fromRegR = mux_n<wordSize>(r1r, r0r, op3); (* MOVEright                    *)
+	fromReg  = mux_n<wordSize>(fromRegR, fromRegA, isMOVEright);
+	
+	ramAddr = mux_n<wordSize>(r1r, r0r, op2);
+	fromRam = ram<wordSize, wordSize>(ramAddr, isSAVE, writeAddr, fromReg);
+	
+	toBeWritten = mux_n<wordSize>(fromRam, fromReg, op0);
+	regAddrMem = 0 . (isMOVEleft and not op0) . op3;
+end where
+
 
 main () = () where
-	instrAddr = jump(isJumping, isSetting, jumpSize, absAddr, addOrSub);
 	instr = rom<instrAddrSize, instrSize>(instrAddr);
 	unit0 = instr[0];
 	unit1 = instr[1];
@@ -43,35 +66,31 @@ main () = () where
 	
 	(a0r, a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
 	
+	isSYS = not(unit0) and not(unit1);
+	() = sys(); (* TODO *)
+	
+	
 	isALU = not(unit0) and unit1;
 	(aluR0, aluR1) = alu(a0r, a1r, op);
 	
 	
-	
 	isMEM = unit0 and not(unit1);
-	op0 = op[0];
-	op1 = op[1];
-	op2 = op[2];
-	op3 = op[3];
-	isMOVEright = not(op0) and not(op1);
-	isMOVEleft = not(op0) and op1;
-	isLOAD = op0 and not(op1);
-	isSAVE = op0 and op1;
-	ramAddr = mux_n<wordSize>(r1r, r0r, op2);
-	regAddrMem = 0 . isMOVEleft . op3;
-	data = mux_n<wordSize>(a1r, a0r, op3);
-	
-	word = ram<wordSize, wordSize>(ramAddr, isSAVE, writeAddr, data);
+	(memWrite, regAddrMem) = mem(a0r, a1r, r0r, r1r, op);
 	
 	
+	isJUMP = unit0 and unit1;
+	() = jump() (* TODO + définir les variables utilisées à la ligne suivante *)
+	instrAddr = makeJump(isJumping, isSetting, jumpSize, absAddr, addOrSub);
 	
-	regAddr = mux_n<3>(110, 111, isALU);
-	regAddr = mux_n<3>(regAddrMem, 111, isMEM);
+	
+	regAddr0 = mux_n<3>(111, 110, isSYS);
+	regAddr1 = mux_n<3>(regAddrMem, 111, isMEM);
+	regAddr  = mux_n<3>(regAddr1, regAddr0, unit0);
 end where
 
 
 (*
-	(r0, r1) = alu(a0r[wordSize], a1r[wordSize], op[instrSize-2]);
+	alu (a0r[wordSize], a1r[wordSize], op[instrSize-2]) = (r0, r1)
 *)
 
 
