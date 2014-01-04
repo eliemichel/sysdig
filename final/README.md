@@ -3,7 +3,7 @@
 
 ## Informations générales ##
 
-Ce répertoire le script `run` lançant la simulation complète de l'horloge sur le
+Ce répertoire contient le script `run` lançant la simulation complète de l'horloge sur le
 microprocesseur. Ce script est en réalité très simple :
 
 	./input | ./core | ./output
@@ -28,7 +28,7 @@ Il est possible que vous rencontiez l'erreur suivante ou une variation :
 
 Cela signifie que le fichier `run` n'est pas indiqué comme étant exécutable. Pour
 y remédier, il suffit d'appeler la commande `chmod` avec le paramètre `+x`
-(e**x**écution) :
+(eXécution) :
 
 	chmod +x run
 
