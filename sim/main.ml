@@ -3,6 +3,8 @@ open Netlist_ast
 exception Exit
 
 let default_rom_file = "rom.sim"
+let schedule_only = ref false
+let sim_only = ref false
 let separateur = "\n"
 
 let rom_file = ref default_rom_file
@@ -26,6 +28,7 @@ let loadRom () =
 let simulate filename =
 	loadRom ();
 	
+	Format.eprintf "Open file...@.";
 	let p =
 		try Netlist.read_file filename
 		with Netlist.Parse_error s -> (
@@ -35,11 +38,15 @@ let simulate filename =
 	in
 	
 	let p =
-		try Scheduler.schedule p
-		with Scheduler.Combinational_cycle -> (
-			Printf.eprintf "The netlist has a combinatory cycle.\n";
-			exit 1
-			)
+		if not !sim_only then (
+			Format.eprintf "Schedule...@.";
+			try Scheduler.schedule p
+			with Scheduler.Combinational_cycle -> (
+				Printf.eprintf "The netlist has a combinatory cycle.\n";
+				exit 1
+				)
+		)
+		else p
 	in
 	
 	
@@ -66,31 +73,50 @@ let simulate filename =
 			| o -> ()
 	in
 	
-	Printf.eprintf "Running simulation...\n";
-	let rec run env =
-		let new_env, o =
-			Core.tic env ram rom p
-		in (
-			check_power o;
-			run new_env
-			)
-	in
-	try run Env.empty
-	with
-		| Exit -> (
-			Printf.eprintf "Simulation done.\n";
+	if !schedule_only
+	then
+		let f = (Filename.chop_suffix filename ".net") ^ ".sch.net" in
+		Format.eprintf "Export scheduled netlist in %s...@." f;
+		let outnet = open_out f in
+			Netlist_printer.print_program outnet p;
+			close_out outnet;
+			Format.eprintf "Done.@.";
 			exit 0
-			)
-		| Core.Sim_error s -> (
-			Printf.eprintf "Simulation error:\n%s\n" s;
-			exit 1
-			)
+	else
+		Format.eprintf "Running simulation...@.";
+		let rec run env =
+			let new_env, o =
+				Core.tic env ram rom p
+			in (
+				check_power o;
+				run new_env
+				)
+		in
+		try run Env.empty
+		with
+			| Exit -> (
+				Format.eprintf "Simulation done.@.";
+				exit 0
+				)
+			| Core.Sim_error s -> (
+				Format.eprintf "Simulation error:\n%s@." s;
+				exit 1
+				)
 
 let () =
 	Arg.parse
 		["-rom", Arg.Set_string rom_file,
 		 "File containing ROM (set by default to rom.sim)";
+		 
+		 "--schedule-only", Arg.Set schedule_only,
+		 "Schedule the netlist and then export it netlist.sch.net without \
+		  simulating it.";
+		 
+		 "--sim-only", Arg.Set sim_only,
+		 "Simulate netlist assuming that it has already been scheduled. Use it \
+		  carefully.";
 		]
 		simulate
-		"sim [filename] simulates the circuit described in the given .net file."
+		"sim [filename] schedule and simulates the circuit described in the \
+		 given .net file."
 
