@@ -1,12 +1,7 @@
 (* Représentation des entiers : [a0...an] : an..a0(2) *)
 (* #require(param utils) *)
 
-addsub <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
-  (r0a,r1a) = add<n>(a0,a1);
-  (r0b,r1b) = sub<n>(a0,a1);
-  r0 = mux_n<n>( r0b , r0a , op );
-  r1 = mux( r1b , r1a , op ) . empty<n-1>()
-end where
+(* addsub dans utils *)
 
 multdiv <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
   (r0a,r1a) = mult<n>(a0,a1);
@@ -16,7 +11,8 @@ multdiv <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
 end where
 
 alu_arith <n> ( a0:[n] , a1:[n] , op , op' ) = ( r0:[n] , r1:[n] ) where
-  (r0a,r1a) =  addsub<n>(a0,a1,op');
+  (r0a,r1a') = addsub<n>(a0,a1,op');
+  r1a = r1a' . empty<n-1>();
   (r0b,r1b) = multdiv<n>(a0,a1,op');
   r0 = mux_n<n>( r0b , r0a , op );
   r1 = mux_n<n>( r1b , r1a , op )
@@ -44,11 +40,13 @@ alu_logique <n> ( a0:[n] , a1:[n] , op , op' ) = ( r0:[n] , r1:[n] ) where
   r1 = mux_n<n>( r1b , r1a , op )
 end where
 
+
 (******************************************************************************)
 (* Et la voila, la belle, l'ALU !                                             *)
 (* alu prend deux valeurs (celles des registres a0 et a1) et un code          *)
 (* d'opération `op`, et renvoit des valeurs (r0 et r1)                        *)
 (* La nappe de fils op doit représenter ce qu'on voit dans Cheat sheet        *)
+
 alu ( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
     ( r0:[wordSize] , r1:[wordSize] ) where
   (r0a,r1a) =   alu_arith<wordSize>( a0, a1, op[1], op[0] );
