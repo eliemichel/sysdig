@@ -3,15 +3,21 @@
 
 makeJump (isJumping, isAbs, jumpSize:[wordSize], absAddr:[instrAddrSize], addOrSub) =
 		(addr:[instrAddrSize]) where
-	curAddr = reg_n<instrAddrSize>(addr);
-	a = incr_n<instrAddrSize>(curAddr);
+	addr = reg_n<instrAddrSize>(newAddr);
+	
+	next = incr_n<instrAddrSize>(addr);
+	
 	vide = empty<instrAddrSize-wordSize>();
-	(b, br) = add<instrAddrSize>(curAddr, vide . jumpSize);
-	(c, cr) = sub<instrAddrSize>(curAddr, vide . jumpSize);
-	d = mux_n<instrAddrSize>(b, c, addOrSub);
-	e = mux_n<instrAddrSize>(d, a, isJumping);
-	addr = mux_n<instrAddrSize>(absAddr, e, isAbs);
+	
+	(forward, fr) = add<instrAddrSize>(addr, vide . jumpSize);
+	(backward, br) = sub<instrAddrSize>(addr, vide . jumpSize);
+	
+	jump = mux_n<instrAddrSize>(forward, backward, addOrSub);
+	relAddr = mux_n<instrAddrSize>(jump, next, isJumping);
+	
+	newAddr = mux_n<instrAddrSize>(absAddr, relAddr, isAbs);
 end where
+
 
 jump (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSize-2], isJUMP) =
 		(instrAddr:[instrAddrSize], regAddrJump:[3]) where

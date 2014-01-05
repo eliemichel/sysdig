@@ -58,7 +58,6 @@ mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSi
 end where
 
 
-
 main () = (power) where
 	instr = rom<instrAddrSize, instrSize>(instrAddr);
 	unit0 = instr[0];
