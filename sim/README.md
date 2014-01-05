@@ -83,6 +83,15 @@ Par défaut, le Sim utilise les fichiers suivants :
 Pour modifier le fichier de description de la rom, utiliser l'option
 `-rom [filename].sim`.
 
+L'opération d'ordonnement de la netlist peut s'avérer très coûteuse en temps,
+c'est pourquoi on peut choisir de sauvegarder la netlist ordonnée à l'aide de
+l'option `--schedule-only`. Dans ce cas, l'étape de simulation n'est pas effectuée
+et la netlist ordonnée est enregistrée dans `[filename].sch.net`.
+
+Lorsque l'on veut utiliser un fichier netlist déjà ordonné, il utiliser l'option
+`--sim-only`. À ce moment, si la netlist n'a pas préalablement été ordonnée, il
+peut y avoir des erreurs diverses. Le plus simple est de n'utilise cette option
+que lorsque le fichier termine par `.sch.net` afin d'éviter les confusions.
 
 ## Informations complémentaires ##
 ### Bugs connus ###
