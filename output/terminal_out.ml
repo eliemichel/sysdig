@@ -21,18 +21,18 @@ let s = ref "" in
 let buff = String.create 1 in
 	while true do
 		s := "";
-		while String.length !s < 7 * 1 + 1 do
+		while String.length !s < 7 * 14 + 1 do
 			match Unix.read Unix.stdin buff 0 1 with
 				| 0 -> Printf.printf "\nEnd of pipe\n" ; exit 0
 				| n -> s := !s ^ buff
 		done;
 		let aux i = (int_of_7seg (String.sub !s (7 * i + 1) 7)) in
-			(*
-			Printf.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d"
-				(aux 0) (aux 1) (aux 2) (aux 3) (aux 4) (aux 5) (aux 6) (aux 7)
-				(aux 8) (aux 9) (aux 10) (aux 11) (aux 12) (aux 13)
-			*)
-			Printf.printf "%d\n" (aux 0)
+			
+			Printf.printf "%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d\n"
+				(aux 6) (aux 7) (aux 8) (aux 9) (aux 10) (aux 11) (aux 12) (aux 13)
+				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0)
+			
+			(*Printf.printf "%d\n" (aux 0)*)
 	done
 
 

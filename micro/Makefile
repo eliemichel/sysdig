@@ -14,10 +14,14 @@ clean:
 	@rm -v -f *~ *.net *_${POSTFIX}.mj
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
+
 %: %.mj
 	@echo "${WARN_COLOR}  ./mjdep -o $@_${POSTFIX}.mj $<${NO_COLOR}"
 	@./mjdep -o $@_${POSTFIX}.mj $<
 	@echo "${WARN_COLOR}  ./mjc.byte $@_${POSTFIX}.mj${NO_COLOR}"
 	@./mjc.byte $@_${POSTFIX}.mj
-	@echo "${WARN_COLOR}  ./sim -rom $@.bin $@_${POSTFIX}.net${NO_COLOR}"
-	@./sim -rom $@.bin $@_${POSTFIX}.net
+	@echo "${WARN_COLOR}  ./sim --schedule-only $@_${POSTFIX}.net${NO_COLOR}"
+	@./sim --schedule-only $@_${POSTFIX}.net
+#./sim --sim-only -rom $@.bin $@_${POSTFIX}.sch.net
+
+
