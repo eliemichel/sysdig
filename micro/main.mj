@@ -1,11 +1,5 @@
 
-(* #require(param utils alu jump mem) *)
-
-(* Registre à enable de taille n *)
-enableReg<n> (writeVal:[n], enable) = (val:[n]) where
-	newVal = mux_n<n>(writeVal, val, enable);
-	val = reg_n<n>(newVal);
-end where
+(* #require(param utils sys alu mem jump) *)
 
 (*
 	writeAddr : Détermine les write enables
@@ -35,17 +29,17 @@ registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], write
 end where
 
 
-main () = (power) where
+main (input) = (power, output:[outputSize]) where
 	instr = rom<instrAddrSize, instrSize>(instrAddr);
 	unit0 = instr[0];
 	unit1 = instr[1];
 	op = instr[2..];
 	
 	(a0r, a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
-	(*
+	
 	isSYS = not(unit0) and not(unit1);
-	() = sys(); (* TODO *)
-	*)
+	(regAddrSys, output) = sys(a0r, op, input);
+	
 	
 	isALU = not(unit0) and unit1;
 	(aluR0, aluR1) = alu(a0r, a1r, op);
@@ -59,15 +53,17 @@ main () = (power) where
 	(instrAddr, regAddrJump) = jump(a0r, a1r, r0r, r1r, op, isJUMP);
 	
 	
-	power = full_n<instrSize>(instr);
+	(*power = full_n<instrSize>(instr);*)
+	power = 0;
 	
-	regAddr = mux4_n<3>(1.1.1, 1.1.0, regAddrMem, regAddrJump, unit0, unit1);
+	regAddr = mux4_n<3>(regAddrSys, 1.1.0, regAddrMem, regAddrJump, unit0, unit1);
 	
 	vide = empty<wordSize>();
-	a0 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr[..wordSize-1], unit0, unit1);
-	a1 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr[wordSize..], unit0, unit1);
-	r0 = mux4_n<wordSize>(vide, aluR0, memWrite, instrAddr[..wordSize-1], unit0, unit1);
-	r1 = mux4_n<wordSize>(vide, aluR1, memWrite, instrAddr[wordSize..], unit0, unit1);
+	input8 = input . vide[1..];
+	a0 = mux4_n<wordSize>(input8, vide,  memWrite, instrAddr[..wordSize-1], unit0, unit1);
+	a1 = mux4_n<wordSize>(input8, vide,  memWrite, instrAddr[wordSize..]  , unit0, unit1);
+	r0 = mux4_n<wordSize>(input8, aluR0, memWrite, instrAddr[..wordSize-1], unit0, unit1);
+	r1 = mux4_n<wordSize>(input8, aluR1, memWrite, instrAddr[wordSize..]  , unit0, unit1);
 end where
 
 

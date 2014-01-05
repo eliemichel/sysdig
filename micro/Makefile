@@ -19,4 +19,5 @@ clean:
 	@./mjdep -o $@_${POSTFIX}.mj $<
 	@echo "${WARN_COLOR}  ./mjc.byte $@_${POSTFIX}.mj${NO_COLOR}"
 	@./mjc.byte $@_${POSTFIX}.mj
-	./sim -rom $@.bin $@_${POSTFIX}.net
+	@echo "${WARN_COLOR}  ./sim -rom $@.bin $@_${POSTFIX}.net${NO_COLOR}"
+	@./sim -rom $@.bin $@_${POSTFIX}.net

@@ -70,8 +70,6 @@ div10<n, m> (a:[n]) = (q:[m], r:[n]) where
 		
 		(q', r) = div10<n, m-1> (a'');
 		q = q' . not(r');
-		q = empty<n>();
-		
 	end if
 end where
 
@@ -79,8 +77,7 @@ end where
 (* Précision pour 2012 par exemple : a01 = 20 et a02 = 12           *)
 (* Format j1 j2 / m1 m2 / a1 a2 a3 a4     h1 h2 : min1 min2 : s1 s2 *)
 gpu (j:[8], m:[8], a01:[8], a02:[8], h:[8], min:[8], s:[8]) =
-		(j1:[7], j2:[7], m1:[7], m2:[7], a1:[7], a2:[7], a3:[7], a4:[7], h1:[7],
-		 h2:[7], min1:[7], min2:[7], s1:[7], s2:[7]) where
+		(output:[7*14]) where
 	(s1', s2') = div10<8,8>(s); (* 0<s<60 *)
 	(min1', min2') = div10<8,8>(min);
 	(h1', h2') = div10<8,8>(h);
@@ -88,19 +85,24 @@ gpu (j:[8], m:[8], a01:[8], a02:[8], h:[8], min:[8], s:[8]) =
 	(m1', m2') = div10<8,8>(m);
 	(a1', a2') = div10<8,8>(a01);
 	(a3', a4') = div10<8,8>(a02);
-	s1 = seg(s1');
-	s2 = seg(s2');
-	min1 = seg(min1');
-	min2 = seg(min2');
-	h1 = seg(h1');
-	h2 = seg(h2');
-	j1 = seg(j1');
-	j2 = seg(j2');
-	m1 = seg(m1');
-	m2 = seg(m2');
-	a1 = seg(a1');
-	a2 = seg(a2');
-	a3 = seg(a3');
-	a4 = seg(a4');
+	
+	output
+	= seg(s1')
+	. seg(s2')
+	. seg(min1')
+	. seg(min2')
+	. seg(h1')
+	. seg(h2')
+	. seg(j1')
+	. seg(j2')
+	. seg(m1')
+	. seg(m2')
+	. seg(a1')
+	. seg(a2')
+	. seg(a3')
+	. seg(a4');
 end where
+
+
+
 

@@ -245,3 +245,11 @@ decr_n<n>(a:[n]) = (o:[n], r) where
   end if
 end where
 
+(******************************************************************************)
+(* Registre à enable de taille n                                              *)
+enableReg<n> (writeVal:[n], enable) = (val:[n]) where
+  newVal = mux_n<n>(writeVal, val, enable);
+  val = reg_n<n>(newVal);
+end where
+
+

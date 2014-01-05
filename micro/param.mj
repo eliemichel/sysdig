@@ -5,4 +5,5 @@
 const instrAddrSize = 16
 const wordSize = 8
 const instrSize = 6
+const outputSize = 7*14
 
