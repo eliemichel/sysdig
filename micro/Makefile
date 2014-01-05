@@ -15,6 +15,8 @@ clean:
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
 %: %.mj
-	./mjdep -o $@_${POSTFIX}.mj $<
-	./mjc.byte $@_${POSTFIX}.mj
+	@echo "${WARN_COLOR}  ./mjdep -o $@_${POSTFIX}.mj $<${NO_COLOR}"
+	@./mjdep -o $@_${POSTFIX}.mj $<
+	@echo "${WARN_COLOR}  ./mjc.byte $@_${POSTFIX}.mj${NO_COLOR}"
+	@./mjc.byte $@_${POSTFIX}.mj
 	./sim -rom $@.bin $@_${POSTFIX}.net

@@ -70,7 +70,8 @@ let getAddr addrSize addr =
 	let a = array_of_value addr in
 	let addr = ref 0 in
 	let mask = ref 1 in
-	for k = addrSize - 1 downto 0 do (* for k = 0 to addrSize - 1 do *)
+	(*for k = addrSize - 1 downto 0 do*) (* Poids faibles aux indices hauts *)
+	for k = 0 to addrSize - 1 do (* Poids faibles aux indices bas *)
 		(
 		try
 			if a.(k) then addr := !addr + !mask
@@ -216,11 +217,11 @@ let addInput p vars =
 		let cur = ref 0 in
 		let input =
 			let s = ref "" in
-			let buff = String.create 5 in
+			let buff = String.create 1 in
 			while String.length !s < l do
-				match Unix.read Unix.stdin buff 0 5 with
+				match Unix.read Unix.stdin buff 0 1 with
 					| 0 -> raise (Sim_error "End of pipe")
-					| n -> s := !s ^ (String.sub buff 0 n) ^ "."
+					| n -> s := !s ^ buff
 			done; !s
 		in fun () -> let c = input.[!cur] in incr cur ; c = '1'
 	in

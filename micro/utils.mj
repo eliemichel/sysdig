@@ -8,6 +8,51 @@ empty<n>() = (o:[n]) where
   end if
 end where
 
+
+(******************************************************************************)
+(* null_n( a ) = a == 00...0                                                  *)
+(* full_n( a ) = a == 11...1                                                  *)
+null_n<n>(a:[n]) = (o) where
+  if n = 0 then
+    o = 1
+  else
+    o = not(a[0]) and null_n<n-1>(a[1..]);
+  end if
+end where
+full_n<n>(a:[n]) = (o) where
+  if n = 0 then
+    o = 1
+  else
+    o = a[0] and full_n<n-1>(a[1..]);
+  end if
+end where
+
+
+(******************************************************************************)
+(* full_as                                                                    *)
+(* full_as(a,b,c,0) = fulladder(a,b,c)                                        *)
+(* full_as(a,b,c,1) = fullsuber(a,b,c)                                        *)
+full_as ( a , b , c , op ) = ( s , r ) where
+  s = (a xor b) xor c;
+  a' = op xor a;                              (* 0 xor a = a, 1 xor a = not a *)
+  r = (a' and b) or ((a' xor b) and c)
+end where
+addsuber<n>(a:[n], b:[n], r_in, op) = (o:[n], r_out) where
+  if n=0 then
+    o     = [];
+    r_out = r_in
+  else
+    (s ,r ) = full_as( a[0] , b[0] , r_in , op );
+    (o',r') = addsuber<n>( a[1..] , b[1..] , r , op );
+    o = s . o';
+    r_out = r'
+  end if
+end where
+addsub<n>( a:[n] , b:[n] , op ) = ( o:[n] , r_out ) where
+  ( o , r_out ) = addsuber<n>( a , b , 0 , op )
+end where
+
+
 (******************************************************************************)
 (* mux_n                                                                      *)
 (* mux( a, b, c ) = a si c = 1                                                *)
@@ -20,6 +65,18 @@ mux_n<n>(a:[n], b:[n], c) = (o:[n]) where
   end if
 end where
 
+
+(******************************************************************************)
+(* mux_n                                                                      *)
+(* mux( v00, v01, v10, v11, c0, c1 ) = v[c0][c1]                              *)
+(*                  b sinon                                                   *)
+mux4_n<n> (v00:[n], v01:[n], v10:[n], v11:[n], c0, c1) = (v:[n]) where
+  v0 = mux_n<n>(v01, v00, c1);
+  v1 = mux_n<n>(v11, v10, c1);
+  v  = mux_n<n>(v1, v0, c0);
+end where
+
+
 (******************************************************************************)
 (* reg_n                                                                      *)
 reg_n<n>(a:[n]) = (o:[n]) where
@@ -30,36 +87,24 @@ reg_n<n>(a:[n]) = (o:[n]) where
   end if
 end where
 
-(******************************************************************************)
-(* fulladder                                                                  *)
-(* a+b+c = s et reste r                                                       *)
-fulladder(a, b, c) = (s, r) where
-  s = (a xor b) xor c;
-  r = (a and b) or ((a xor b) and c);
-end where
 
 (******************************************************************************)
-(* add                                                                        *)
-(* Endian CHECK                                                               *)
+(* CES TROIS FONCTIONS SONT OBSOLÈTES                                         *)
+fulladder(a, b, c) = (s, r) where
+  (s,r) = full_as(a,b,c,0);
+end where
 nadder<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
-  if n=0 then
-    o     = [];
-    r_out = r_in
-  else
-    (s, r)   = fulladder( a[0] , b[0] , r_in );
-    (o', r') = nadder<n-1>( a[1..] , b[1..] , r );
-    o = s . o';
-    r_out = r'
-  end if
+  (o,r_out) = addsuber<n>(a,b,r_in,0);
 end where
 add<n>(a:[n], b:[n]) = (o:[n], r) where
-  (o, r) = nadder<n>(a, b, 0)
+  (o, r) = nadder<n>(a, b, 0);
 end where
+
 
 (******************************************************************************)
 (* Multiplication                                                             *)
 (* Le résultat est renvoyé dans r[0]...r[n-1].q[0]...q[n-1]                   *)
-(* PROBLEME DE COMPATILIBILITE DES ARGUMENTS A TROUVER...                     *)
+(* PROBLEME DE COMPATIBILITE DES ARGUMENTS A TROUVER ?                        *)
 mult_nm<n,m>( a:[n] , b:[n] ) = ( r:[n] , q:[n] ) where
   if m=0 then
     q = empty<n>();
@@ -70,46 +115,27 @@ mult_nm<n,m>( a:[n] , b:[n] ) = ( r:[n] , q:[n] ) where
     qp = mux_n<n>( b[n-m+1..] . empty<n-m+1>() , empty<n>() , a[m-1] );
     rp = mux_n<n>( empty<m-1>() . b[..n-m] , empty<n>(), a[m-1] );
     
-    (r, bit) = add<n>( rp , r');
-    (q, pbit) = nadder<n>( qp , q' , bit ); (* pointless bit (pas de dép.) *)
+    (r, bit) = addsub<n>( rp , r' , 0);
+    (q, pbit) = addsuber<n>( qp , q' , bit , 0);             (* pointless bit *)
   end if
 end where
 mult<n>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
   (q,r) = mult_nm<n,n>(a,b)
 end where
 
-(******************************************************************************)
-(* fullsubber                                                                 *)
-(* Il faudrait trouver une autre orthographe, c'est moche.                    *)
-(* Fait la soustraction a-b-c, et mets son bit r à 1 si le résultat entraine  *)
-(* une retenue de -1.                                                         *)
-(* VERIFIE PAR TABLE DE VERITE : OK                                           *)
-fullsubber(a, b, c) = (s, r) where
-  s = ((not a) and (b xor c)) or (a and (not(b xor c)));
-  r = ((not a) and (b or c)) or (a and b and c)
-end where
 
 (******************************************************************************)
-(* nsubber                                                                    *)
-(* Même remarque...                                                           *)
-(* Ajoutons quand même que la construction de nsubber est 'exactement' la     *)
-(* même que celle de nadder, mais en appelant fullsubber. Ca veut d'ailleurs  *)
-(* dire qu'on peut regrouper ces deux fonctions en une seule, qui serait      *)
-(* contrôlée par un bit addition ou soustraction.                             *)
+(* CES TROIS FONCTIONS SONT OBSOLÈTES                                         *)
+fullsubber(a, b, c) = (s, r) where
+  (s,r) = full_as(a,b,c,1)
+end where
 nsubber<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
-  if n=0 then
-    o     = [];
-    r_out = r_in
-  else
-    (s, r)   = fullsubber( a[0] , b[0] , r_in );
-    (o', r') = nsubber<n-1>( a[1..] , b[1..] , r );
-    o = s . o';
-    r_out = r'
-  end if
+  (o,r_out) = addsuber<n>(a,b,r_in,1);
 end where
 sub<n>(a:[n], b:[n]) = (o:[n], r) where
   (o, r) = nsubber<n>(a, b, 0)
 end where
+
 
 (******************************************************************************)
 (* Division euclidienne                                                       *)
@@ -119,14 +145,8 @@ div_mn<n,m>(a:[n],b:[n]) = (q:[m],r:[n]) where
     r = a
   else
     a' = a[m-1..] . empty<m-1>();
-    (res, con) = sub<n>(a', b);
-    res' = a[..m-2] . res[..n-m];      (* On recompose le résultat *)
-
-    (* Les deux lignes suivantes créaient 2^n divisions... C'est beaucoup. *)
-    (* (q1, r1) = div_mn<n,m-1>(a, b);      (* Si con=1 *) *)
-    (* (q0, r0) = div_mn<n,m-1>(res', b);   (* Si con=0 *) *)
-    (* Donc on va corriger ça par les lignes suivantes. *)
-
+    (res, con) = addsub<n>(a', b, 1);     (* addsub<n>(a',b,1) = sub<n>(a',b) *)
+    res' = a[..m-2] . res[..n-m];                 (* On recompose le résultat *)
     a'' = mux_n<n>( a , res' , con );
     (q', r) = div_mn<n,m-1>( a'', b);
     q = q' . (not con);
@@ -135,6 +155,7 @@ end where
 div<n>(a:[n],b:[n]) = (q:[n],r:[n]) where
   (q,r) = div_mn<n,n>(a,b)
 end where
+
 
 (******************************************************************************)
 (* not_n                                                                      *)
@@ -146,6 +167,7 @@ not_n<n>(a:[n])=(o:[n]) where
   end if
 end where
 
+
 (******************************************************************************)
 (* or_n                                                                       *)
 or_n<n>(a:[n],b:[n])=(o:[n]) where
@@ -155,6 +177,7 @@ or_n<n>(a:[n],b:[n])=(o:[n]) where
     o = (a[0] or b[0]) . (or_n<n-1>(a[1..],b[1..]))
   end if
 end where
+
 
 (******************************************************************************)
 (* and_n                                                                      *)
@@ -166,27 +189,21 @@ and_n<n>(a:[n],b:[n])=(o:[n]) where
   end if
 end where
 
+
 (******************************************************************************)
 (* eq_n                                                                       *)
 (* Pas besoin non plus, soustraction le fait aussi !                          *)
+
 
 (******************************************************************************)
 (* inf_n(a,b) = a<b                                                           *)
 (* Finalement, on a pas besoin de l'inf, puisque la soustraction le fait.     *)
 
-(******************************************************************************)
-(* shift                                                                      *)
-(* ATTENTION. Le "left" et "right" est au sens gauche et droite des nombres   *)
-(* binaires qu'on regarde ! left(01(2)) = 0|10(2), right(01(2)) = 00|1(2)     *)
-shift<n>( a:[n] , b:[n] ) = ( left_a:[n] , right_b:[n] ) where
-  left_a  = 0 . a[..n-2];
-  right_b = b[1..] . 0
-end where
 
-(******************************************************************************)
-(* Fonctions pour bfmachine                                                   *)
-(* Ne pas supprimer drastiquement                                             *)
-(* OK, OK, bien retenu. A priori pas de dépendances pour le micro final ?     *)
+
+(* /!\ ATTENTION : Les fonctions suivante sont efficace pour une petite valeur*)
+(* de n seulement. Si n > 8, il est préférable d'utiliser add et sub qui sont *)
+(* de complexité linéaire et non quadratique.                                 *)
 
 (******************************************************************************)
 (* incr_n(a) = a+1                                                            *)
@@ -194,29 +211,56 @@ incr_n<n>(a:[n]) = (o:[n]) where
   if n = 0 then
     o = []
   else
-    b = incr_n<n-1>(a[..n-2]);
-    o = mux_n<n>(b . 0, a[..n-2] . 1, a[n-1])
+    b = incr_n<n-1>(a[1..]);
+    o = mux_n<n>(0 . b, 1. a[1..], a[0])
   end if
 end where
 
+(* incr_n et decr_n n'ont pas la même signature malgré la proximité de leur   *)
+(* nom mais c'est dû à leur utilisation totalement différente.                *)
 (******************************************************************************)
 (* decr_n(a) = a-1                                                            *)
-decr_n<n>(a:[n]) = (o:[n]) where
+decr_n<n>(a:[n]) = (o:[n], r) where
   if n = 0 then
-    o = []
+    o = [];
+    r = 1
   else
-    b = decr_n<n-1>(a[..n-2]);
-    o = mux_n<n>(a[..n-2] . 0, b . 1, a[n-1])
+    a0 = a[0];
+    (b, r') = decr_n<n-1>(a[1..]);
+    o = mux_n<n>(0 . a[1..], 1 . b, a0);
+    r = mux(0, r', a0);
   end if
 end where
+
 
 (******************************************************************************)
-(* null_n(a) = a == 00...0                                                    *)
-null_n<n>(a:[n]) = (o) where
-  if n = 0 then
-    o = 1
+(* shift                                                                      *)
+(* CHANGEMENT DU SHIFT !                                                      *)
+shift_nm<n,m>( r0_in:[n] , r1_in:[n] , a1:[n] ) =
+	       ( r0_out:[n] , r1_out:[n] ) where
+  if m=0 then
+    r0_out = r0_in;
+    r1_out = r1_in;
   else
-    o = not(a[0]) and null_n<n-1>(a[1..]);
+
+    (da1,d) = decr_n<n>( a1 );
+    (dr0_in,dr1_in) = shift_nm<n,m-1>( 0 . r0_in[..n-2] ,
+                                       r0_in[n-1] . r1_in[..n-2] , da1 );
+
+    r0_out = mux_n<n>( r0_in , dr0_in , d );
+    r1_out = mux_n<n>( r1_in , dr1_in , d );
   end if
 end where
+shift<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
+  (r0,r1) = shift_nm<n,n>( a0 , empty<n>() , a1 );
+end where
 
+
+
+
+
+
+(***** TEST TIME *****)
+main ( a0:[4] , a1:[4] ) = ( r0:[4] , r1:[4] ) where
+  (r0,r1) = shift<4>(a0,a1);
+end where

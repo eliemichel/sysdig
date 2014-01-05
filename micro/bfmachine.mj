@@ -9,10 +9,13 @@ const ramSize     =  8
 const romSize     = 16
 const maxNestSize =  8
 
-(* #require(utils) *)
+(* #require(bfutils) *)
 
+(* pour le debug :
+(power, instr:[instrSize], disp, val:[ws], p:[ramSize], addr:[romSize], usual_mode, open_bracket:[maxNestSize])
+*)
 
-main () = (power, instr:[instrSize], disp, val:[ws], p:[ramSize], addr:[romSize], usual_mode, open_bracket:[maxNestSize]) where
+main () = (power, out:[4]) where
 	
 	(************)
 	instr = rom<romSize, instrSize>(addr);
@@ -74,6 +77,11 @@ main () = (power, instr:[instrSize], disp, val:[ws], p:[ramSize], addr:[romSize]
 	change_open_bracket = mux_n<maxNestSize>(decr_old_open_bracket, incr_old_open_bracket, i2 xor old_dir);
 	new_open_bracket = mux_n<maxNestSize>(change_open_bracket, old_open_bracket, isBracket);
 	open_bracket = mux_n<maxNestSize>(empty<maxNestSize-1>().1, new_open_bracket, isJumping);
+	
+	(*out = mux_n<4>(val[..3], reg_n<4>(out), disp);*)
+	(*out = val[..3];*)
+	(*out = dir.0.0.0;*)
+	out = addr[..3];
 	
 end where
 

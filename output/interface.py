@@ -189,3 +189,5 @@ But = tk.Button(window, text ="Quit", command = window.quit)
 But.pack()
 
 window.mainloop()
+
+

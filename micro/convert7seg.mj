@@ -1,0 +1,39 @@
+
+
+convert7seg (i:[4]) = (o:[7]) where
+	i0 = i[0];
+	i1 = i[1];
+	i2 = i[2];
+	i3 = i[3];
+	ni0 = not i0;
+	ni1 = not i1;
+	ni2 = not i2;
+	ni3 = not i3;
+	is0 = ni0 and ni1 and ni2 and ni3;
+	is1 =  i0 and ni1 and ni2 and ni3;
+	is2 = ni0 and  i1 and ni2 and ni3;
+	is3 =  i0 and  i1 and ni2 and ni3;
+	is4 = ni0 and ni1 and  i2 and ni3;
+	is5 =  i0 and ni1 and  i2 and ni3;
+	is6 = ni0 and  i1 and  i2 and ni3;
+	is7 =  i0 and  i1 and  i2 and ni3;
+	is8 = ni0 and ni1 and ni2 and  i3;
+	is9 =  i0 and ni1 and ni2 and  i3;
+	o0 = is0 or is2 or is3 or is5 or is6 or is7 or is8 or is9;
+	o1 = is0 or is1 or is2 or is3 or is4 or is7 or is8 or is9;
+	o2 = is0 or is1 or is3 or is4 or is5 or is6 or is7 or is8 or is9;
+	o3 = is0 or is2 or is3 or is5 or is6 or is8 or is9;
+	o4 = is0 or is2 or is6 or is8;
+	o5 = is0 or is4 or is5 or is6 or is8 or is9;
+	o6 = is2 or is3 or is4 or is5 or is6 or is8 or is9;
+	
+	o = o0 . o1 . o2 . o3 . o4 . o5 . o6;
+end where
+
+
+main (p, i:[4]) = (power, o:[7]) where
+	o = convert7seg(i);
+	power = p;
+end where
+
+
