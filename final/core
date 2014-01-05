@@ -3,5 +3,5 @@
 #../sim/sim ../sim/test/test.net 2> /dev/null
 # Pour bfmachine :
 # ../sim/sim -rom ../micro/bfmachine.bin ../micro/bfmachine_full.net 2> /dev/null | ../sim/sim ../micro/convert7seg_full.net 2> /dev/null
-
+../sim/sim --sim-only -rom ../micro/main.bin ../micro/main_full.sch.net.backup
 

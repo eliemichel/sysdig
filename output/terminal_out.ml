@@ -23,12 +23,12 @@ let buff = String.create 1 in
 		s := "";
 		while String.length !s < 7 * 14 + 1 do
 			match Unix.read Unix.stdin buff 0 1 with
-				| 0 -> Printf.printf "\nEnd of pipe\n" ; exit 0
+				| 0 -> Format.printf "\nClose output (End of pipe)@." ; exit 0
 				| n -> s := !s ^ buff
 		done;
 		let aux i = (int_of_7seg (String.sub !s (7 * i + 1) 7)) in
 			
-			Printf.printf "%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d\n"
+			Format.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d@?"
 				(aux 6) (aux 7) (aux 8) (aux 9) (aux 10) (aux 11) (aux 12) (aux 13)
 				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0)
 			
