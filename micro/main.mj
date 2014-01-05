@@ -58,7 +58,8 @@ mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSi
 end where
 
 
-main () = () where
+
+main () = (power) where
 	instr = rom<instrAddrSize, instrSize>(instrAddr);
 	unit0 = instr[0];
 	unit1 = instr[1];
@@ -79,18 +80,20 @@ main () = () where
 	
 	
 	isJUMP = unit0 and unit1;
-	() = jump() (* TODO + définir les variables utilisées à la ligne suivante *)
-	instrAddr = makeJump(isJumping, isSetting, jumpSize, absAddr, addOrSub);
+	(instrAddr, regAddrJump) = jump(a0r, a1r, r0r, r1r, op);
 	
 	
-	regAddr0 = mux_n<3>(111, 110, isSYS);
-	regAddr1 = mux_n<3>(regAddrMem, 111, isMEM);
-	regAddr  = mux_n<3>(regAddr1, regAddr0, unit0);
+	power = full_n<instrSize>(instr);
+	
+	regAddr = mux4_n<3>(111, 110, regAddrMem, regAddrJump, unit0, unit1);
+	
+	vide = empty<wordSize>();
+	a0 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr, unit0, unit1);
+	a1 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr, unit0, unit1);
+	r0 = mux4_n<wordSize>(vide, aluR0, memWrite, instrAddr, unit0, unit1);
+	r1 = mux4_n<wordSize>(vide, aluR1, memWrite, instrAddr, unit0, unit1);
 end where
 
 
-(*
-	alu (a0r[wordSize], a1r[wordSize], op[instrSize-2]) = (r0, r1)
-*)
 
 
