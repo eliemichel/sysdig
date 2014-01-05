@@ -8,7 +8,7 @@ let print_li s =
   let n = String.length s in
   let str = 
     if n >= 1 && n <= 3 then "011"^(String.make (3-n) '0')^s
-    else if n >= 4 && n <= 6 then "011"^(String.sub s 0 2)^"010111"^"011"^(String.sub s 3 (n-1))
+    else if n >= 4 && n <= 6 then "011"^(String.sub s 0 2)^"010111"^"100100"^"100001"^"011"^(String.sub s 3 (n-1))^"010000"^"100000"
     else failwith "Mauvais format" in
   txt := !txt ^ str
 
