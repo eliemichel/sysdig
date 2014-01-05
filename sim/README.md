@@ -89,3 +89,5 @@ Pour modifier le fichier de description de la rom, utiliser l'option
 Certaines boucles combinatoires peuvent ne pas être détectées par le détecteur
 de boucles combinatoires.
 
+Mettre une nappe de taille nulle en sortie génère l'exception Not_found.
+
