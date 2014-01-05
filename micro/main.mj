@@ -1,5 +1,5 @@
 
-(* #require(param jump utils alu) *)
+(* #require(param utils alu jump mem) *)
 
 (* Registre à enable de taille n *)
 enableReg<n> (writeVal:[n], enable) = (val:[n]) where
@@ -32,29 +32,6 @@ registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], write
 	a1r = enableReg<wordSize>(a1w, a1e);
 	r0r = enableReg<wordSize>(r0w, r0e);
 	r1r = enableReg<wordSize>(r1w, r1e);
-end where
-
-
-mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSize-2]) =
-		(toBeWritten:[wordSize], regAddrMem:[3]) where
-	op0 = op[0];
-	op1 = op[1];
-	isMOVEright = not(op0) and not(op1);
-	isMOVEleft  = not(op0) and     op1;
-	isLOAD      =     op0  and not(op1);
-	isSAVE      =     op0  and     op1;
-	
-	op2 = op[2];
-	op3 = op[3];
-	fromRegA = mux_n<wordSize>(a1r, a0r, op3); (* MOVEleft ou isLOAD ou isMOVE *)
-	fromRegR = mux_n<wordSize>(r1r, r0r, op3); (* MOVEright                    *)
-	fromReg  = mux_n<wordSize>(fromRegR, fromRegA, isMOVEright);
-	
-	ramAddr = mux_n<wordSize>(r1r, r0r, op2);
-	fromRam = ram<wordSize, wordSize>(ramAddr, isSAVE, ramAddr, fromReg);
-	
-	toBeWritten = mux_n<wordSize>(fromRam, fromReg, op0);
-	regAddrMem = 0 . (isMOVEleft and not op0) . op3;
 end where
 
 
