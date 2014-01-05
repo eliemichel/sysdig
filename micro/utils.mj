@@ -11,6 +11,7 @@ end where
 
 (******************************************************************************)
 (* null_n( a ) = a == 00...0                                                  *)
+(* full_n( a ) = a == 11...1                                                  *)
 null_n<n>(a:[n]) = (o) where
   if n = 0 then
     o = 1
@@ -18,10 +19,6 @@ null_n<n>(a:[n]) = (o) where
     o = not(a[0]) and null_n<n-1>(a[1..]);
   end if
 end where
-
-
-(******************************************************************************)
-(* full_n( a ) = a == 11...1                                                  *)
 full_n<n>(a:[n]) = (o) where
   if n = 0 then
     o = 1
@@ -107,7 +104,7 @@ end where
 (******************************************************************************)
 (* Multiplication                                                             *)
 (* Le résultat est renvoyé dans r[0]...r[n-1].q[0]...q[n-1]                   *)
-(* PROBLEME DE COMPATILIBILITE DES ARGUMENTS A TROUVER ?                      *)
+(* PROBLEME DE COMPATIBILITE DES ARGUMENTS A TROUVER ?                        *)
 mult_nm<n,m>( a:[n] , b:[n] ) = ( r:[n] , q:[n] ) where
   if m=0 then
     q = empty<n>();
@@ -205,16 +202,24 @@ end where
 
 (******************************************************************************)
 (* shift                                                                      *)
-(* ATTENTION. Le "left" et "right" est au sens gauche et droite des nombres   *)
-(* binaires qu'on regarde ! left(01(2)) = 0|10(2), right(01(2)) = 00|1(2)     *)
+(* CHANGEMENT DU SHIFT !                                                      *)
 
- shift<n>( a:[n] , b:[n] ) = ( left_a:[n] , right_b:[n] ) where
-
-  left_a  = 0 . a[..n-2];
-  right_b = b[1..] . 0
-
+shift_nm<n,m>( r0_in:[n] , r1_in:[n] , a1:[n] ) =
+	       ( r0_out:[n] , r1_out:[n] ) where
+  if m=0 then
+    r0_out = empty<n>();         (* Un décallage de plus de n est puni par le *)
+    r1_out = empty<n>();         (* superbe full 0 que vous pouvez voir ici.  *)
+  else
+    r_in = r0_in . r1_in;
+    (r,d) = decr<2*n>( r_in );
+    r_out = mux( r_in , 0.r_in[..2*n-2] , d );
+    r0_out = r_out[..n-1];
+    r1_out = r_out[n..];
+  end if
 end where
-
+shift<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
+  (r0,r1) = shift_nm<n,n>( a0 , empty<n>() , a1 );
+end where
 
 
 (* /!\ ATTENTION : Les fonctions suivante sont efficace pour une petite valeur*)
@@ -248,3 +253,12 @@ decr_n<n>(a:[n]) = (o:[n], r) where
   end if
 end where
 
+
+
+
+
+
+(***** TEST TIME *****)
+main ( a0 , a1 ) = ( r0 , r1 ) where
+  (r0,r1) = shift(a0,a1);
+end where
