@@ -1,0 +1,106 @@
+
+(* #require(param utils) *)
+
+(* 00/00/0000 00:00:00 *)
+
+(* On prend i de taille 8 pour éviter d'ajouter des lignes inutiles à la netlist
+ * de découpage de i.
+ * Il y a plein de variables intermédiaires afin d'éviter que les mêmes
+ * variables ne soient recompilées.
+ *)
+seg (i:[8]) = (o:[7]) where
+	i0 = i[0];
+	i1 = i[1];
+	i2 = i[2];
+	i3 = i[3];
+	ni0 = not i0;
+	ni1 = not i1;
+	ni2 = not i2;
+	ni3 = not i3;
+	is0 = ni0 and ni1 and ni2 and ni3;
+	is1 =  i0 and ni1 and ni2 and ni3;
+	is2 = ni0 and  i1 and ni2 and ni3;
+	is3 =  i0 and  i1 and ni2 and ni3;
+	is4 = ni0 and ni1 and  i2 and ni3;
+	is5 =  i0 and ni1 and  i2 and ni3;
+	is6 = ni0 and  i1 and  i2 and ni3;
+	is7 =  i0 and  i1 and  i2 and ni3;
+	is8 = ni0 and ni1 and ni2 and  i3;
+	is9 =  i0 and ni1 and ni2 and  i3;
+	o0 = is0 or is2 or is3 or is5 or is6 or is7 or is8 or is9;
+	o1 = is0 or is1 or is2 or is3 or is4 or is7 or is8 or is9;
+	o2 = is0 or is1 or is3 or is4 or is5 or is6 or is7 or is8 or is9;
+	o3 = is0 or is2 or is3 or is5 or is6 or is8 or is9;
+	o4 = is0 or is2 or is6 or is8;
+	o5 = is0 or is4 or is5 or is6 or is8 or is9;
+	o6 = is2 or is3 or is4 or is5 or is6 or is8 or is9;
+	
+	o = o0 . o1 . o2 . o3 . o4 . o5 . o6;
+end where
+
+
+
+(* Fonctions arithmétiques optimisées *)
+sub10<n> (a:[n]) = (b:[n], r) where
+	a0 = a[0];
+	a1 = a[1];
+	a2 = a[2];
+	a3 = a[3];
+	b1 = not(a1);
+	b2 = a2 xor b1;
+	r23 = not(a1) and b1;
+	b3 = not(a3 xor r23);
+	r' = not(a3) or r23;
+	finA = a[4..];
+	(decrFinA, r'') = decr_n<n-4>(finA);
+	
+	finB = mux_n<n-4>(decrFinA, finA, r');
+	b = a0 . b1 . b2 . b3 . finB;
+	r = r'' and r';
+end where
+
+div10<n, m> (a:[n]) = (q:[m], r:[n]) where
+	if m = 0 then
+		q = [];
+		r = a;
+	else
+		a' = a[m-1..] . empty<m-1>();
+		(res, r') = sub10<n>(a');
+		a'' = mux_n<n>(a, a[..m-2] . res[..n-m], r');
+		
+		(q', r) = div10<n, m-1> (a'');
+		q = q' . not(r');
+		q = empty<n>();
+		
+	end if
+end where
+
+
+(* Précision pour 2012 par exemple : a01 = 20 et a02 = 12           *)
+(* Format j1 j2 / m1 m2 / a1 a2 a3 a4     h1 h2 : min1 min2 : s1 s2 *)
+gpu (j:[8], m:[8], a01:[8], a02:[8], h:[8], min:[8], s:[8]) =
+		(j1:[7], j2:[7], m1:[7], m2:[7], a1:[7], a2:[7], a3:[7], a4:[7], h1:[7],
+		 h2:[7], min1:[7], min2:[7], s1:[7], s2:[7]) where
+	(s1', s2') = div10<8,8>(s); (* 0<s<60 *)
+	(min1', min2') = div10<8,8>(min);
+	(h1', h2') = div10<8,8>(h);
+	(j1', j2') = div10<8,8>(j);
+	(m1', m2') = div10<8,8>(m);
+	(a1', a2') = div10<8,8>(a01);
+	(a3', a4') = div10<8,8>(a02);
+	s1 = seg(s1');
+	s2 = seg(s2');
+	min1 = seg(min1');
+	min2 = seg(min2');
+	h1 = seg(h1');
+	h2 = seg(h2');
+	j1 = seg(j1');
+	j2 = seg(j2');
+	m1 = seg(m1');
+	m2 = seg(m2');
+	a1 = seg(a1');
+	a2 = seg(a2');
+	a3 = seg(a3');
+	a4 = seg(a4');
+end where
+
