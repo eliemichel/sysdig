@@ -1,8 +1,7 @@
 {
   let txt = ref ""
     
-let print i = 
-  let s = string_of_int i in
+let print s =
   txt := !txt ^ s
 
 let print_li s =
@@ -13,40 +12,45 @@ let print_li s =
     else failwith "Mauvais format" in
   txt := !txt ^ str
 
-let print_ij i ij = 
-  let s = string_of_int i in
+let print_ij s ij =
   txt := !txt ^ s ^ ij
 }
 
 let space = [' ' '\t' '\r' '\n']
-let integer = ['0'-'9']+
+let bit = ['0' '1']+
 
 rule scan = parse
   | space { scan lexbuf }
-  | "input" (space?) (integer as ij) { print_ij 0001 ij ; scan lexbuf }
-  | "flip" { print 001111 ; scan lexbuf }
-  | "add" { print 010000 ; scan lexbuf }
-  | "sub" { print 010001 ; scan lexbuf }
-  | "mult" { print 010010 ; scan lexbuf }
-  | "div" { print 010011 ; scan lexbuf }
-  | "and" { print 010100 ; scan lexbuf }
-  | "or" { print 010101 ; scan lexbuf }
-  | "not" { print 010110 ; scan lexbuf }
-  | "shift" { print 010111 ; scan lexbuf }
-  | "li" (space?) (integer as i) { print_li i ; scan lexbuf }
-  | "mvra" (space?) (integer as ij) {  print_ij 1000 ij ; scan lexbuf }
-  | "mvar" (space?) (integer as ij) { print_ij 1001 ij ; scan lexbuf }
-  | "load" (space?) (integer as ij) { print_ij 1010 ij ; scan lexbuf }
-  | "save" (space?) (integer as ij) { print_ij 1011 ij ; scan lexbuf }
-  | "jfra" (space?) (integer as ij) { print_ij 1100 ij ; scan lexbuf }
-  | "jbra" (space?) (integer as ij) { print_ij 1101 ij ; scan lexbuf }
-  | "iio" (space?) (integer as ij) { print_ij 1110 ij ; scan lexbuf }
-  | "jaaa" { print 111100 ; scan lexbuf }
-  | "jaar" { print 111101 ; scan lexbuf }
-  | "wca" { print 111110 ; scan lexbuf }
-  | "end" { print 111111 ; scan lexbuf }
+  | "*" { com lexbuf }
+  | "input" (space?) (bit as ij) { print_ij "0001" ij ; scan lexbuf }
+  | "flip" { print "001111" ; scan lexbuf }
+  | "add" { print "010000" ; scan lexbuf }
+  | "sub" { print "010001" ; scan lexbuf }
+  | "mult" { print "010010" ; scan lexbuf }
+  | "div" { print "010011" ; scan lexbuf }
+  | "and" { print "010100" ; scan lexbuf }
+  | "or" { print "010101" ; scan lexbuf }
+  | "not" { print "010110" ; scan lexbuf }
+  | "shift" { print "010111" ; scan lexbuf }
+  | "li" (space?) (bit as i) { print_li i ; scan lexbuf }
+  | "mvra" (space?) (bit as ij) {  print_ij "1000" ij ; scan lexbuf }
+  | "mvar" (space?) (bit as ij) { print_ij "1001" ij ; scan lexbuf }
+  | "load" (space?) (bit as ij) { print_ij "1010" ij ; scan lexbuf }
+  | "save" (space?) (bit as ij) { print_ij "1011" ij ; scan lexbuf }
+  | "jfra" (space?) (bit as ij) { print_ij "1100" ij ; scan lexbuf }
+  | "jbra" (space?) (bit as ij) { print_ij "1101" ij ; scan lexbuf }
+  | "iio" (space?) (bit as ij) { print_ij "1110" ij ; scan lexbuf }
+  | "jaaa" { print "111100" ; scan lexbuf }
+  | "jaar" { print "111101" ; scan lexbuf }
+  | "wca" { print "111110" ; scan lexbuf }
+  | "end" { print "111111" ; scan lexbuf }
   | eof { }
   | _ { failwith "Oubli d'un argument ou caractère inconnu"; exit 1 }
+
+and com = parse
+  | '\n' { scan lexbuf }
+  | eof { }
+  | _ { com lexbuf }
 
 {
   let () =
