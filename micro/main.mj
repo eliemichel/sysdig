@@ -53,8 +53,7 @@ main (input) = (power, output:[outputSize]) where
 	(instrAddr, regAddrJump) = jump(a0r, a1r, r0r, r1r, op, isJUMP);
 	
 	
-	(*power = full_n<instrSize>(instr);*)
-	power = 0;
+	power = full_n<instrSize>(instr);
 	
 	regAddr = mux4_n<3>(regAddrSys, 1.1.0, regAddrMem, regAddrJump, unit0, unit1);
 	

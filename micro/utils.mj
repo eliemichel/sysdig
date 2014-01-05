@@ -43,13 +43,13 @@ addsuber<n>(a:[n], b:[n], r_in, op) = (o:[n], r_out) where
     r_out = r_in
   else
     (s ,r ) = full_as( a[0] , b[0] , r_in , op );
-    (o',r') = addsuber<n>( a[1..] , b[1..] , r , op );
+    (o',r') = addsuber<n-1>( a[1..] , b[1..] , r , op );
     o = s . o';
     r_out = r'
   end if
 end where
 addsub<n>( a:[n] , b:[n] , op ) = ( o:[n] , r_out ) where
-  ( o , r_out ) = addsuber<n>( a , b , 0 , op )
+  ( o , r_out ) = addsuber<n>( a , b , op , op )
 end where
 
 
