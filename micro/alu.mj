@@ -61,5 +61,5 @@ end where
 (* Heure des tests *)
 main( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
     ( r0:[wordSize] , r1:[wordSize] ) where
-  (r0,r1) = alu<wordSize,instrSize-2>(a0,a1,op)
+  (r0,r1) = alu(a0,a1,op)
 end where

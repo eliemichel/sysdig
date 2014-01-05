@@ -1,8 +1,8 @@
 
-(* #require(param jump utils) *)
+(* #require(param jump utils alu) *)
 
 (* Registre à enable de taille n *)
-enableReg<n> (writeVal[n], enable) = (val[n]) where
+enableReg<n> (writeVal:[n], enable) = (val:[n]) where
 	newVal = mux_n<n>(writeVal, val, enable);
 	val = reg_n<n>(newVal);
 end where
@@ -18,7 +18,7 @@ end where
 	**e : write enable
 	**w : valeur à écrire
 *)
-registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], writeAddr[3]) =
+registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], writeAddr:[3]) =
 		(a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize]) where
 	wa0 = writeAddr[0];
 	wa1 = writeAddr[1];
@@ -26,7 +26,7 @@ registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], write
 	a0e = not(wa1 or wa2);
 	a1e = not(wa1) and (wa0 xor wa2);
 	r0e = wa1 and not(wa2);
-	r1e = w1 and (wa0 xor wa2);
+	r1e = wa1 and (wa0 xor wa2);
 	
 	a0r = enableReg<wordSize>(a0w, a0e);
 	a1r = enableReg<wordSize>(a1w, a1e);
@@ -51,7 +51,7 @@ mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSi
 	fromReg  = mux_n<wordSize>(fromRegR, fromRegA, isMOVEright);
 	
 	ramAddr = mux_n<wordSize>(r1r, r0r, op2);
-	fromRam = ram<wordSize, wordSize>(ramAddr, isSAVE, writeAddr, fromReg);
+	fromRam = ram<wordSize, wordSize>(ramAddr, isSAVE, ramAddr, fromReg);
 	
 	toBeWritten = mux_n<wordSize>(fromRam, fromReg, op0);
 	regAddrMem = 0 . (isMOVEleft and not op0) . op3;
@@ -66,10 +66,10 @@ main () = (power) where
 	op = instr[2..];
 	
 	(a0r, a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
-	
+	(*
 	isSYS = not(unit0) and not(unit1);
 	() = sys(); (* TODO *)
-	
+	*)
 	
 	isALU = not(unit0) and unit1;
 	(aluR0, aluR1) = alu(a0r, a1r, op);
@@ -80,18 +80,18 @@ main () = (power) where
 	
 	
 	isJUMP = unit0 and unit1;
-	(instrAddr, regAddrJump) = jump(a0r, a1r, r0r, r1r, op);
+	(instrAddr, regAddrJump) = jump(a0r, a1r, r0r, r1r, op, isJUMP);
 	
 	
 	power = full_n<instrSize>(instr);
 	
-	regAddr = mux4_n<3>(111, 110, regAddrMem, regAddrJump, unit0, unit1);
+	regAddr = mux4_n<3>(1.1.1, 1.1.0, regAddrMem, regAddrJump, unit0, unit1);
 	
 	vide = empty<wordSize>();
-	a0 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr, unit0, unit1);
-	a1 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr, unit0, unit1);
-	r0 = mux4_n<wordSize>(vide, aluR0, memWrite, instrAddr, unit0, unit1);
-	r1 = mux4_n<wordSize>(vide, aluR1, memWrite, instrAddr, unit0, unit1);
+	a0 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr[..wordSize-1], unit0, unit1);
+	a1 = mux4_n<wordSize>(vide, vide, memWrite, instrAddr[wordSize..], unit0, unit1);
+	r0 = mux4_n<wordSize>(vide, aluR0, memWrite, instrAddr[..wordSize-1], unit0, unit1);
+	r1 = mux4_n<wordSize>(vide, aluR1, memWrite, instrAddr[wordSize..], unit0, unit1);
 end where
 
 
