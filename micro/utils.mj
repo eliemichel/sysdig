@@ -43,7 +43,7 @@ addsuber<n>(a:[n], b:[n], r_in, op) = (o:[n], r_out) where
     r_out = r_in
   else
     (s ,r ) = full_as( a[0] , b[0] , r_in , op );
-    (o',r') = addsuber( a[1..] , b[1..] , r , op );
+    (o',r') = addsuber<n>( a[1..] , b[1..] , r , op );
     o = s . o';
     r_out = r'
   end if
@@ -200,27 +200,6 @@ end where
 (* Finalement, on a pas besoin de l'inf, puisque la soustraction le fait.     *)
 
 
-(******************************************************************************)
-(* shift                                                                      *)
-(* CHANGEMENT DU SHIFT !                                                      *)
-
-shift_nm<n,m>( r0_in:[n] , r1_in:[n] , a1:[n] ) =
-	       ( r0_out:[n] , r1_out:[n] ) where
-  if m=0 then
-    r0_out = empty<n>();         (* Un décallage de plus de n est puni par le *)
-    r1_out = empty<n>();         (* superbe full 0 que vous pouvez voir ici.  *)
-  else
-    r_in = r0_in . r1_in;
-    (r,d) = decr<2*n>( r_in );
-    r_out = mux( r_in , 0.r_in[..2*n-2] , d );
-    r0_out = r_out[..n-1];
-    r1_out = r_out[n..];
-  end if
-end where
-shift<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
-  (r0,r1) = shift_nm<n,n>( a0 , empty<n>() , a1 );
-end where
-
 
 (* /!\ ATTENTION : Les fonctions suivante sont efficace pour une petite valeur*)
 (* de n seulement. Si n > 8, il est préférable d'utiliser add et sub qui sont *)
@@ -254,11 +233,34 @@ decr_n<n>(a:[n]) = (o:[n], r) where
 end where
 
 
+(******************************************************************************)
+(* shift                                                                      *)
+(* CHANGEMENT DU SHIFT !                                                      *)
+shift_nm<n,m>( r0_in:[n] , r1_in:[n] , a1:[n] ) =
+	       ( r0_out:[n] , r1_out:[n] ) where
+  if m=0 then
+    r0_out = r0_in;
+    r1_out = r1_in;
+  else
+
+    (da1,d) = decr_n<n>( a1 );
+    (dr0_in,dr1_in) = shift_nm<n,m-1>( 0 . r0_in[..n-2] ,
+                                       r0_in[n-1] . r1_in[..n-2] , da1 );
+
+    r0_out = mux_n<n>( r0_in , dr0_in , d );
+    r1_out = mux_n<n>( r1_in , dr1_in , d );
+  end if
+end where
+shift<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
+  (r0,r1) = shift_nm<n,n>( a0 , empty<n>() , a1 );
+end where
+
+
 
 
 
 
 (***** TEST TIME *****)
-main ( a0 , a1 ) = ( r0 , r1 ) where
-  (r0,r1) = shift(a0,a1);
+main ( a0:[4] , a1:[4] ) = ( r0:[4] , r1:[4] ) where
+  (r0,r1) = shift<4>(a0,a1);
 end where
