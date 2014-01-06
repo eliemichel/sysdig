@@ -1,26 +1,42 @@
 {
   let txt = ref ""
-    
+let line = ref 1
+
 let print s =
   txt := !txt ^ s
 
 let print_li s =
   let n = String.length s in
   let str = 
-    if n >= 1 && n <= 3 then "011"^(String.make (3-n) '0')^s
-    else if n >= 4 && n <= 6 then "011"^(String.sub s 0 2)^"010111"^"100100"^"100001"^"011"^(String.sub s 3 (n-1))^"010000"^"100000"
-    else failwith "Mauvais format" in
+    if n >= 1 && n <= 3 then "011"^s^(String.make (3-n) '0')
+    else if n >= 4 && n <= 6 then 
+      let p1 = (String.sub s 3 (n-3))^(String.make (6-n) '0') in
+      let p2 = (String.sub s 0 3) in
+      "011110"^ (* li 3 *)
+	"100100"^ (* move a0 -> a1 *)
+	"100001"^
+	"011"^p1^ (* li *)
+	"010111"^ (* shift *)
+	"100100"^ (* move a0 -> a1 *)
+	"100001"^
+	"011"^p2^
+	"010000"^ (* add *)
+	"100000" (* move r0 -> a0 *)
+    else (Printf.printf "Problème ligne %d \n" !line ; 
+	  failwith "Mauvais format") 
+  in
   txt := !txt ^ str
 
 let print_ij s ij =
   txt := !txt ^ s ^ ij
 }
 
-let space = [' ' '\t' '\r' '\n']
+let space = [' ' '\t' '\r']
 let bit = ['0' '1']+
 
 rule scan = parse
   | space { scan lexbuf }
+  | '\n' { incr line ; scan lexbuf }
   | "*" { com lexbuf }
   | "input" (space?) (bit as ij) { print_ij "0001" ij ; scan lexbuf }
   | "flip" { print "001111" ; scan lexbuf }
@@ -45,10 +61,12 @@ rule scan = parse
   | "wca" { print "111110" ; scan lexbuf }
   | "end" { print "111111" ; scan lexbuf }
   | eof { }
-  | _ { failwith "Oubli d'un argument ou caractère inconnu"; exit 1 }
+  | _ { Printf.printf "Problème ligne %d \n" !line ; 
+	failwith "Oubli d'un argument ou caractère inconnu"; 
+	exit 1 }
 
 and com = parse
-  | '\n' { scan lexbuf }
+  | '\n' { incr line ; scan lexbuf }
   | eof { }
   | _ { com lexbuf }
 
@@ -56,8 +74,8 @@ and com = parse
   let () =
     let file = Sys.argv.(1) in
     let c = open_in file in
-    (if not (Filename.check_suffix file ".bar") then failwith "Mauvaise extension du fichier d'entrée");
-    let name = (Filename.chop_suffix file ".bar")^".bin" in
+    (if not (Filename.check_suffix file ".s") then failwith "Mauvaise extension du fichier d'entrée");
+    let name = (Filename.chop_suffix file ".s")^".bin" in
     let o = open_out name in
     let b = Lexing.from_channel c in
     scan b ;
