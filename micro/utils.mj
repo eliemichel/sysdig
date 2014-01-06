@@ -91,24 +91,19 @@ end where
 
 (******************************************************************************)
 (* Multiplication                                                             *)
-(* Le résultat est renvoyé dans r[0]...r[n-1].q[0]...q[n-1]                   *)
-(* PROBLEME DE COMPATIBILITE DES ARGUMENTS A TROUVER ?                        *)
-mult_nm<n,m>( a:[n] , b:[n] ) = ( r:[n] , q:[n] ) where
-  if m=0 then
-    q = empty<n>();
-    r = empty<n>()
+mult_abc<n>( a:[n] , b:[n] ) = (c:[n]) where
+  if n=0 then
+    c = [];
   else
-    (q', r') = mult_nm<n,m-1>( a , b );
-
-    qp = mux_n<n>( b[n-m+1..] . empty<n-m+1>() , empty<n>() , a[m-1] );
-    rp = mux_n<n>( empty<m-1>() . b[..n-m] , empty<n>(), a[m-1] );
-    
-    (r, bit) = addsub<n>( rp , r' , 0);
-    (q, pbit) = addsuber<n>( qp , q' , bit , 0);             (* pointless bit *)
+    (c,pb) = addsub<n>( mux_n<n>( a , empty<n>() , b[0] ) ,
+                        0 . mult_abc<n-1>( a[..n-2] , b[1..] ) ,
+                        0 );
   end if
 end where
-mult<n>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
-  (q,r) = mult_nm<n,n>(a,b)
+mult<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
+  r = mult_abc<2*n>( a0 . empty<n>() , a1 . empty<n>() );
+  r0 = r[..n-1];
+  r1 = r[n..];
 end where
 
 
@@ -260,7 +255,7 @@ end where
 
 (***** TEST TIME *****)
 main ( a0:[4] , a1:[4] ) = ( r0:[4] , r1:[4] ) where
-  (r0,r1) = shift<4>(a0,a1);
+  (r0,r1) = mult<4>(a0,a1);
 end where
 
 
