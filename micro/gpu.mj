@@ -74,7 +74,7 @@ div10'<n, m> (a:[n]) = (q:[m], r:[n]) where
 end where
 
 div10<n> (a:[n]) = (q:[n], r:[n]) where
-	(q, r) = div<n>(a, 0.1.0.1 . 0.0.0.0);
+	(q, r) = div10'<n,n>(a);
 end where
 
 (* Précision pour 2012 par exemple : a01 = 20 et a02 = 12           *)

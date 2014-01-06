@@ -232,20 +232,8 @@ shift<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
 end where
 
 
-
-
-
-
-(***** TEST TIME *****)
-main ( a0:[4] , a1:[4] ) = ( r0:[4] , r1:[4] ) where
-  (r0,r1) = shift<4>(a0,a1);
-end where
-
-
-
-
 (******************************************************************************)
-(* LES FONCTIONS QUI SUIVENT SONT OBSOLÈTES                                   *)
+(*                                                                            *)
 fulladder(a, b, c) = (s, r) where
   (s,r) = full_as(a,b,c,0);
 end where
@@ -266,4 +254,16 @@ end where
 sub<n>(a:[n], b:[n]) = (o:[n], r) where
   (o, r) = nsubber<n>(a, b, 0)
 end where
+
+
+
+
+(***** TEST TIME *****)
+main ( a0:[4] , a1:[4] ) = ( r0:[4] , r1:[4] ) where
+  (r0,r1) = shift<4>(a0,a1);
+end where
+
+
+
+
 

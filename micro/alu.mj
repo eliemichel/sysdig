@@ -42,24 +42,27 @@ end where
 
 
 (******************************************************************************)
-(* Et la voila, la belle, l'ALU !                                             *)
 (* alu prend deux valeurs (celles des registres a0 et a1) et un code          *)
 (* d'opération `op`, et renvoit des valeurs (r0 et r1)                        *)
 (* La nappe de fils op doit représenter ce qu'on voit dans Cheat sheet        *)
 
 alu ( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
-    ( r0w:[wordSize] , r1w:[wordSize] , a0w:[wordSize] , regAddr:[3] ) where
+    ( r0:[wordSize] , r1:[wordSize] , regAddr:[3] ) where
+  op0 = op[0];
   op1 = op[1];
   op2 = op[2];
   op3 = op[3];
   (r0a,r1a) =   alu_arith<wordSize>( a0, a1, op2, op3 );
-  (r0b,r1b) = alu_logique<wordSize>( a0, a1, op2, op3 );
-  r0w = mux_n<wordSize>( r0b , r0a , op1 );
-  r1w = mux_n<wordSize>( r1b , r1a , op1 );
+  (r0l,r1l) = alu_logique<wordSize>( a0, a1, op2, op3 );
   
-  a0w = op3 . op2 . op1 . a0[3..];
+  r0alu = mux_n<wordSize>( r0l , r0a , op1 );
+  r0li = op3 . op2 . op1 . a0[3..];
   
-  a = not(op[0]);
+  r0 = mux_n<wordSize>( r0li , r0alu , op0 );
+  
+  r1 = mux_n<wordSize>( r1l , r1a , op1 );
+  
+  a = not(op0);
   regAddr = a.a.0;
 end where
 
@@ -67,5 +70,5 @@ end where
 (* Heure des tests *)
 main( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
     ( r0w:[wordSize] , r1w:[wordSize] ) where
-  (r0w ,r1w, a0w, regAddr) = alu(a0,a1,op)
+  (r0w ,r1w, regAddr) = alu(a0,a1,op)
 end where

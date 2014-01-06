@@ -1,4 +1,3 @@
-000000
 011011 # Li 3 in a0
 001110 # Output a0 to s
 001111 # Flip
@@ -7,8 +6,8 @@
 011111 # Li 7 in a0
 001101 # Output a0 to min
 001111 # Flip
-010010 # Mult a0 a1
-100010 # r0 -> a0
+010111 # Add a0 a1
+100000 # r0 -> a0
 001100 # Output a0 to h
 001111 # Flip
 111111

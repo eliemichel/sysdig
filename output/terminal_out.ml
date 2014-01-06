@@ -17,21 +17,26 @@ let int_of_7seg = function
 	| _ -> -1
 in
 
+
 let s = ref "" in
 let buff = String.create 1 in
 	while true do
 		s := "";
-		while String.length !s < 7 * 14 + 1 do
+		while String.length !s < 99 do
 			match Unix.read Unix.stdin buff 0 1 with
 				| 0 -> Format.printf "\nClose output (End of pipe)@." ; exit 0
 				| n -> s := !s ^ buff
 		done;
 		let aux i = (int_of_7seg (String.sub !s (7 * i + 1) 7)) in
+		let byte i = String.sub !s (8 * i + 1) 8 in
 			
 			Format.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d@?"
 				(aux 7) (aux 6) (aux 9) (aux 8) (aux 11) (aux 10) (aux 13) (aux 12)
 				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0)
-			
+			(*
+			Format.printf "%s %s %s %s@."
+				(byte 0) (byte 1) (byte 2) (byte 3)
+			*)
 			(*Printf.printf "%d\n" (aux 0)*)
 	done
 
