@@ -1,0 +1,37 @@
+Opérations :
+add 			$a0+$a1 	Retenue 	
+sub 			$a0-$a1 	Signe 	
+mult 			$a0*$a1 	Suite du résultat 	
+div 			Quotient 	Reste 	
+and 			$a0 && $a1 		
+or 			$a0 || $a1 		
+not 			not $a0 	not $a1 ?? (inutile je pense)	
+shift 			a0*2**a1 (ou 0..0 si a1 > wordSize)    Suite du shift 	
+
+Chargement constantes :
+li *** (entre 1 et 3)   a0 = ***
+li ****** (entre 4 et 6)a0 = ****** en 10 instructions du microprocesseur	
+mvra ij 	        aj := ri 			
+mvar ij 		rj := ai
+
+Communication avec la mémoire :
+load ij            aj := ri* (= valeur à l'adresse ri)	
+save ij 		ri* := aj
+
+$pp représente les 4 registres (si ij = 01, $pp = a1, si ij = 10, $pp = r0, etc...)
+
+Saut conditionnel :
+iio $pp 		Ignore l'instruction suivante, si $pp est impair (finit par un 1)
+
+Sauts inconditionnels :
+jfra $pp 		Saute à adresse courante + $pp
+jbra $pp 		Saute à adresse courante - $pp
+jaaa 			Va à l'adresse de code contenue dans $a0 . $a1
+jaar 			Va à l'adresse de code contenue dans $r0 . $r1
+
+Divers :
+input $pp 		Charge dans $pp la valeur actuelle du quartz
+flip 			Ecriture de a0 dans la mémoire du timer (7 adresses pour m j a0 a1 h m s)
+wca 			Ecrit l'adresse courante dans $a0 . $a1
+end 			Termine le programme
+
