@@ -1,14 +1,14 @@
 
 (* #require(param utils) *)
 
-mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSize-2]) =
+mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSize-2], isMEM) =
 		(toBeWritten:[wordSize], regAddrMem:[3]) where
 	op0 = op[0];
 	op1 = op[1];
 	isMOVEright = not(op0) and not(op1);
 	isMOVEleft  = not(op0) and     op1;
 	isLOAD      =     op0  and not(op1);
-	isSAVE      =     op0  and     op1;
+	isSAVE      =     op0  and     op1  and isMEM;
 	
 	op2 = op[2];
 	op3 = op[3];

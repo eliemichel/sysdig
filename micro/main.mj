@@ -35,18 +35,20 @@ main (input) = (power, output:[outputSize]) where
 	unit1 = instr[1];
 	op = instr[2..];
 	
-	(a0r, a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
+	(a0r', a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
+	
+	a0r = 0.1.0.1.0.1.0.1;
 	
 	isSYS = not(unit0) and not(unit1);
-	(regAddrSys, output) = sys(a0r, op, input);
+	(regAddrSys, output) = sys(a0r, op, input, isSYS);
 	
 	
 	isALU = not(unit0) and unit1;
-	(aluR0, aluR1) = alu(a0r, a1r, op);
+	(aluR0, aluR1, aluA0, regAddrAlu) = alu(a0r, a1r, op);
 	
 	
 	isMEM = unit0 and not(unit1);
-	(memWrite, regAddrMem) = mem(a0r, a1r, r0r, r1r, op);
+	(memWrite, regAddrMem) = mem(a0r, a1r, r0r, r1r, op, isMEM);
 	
 	
 	isJUMP = unit0 and unit1;
@@ -55,12 +57,12 @@ main (input) = (power, output:[outputSize]) where
 	
 	power = not(full_n<instrSize>(instr));
 	
-	regAddr = mux4_n<3>(regAddrSys, 1.1.0, regAddrMem, regAddrJump, unit0, unit1);
+	regAddr = mux4_n<3>(regAddrSys, regAddrAlu, regAddrMem, regAddrJump, unit0, unit1);
 	
 	vide = empty<wordSize>();
 	input8 = input . vide[1..];
-	a0 = mux4_n<wordSize>(input8, vide,  memWrite, instrAddr[..wordSize-1], unit0, unit1);
-	a1 = mux4_n<wordSize>(input8, vide,  memWrite, instrAddr[wordSize..]  , unit0, unit1);
+	a0 = mux4_n<wordSize>(input8, aluA0, memWrite, instrAddr[..wordSize-1], unit0, unit1);
+	a1 = mux4_n<wordSize>(input8, vide , memWrite, instrAddr[wordSize..]  , unit0, unit1);
 	r0 = mux4_n<wordSize>(input8, aluR0, memWrite, instrAddr[..wordSize-1], unit0, unit1);
 	r1 = mux4_n<wordSize>(input8, aluR1, memWrite, instrAddr[wordSize..]  , unit0, unit1);
 end where

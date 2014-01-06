@@ -1,10 +1,10 @@
 
 (* #require(param utils gpu) *)
 
-sys (value:[wordSize], op:[instrSize-2], input) =
+sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
 		(regAddr:[3], output:[outputSize]) where
 	
-	op0 = op[0];
+	op0 = op[0] and isSYS;
 	op1 = op[1];
 	op2 = op[2];
 	op3 = op[3];
@@ -34,7 +34,9 @@ sys (value:[wordSize], op:[instrSize-2], input) =
 	bufa1  = enableReg<wordSize>(value, ea1 );
 	bufh   = enableReg<wordSize>(value, eh  );
 	bufmin = enableReg<wordSize>(value, emin);
-	bufs   = enableReg<wordSize>(value, es  );
+	bufs'   = enableReg<wordSize>(value, es  );
+	
+	bufs = 1.0.1.0.1.0.0.0;
 	
 	j   = enableReg<wordSize>(bufj,   isFLIP);
 	m   = enableReg<wordSize>(bufm,   isFLIP);

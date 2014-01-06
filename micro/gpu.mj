@@ -59,7 +59,7 @@ sub10<n> (a:[n]) = (b:[n], r) where
 	r = r'' and r';
 end where
 
-div10<n, m> (a:[n]) = (q:[m], r:[n]) where
+div10'<n, m> (a:[n]) = (q:[m], r:[n]) where
 	if m = 0 then
 		q = [];
 		r = a;
@@ -68,23 +68,26 @@ div10<n, m> (a:[n]) = (q:[m], r:[n]) where
 		(res, r') = sub10<n>(a');
 		a'' = mux_n<n>(a, a[..m-2] . res[..n-m], r');
 		
-		(q', r) = div10<n, m-1> (a'');
+		(q', r) = div10'<n, m-1> (a'');
 		q = q' . not(r');
 	end if
 end where
 
+div10<n, m> (a:[n]) = (q:[m], r:[n]) where
+	(q, r) = div_mn<n,m>(a, 0.1.0.1 . 0.0.0.0);
+end where
 
 (* Précision pour 2012 par exemple : a01 = 20 et a02 = 12           *)
 (* Format j1 j2 / m1 m2 / a1 a2 a3 a4     h1 h2 : min1 min2 : s1 s2 *)
 gpu (j:[8], m:[8], a01:[8], a02:[8], h:[8], min:[8], s:[8]) =
 		(output:[7*14]) where
-	(s1', s2') = div10<8,8>(s); (* 0<s<60 *)
-	(min1', min2') = div10<8,8>(min);
-	(h1', h2') = div10<8,8>(h);
-	(j1', j2') = div10<8,8>(j);
-	(m1', m2') = div10<8,8>(m);
-	(a1', a2') = div10<8,8>(a01);
-	(a3', a4') = div10<8,8>(a02);
+	(s2', s1') = div10<8,8>(s);
+	(min2', min1') = div10<8,8>(min);
+	(h2', h1') = div10<8,8>(h);
+	(j2', j1') = div10<8,8>(j);
+	(m2', m1') = div10<8,8>(m);
+	(a2', a1') = div10<8,8>(a01);
+	(a4', a3') = div10<8,8>(a02);
 	
 	output
 	= seg(s1')
