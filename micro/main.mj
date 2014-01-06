@@ -35,9 +35,7 @@ main (input) = (power, output:[outputSize]) where
 	unit1 = instr[1];
 	op = instr[2..];
 	
-	(a0r', a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
-	
-	a0r = 0.1.0.1.0.1.0.1;
+	(a0r, a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
 	
 	isSYS = not(unit0) and not(unit1);
 	(regAddrSys, output) = sys(a0r, op, input, isSYS);

@@ -19,14 +19,15 @@ sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
 	
 	(* Mémoire graphique *)
 	ej     =  op0 and nop1 and nop2 and nop3;
-	em     =  op0 and  op1 and nop2 and nop3;
-	ea0    =  op0 and nop1 and nop2 and nop3;
-	ea1    =  op0 and  op1 and nop2 and nop3;
+	em     =  op0 and nop1 and nop2 and  op3;
+	ea0    =  op0 and nop1 and  op2 and nop3;
+	ea1    =  op0 and nop1 and  op2 and  op3;
 	
-	eh     =  op0 and nop1 and nop2 and  op3;
+	eh     =  op0 and  op1 and nop2 and nop3;
 	emin   =  op0 and  op1 and nop2 and  op3;
-	es     =  op0 and nop1 and  op2 and  op3;
+	es     =  op0 and  op1 and  op2 and nop3;
 	isFLIP =  op0 and  op1 and  op2 and  op3;
+	
 	
 	bufj   = enableReg<wordSize>(value, ej  );
 	bufm   = enableReg<wordSize>(value, em  );
@@ -34,9 +35,7 @@ sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
 	bufa1  = enableReg<wordSize>(value, ea1 );
 	bufh   = enableReg<wordSize>(value, eh  );
 	bufmin = enableReg<wordSize>(value, emin);
-	bufs'   = enableReg<wordSize>(value, es  );
-	
-	bufs = 1.0.1.0.1.0.0.0;
+	bufs   = enableReg<wordSize>(value, es  );
 	
 	j   = enableReg<wordSize>(bufj,   isFLIP);
 	m   = enableReg<wordSize>(bufm,   isFLIP);

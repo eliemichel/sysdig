@@ -22,6 +22,8 @@ clean:
 	@./mjc.byte $@_${POSTFIX}.mj
 	@echo "${WARN_COLOR}  ./sim --schedule-only $@_${POSTFIX}.net${NO_COLOR}"
 	@./sim --schedule-only $@_${POSTFIX}.net
+#	@echo "${WARN_COLOR}  ./sim -rom $@.bin $@_${POSTFIX}.net${NO_COLOR}"
+#	@./sim -rom $@.bin $@_${POSTFIX}.net
 #./sim --sim-only -rom $@.bin $@_${POSTFIX}.sch.net
 
 

@@ -52,12 +52,12 @@ alu ( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
   op1 = op[1];
   op2 = op[2];
   op3 = op[3];
-  (r0a,r1a) =   alu_arith<wordSize>( a0, a1, op2, op1 );
-  (r0b,r1b) = alu_logique<wordSize>( a0, a1, op2, op1 );
-  r0w = mux_n<wordSize>( r0b , r0a , op2 );
-  r1w = mux_n<wordSize>( r1b , r1a , op2 );
+  (r0a,r1a) =   alu_arith<wordSize>( a0, a1, op2, op3 );
+  (r0b,r1b) = alu_logique<wordSize>( a0, a1, op2, op3 );
+  r0w = mux_n<wordSize>( r0b , r0a , op1 );
+  r1w = mux_n<wordSize>( r1b , r1a , op1 );
   
-  a0w = op[1..3] . a0[3..];
+  a0w = op3 . op2 . op1 . a0[3..];
   
   a = not(op[0]);
   regAddr = a.a.0;
@@ -66,6 +66,6 @@ end where
 
 (* Heure des tests *)
 main( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
-    ( r0:[wordSize] , r1:[wordSize] ) where
-  (r0,r1, a0, regAddr) = alu(a0,a1,op)
+    ( r0w:[wordSize] , r1w:[wordSize] ) where
+  (r0w ,r1w, a0w, regAddr) = alu(a0,a1,op)
 end where

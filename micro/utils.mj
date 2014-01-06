@@ -49,7 +49,7 @@ addsuber<n>(a:[n], b:[n], r_in, op) = (o:[n], r_out) where
   end if
 end where
 addsub<n>( a:[n] , b:[n] , op ) = ( o:[n] , r_out ) where
-  ( o , r_out ) = addsuber<n>( a , b , op , op )
+  ( o , r_out ) = addsuber<n>( a , b , 0 , op )
 end where
 
 
@@ -88,18 +88,6 @@ reg_n<n>(a:[n]) = (o:[n]) where
 end where
 
 
-(******************************************************************************)
-(* CES TROIS FONCTIONS SONT OBSOLÈTES                                         *)
-fulladder(a, b, c) = (s, r) where
-  (s,r) = full_as(a,b,c,0);
-end where
-nadder<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
-  (o,r_out) = addsuber<n>(a,b,r_in,0);
-end where
-add<n>(a:[n], b:[n]) = (o:[n], r) where
-  (o, r) = nadder<n>(a, b, 0);
-end where
-
 
 (******************************************************************************)
 (* Multiplication                                                             *)
@@ -124,17 +112,6 @@ mult<n>( a:[n] , b:[n] ) = ( q:[n] , r:[n] ) where
 end where
 
 
-(******************************************************************************)
-(* CES TROIS FONCTIONS SONT OBSOLÈTES                                         *)
-fullsubber(a, b, c) = (s, r) where
-  (s,r) = full_as(a,b,c,1)
-end where
-nsubber<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
-  (o,r_out) = addsuber<n>(a,b,r_in,1);
-end where
-sub<n>(a:[n], b:[n]) = (o:[n], r) where
-  (o, r) = nsubber<n>(a, b, 0)
-end where
 
 
 (******************************************************************************)
@@ -188,16 +165,6 @@ and_n<n>(a:[n],b:[n])=(o:[n]) where
     o = (a[0] and b[0]) . (and_n<n-1>(a[1..],b[1..]))
   end if
 end where
-
-
-(******************************************************************************)
-(* eq_n                                                                       *)
-(* Pas besoin non plus, soustraction le fait aussi !                          *)
-
-
-(******************************************************************************)
-(* inf_n(a,b) = a<b                                                           *)
-(* Finalement, on a pas besoin de l'inf, puisque la soustraction le fait.     *)
 
 
 
@@ -272,5 +239,31 @@ end where
 (***** TEST TIME *****)
 main ( a0:[4] , a1:[4] ) = ( r0:[4] , r1:[4] ) where
   (r0,r1) = shift<4>(a0,a1);
+end where
+
+
+
+
+(******************************************************************************)
+(* LES FONCTIONS QUI SUIVENT SONT OBSOLÈTES                                   *)
+fulladder(a, b, c) = (s, r) where
+  (s,r) = full_as(a,b,c,0);
+end where
+nadder<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
+  (o,r_out) = addsuber<n>(a,b,r_in,0);
+end where
+add<n>(a:[n], b:[n]) = (o:[n], r) where
+  (o, r) = nadder<n>(a, b, 0);
+end where
+
+
+fullsubber(a, b, c) = (s, r) where
+  (s,r) = full_as(a,b,c,1)
+end where
+nsubber<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
+  (o,r_out) = addsuber<n>(a,b,r_in,1);
+end where
+sub<n>(a:[n], b:[n]) = (o:[n], r) where
+  (o, r) = nsubber<n>(a, b, 0)
 end where
 

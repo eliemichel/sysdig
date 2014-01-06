@@ -33,7 +33,7 @@ jump (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrS
 	addOrSub = not(op1);
 	
 	isJumping = isJUMP and not(op0 and op1);
-	isAbs = op0 and op1 and not(op2);
+	isAbs = isJUMP and op0 and op1 and not(op2);
 	
 	absAddr = mux_n<instrAddrSize>(r0r . r1r, a0r . a1r, op3);
 	

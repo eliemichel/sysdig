@@ -29,7 +29,7 @@ let buff = String.create 1 in
 		let aux i = (int_of_7seg (String.sub !s (7 * i + 1) 7)) in
 			
 			Format.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d@?"
-				(aux 6) (aux 7) (aux 8) (aux 9) (aux 10) (aux 11) (aux 12) (aux 13)
+				(aux 7) (aux 6) (aux 9) (aux 8) (aux 11) (aux 10) (aux 13) (aux 12)
 				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0)
 			
 			(*Printf.printf "%d\n" (aux 0)*)
