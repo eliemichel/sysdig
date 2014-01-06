@@ -6,31 +6,29 @@ let print_array f a =
 	(** print_array [f] [a] displays the 'a array [a] with the string_of_'a
 	function [f] *)
 	let n = Array.length a in
-		print_string "[|";
+		Format.eprintf "[|";
 		for k = 0 to n - 1 do
-			print_string (f a.(k));
-			if k < n - 1
-			then print_string "; "
+			Format.eprintf "%s"
+				(f a.(k))
 		done;
-		print_string "|]\n"
+		Format.eprintf "|]@."
 
 
 let print_list f l =
 	(** print_list [f] [l] displays the 'a list [l] with the string_of_'a
 	function [f] *)
 	let rec aux = function
-		| []     -> print_string "]\n"
+		| []     -> Format.eprintf "]@."
 		| [x]    -> (
-			print_string (f x);
+			Format.eprintf "%s" (f x);
 			aux []
 			)
 		| x :: q -> (
-			print_string (f x);
-			print_string "; ";
+			Format.eprintf "%s%s" (f x) "; ";
 			aux q
 			)
 	in (
-		print_string "[";
+		Format.eprintf "[";
 		aux l
 	)
 

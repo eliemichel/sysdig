@@ -3,6 +3,8 @@ open Netlist_ast
 exception Sim_error of string
 let ramUp = ref []
 
+
+
 let array_of_value = function
 	| VBit b      -> [|b|]
 	| VBitArray a -> a
@@ -93,7 +95,7 @@ let ramHandler ram addrSize wordSize rAddr writeEnable wAddr data =
 	let wa = getAddr addrSize wAddr in
 		if bool_of_value writeEnable
 		then ramUp := (ram, wa, wordSize, data) :: !ramUp;
-		getWord ram ra wordSize
+			getWord ram ra wordSize
 
 
 let rec getRamTable ram ident =
@@ -158,37 +160,7 @@ let rec var_list_length p = function
 			| TBit        -> 1
 			| TBitArray n -> n
 		)
-(*
-let addInput p stream vars =
-	let rec aux_array next a k =
-		if k < Array.length a
-		then (
-			a.(k) <- next ();
-			aux_array next a (k + 1)
-		)
-	in
-	let rec aux next env = function
-		| [] -> env
-		| var :: q ->
-			let value = match Env.find var p.p_vars with
-				| TBit        -> VBit (next ())
-				| TBitArray n ->
-					let a  = Array.make n false in (
-						aux_array next a 0;
-						VBitArray a
-					)
-			in
-			let env' =  Env.add var value env in
-				aux next env' q
-	in
-	let next =
-		let l = 1 + var_list_length p vars in
-			if (List.length (Stream.npeek l stream)) = l
-			then function () -> Stream.next stream = '1'
-			else (Printf.printf "Use default: " ; function () -> false)
-	in
-		aux next Env.empty vars
-*)
+
 
 let addInput p vars =
 	let rec aux_array next a k =
@@ -216,13 +188,11 @@ let addInput p vars =
 		let l = var_list_length p vars in
 		let cur = ref 0 in
 		let input =
-			let s = ref "" in
-			let buff = String.create 1 in
-			while String.length !s < l do
-				match Unix.read Unix.stdin buff 0 1 with
-					| 0 -> raise (Sim_error "End of pipe")
-					| n -> s := !s ^ buff
-			done; !s
+			let buff = String.create l in
+			let n = Unix.read Unix.stdin buff 0 l in
+			if n = l
+			then buff
+			else raise (Sim_error ("End of pipe (" ^ (string_of_int n) ^ ")"))
 		in fun () -> let c = input.[!cur] in incr cur ; c = '1'
 	in
 		aux next Env.empty vars
