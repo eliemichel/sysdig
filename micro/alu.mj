@@ -56,7 +56,9 @@ alu ( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
   (r0l,r1l) = alu_logique<wordSize>( a0, a1, op2, op3 );
   
   r0alu = mux_n<wordSize>( r0l , r0a , op1 );
-  r0li = op3 . op2 . op1 . a0[3..];
+  
+  (*r0li = op3 . op2 . op1 . a0[3..];*)
+  r0li = op3 . op2 . op1 . empty<wordSize-3>();
   
   r0 = mux_n<wordSize>( r0li , r0alu , op0 );
   

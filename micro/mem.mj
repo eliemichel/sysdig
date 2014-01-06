@@ -2,7 +2,7 @@
 (* #require(param utils) *)
 
 mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSize-2], isMEM) =
-		(toBeWritten:[wordSize], regAddrMem:[3]) where
+		(toBeWritten:[wordSize], regAddr:[3]) where
 	op0 = op[0];
 	op1 = op[1];
 	nop0 = not(op0);
@@ -15,13 +15,14 @@ mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSi
 	
 	op2 = op[2];
 	op3 = op[3];
-	fromRegA = mux_n<wordSize>(a1r, a0r, op2); (* MOVEleft ou isLOAD ou isMOVE *)
-	fromRegR = mux_n<wordSize>(r1r, r0r, op2); (* MOVEright                    *)
+	fromRegA = mux_n<wordSize>(a1r, a0r, op2); (* MOVEleft ou isLOAD *)
+	fromRegR = mux_n<wordSize>(r1r, r0r, op2); (* MOVEright          *)
 	fromReg  = mux_n<wordSize>(fromRegR, fromRegA, isMOVEright);
 	
 	ramAddr = mux_n<wordSize>(r1r, r0r, op2);
-	fromRam = ram<wordSize, wordSize>(ramAddr, isSAVE, ramAddr, fromReg);
+	ramData = mux_n<wordSize>(a1r, a0r, op3);
+	fromRam = ram<wordSize, wordSize>(ramAddr, isSAVE, ramAddr, ramData);
 	
 	toBeWritten = mux_n<wordSize>(fromRam, fromReg, op0);
-	regAddrMem = 0 . (isMOVEleft and nop0) . op3;
+	regAddr = mux_n<3>(1.1.1, 0 . (isMOVEleft and nop0) . op3, isSAVE);
 end where
