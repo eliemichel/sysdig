@@ -14,7 +14,7 @@
    id="svg13095"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="archi.svg">
+   sodipodi:docname="archi.eps">
   <defs
      id="defs13097" />
   <sodipodi:namedview
@@ -25,8 +25,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="328.02473"
-     inkscape:cy="252.50122"
+     inkscape:cx="354.88973"
+     inkscape:cy="272.215"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -47,7 +47,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1692,7 +1692,7 @@
          transform="translate(-173.5,-264.81728)">
         <path
            sodipodi:type="arc"
-           style="fill:#ffffff;fill-opacity:1;stroke:#737373;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
            id="path15500"
            sodipodi:cx="240.53572"
            sodipodi:cy="459.68976"
@@ -1704,7 +1704,7 @@
            sodipodi:open="true"
            transform="matrix(0.71932622,0,0,0.71932622,118.33537,160.65326)" />
         <path
-           style="fill:none;stroke:#737373;stroke-width:1.79831553;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;stroke:#000000;stroke-width:1.79831553000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            d="m 293.15735,491.26253 16.28117,0"
            id="path15502"
            inkscape:connector-curvature="0" />
@@ -1942,7 +1942,7 @@
        inkscape:connector-curvature="0"
        id="path15766"
        d="m 135.16258,150.0803 16.28117,0"
-       style="fill:none;stroke:#737373;stroke-width:1.79831553;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+       style="fill:none;stroke:#000000;stroke-width:1.79831553000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
     <path
        style="fill:none;stroke:#c03312;stroke-width:1.79831553;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 155.55902,145.74927 16.28117,0"
@@ -3377,5 +3377,16 @@
          x="417.15701"
          id="tspan5229"
          sodipodi:role="line">0</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.60321331px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#a1a1a1;fill-opacity:1;stroke:none;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono"
+       x="136.20999"
+       y="148.80937"
+       id="text16745"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan16747"
+         x="136.20999"
+         y="148.80937">6 bits</tspan></text>
   </g>
 </svg>
