@@ -109,6 +109,7 @@ avec la petite taille de nos instructions. En effet, l'instruction doit contenir
 la valeur que l'on veut charger, ce qui n'est pas possible avec des instructions
 plus petites que les mots machine.
 
+\paragraph{}
 Une première idée fut d'interpréter l'instruction suivante non pas comme une
 instruction mais comme une valeur. En utilisant les 2 derniers bits de l'instruction
 LI puis les 6 bits de l'instruction suivante, on pouvait charger toute valeur.
@@ -118,6 +119,7 @@ et complexifiait le processeur. Gérer des tailles variables pour une seule inst
 manquait de cohérence et nous avons préféré faire un chargement partiel, ne gérant
 pas toutes les valeurs possibles.
 
+\paragraph{}
 Il s'est ensuite posé la question du choix valeurs à gérer. La réponse la plus immédiate
 est de charger les bits de poids faible seulement. Une autre solution aurait
 pu être de choisir des valeurs que l'on est plus susceptible d'utiliser pour l'horloge,
@@ -170,6 +172,7 @@ d'afficher ces valeurs en même temps. Nous avons donc utilisé une mémoire
 spécifique : 7 registres en écriture seule branchés à la sortie font office
 de mémoire graphique.
 
+\paragraph{}
 Ces registres ne peuvent cependant pas être modifiés simultanément, du fait de
 notre jeu d'instruction réduit et de l'absence de 7 mémoire lisible simultanément.
 Nous avons donc doublé la mémoire graphique afin de créer un système de \emph{double
@@ -177,6 +180,7 @@ buffering} : les modifications sont apportées à une mémoire tampon au fur et 
 du code et lorsque l'on appelle la commande FLIP, tous les registres d'affichage
 sont modifiés simultanément. La date/heure est ainsi affichée en une seule instruction.
 
+\paragraph{}
 Nous tenions à implémenter l'intégralité de la logique en netlist, c'est pourquoi
 la sortie de celle-ci est une suite de chiffre sous forme 7 segments, telle que l'on
 pourrait imaginer la brancher directement sur les segments de l'afficheur sans
