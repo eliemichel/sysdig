@@ -1,39 +1,41 @@
-*Met 10 dans r1 (pr sauter 10 instr + tard)
-li 0101      *L0    !ce li prend 10 instr
+* Met 10 dans r1 (pr sauter 10 instr + tard)
+li 1010      *L0    !ce li prend 10 instr
 mvar 01
 
-*Regarde ds la mem quelle était le val prec du quartz=q
-*en considérant qu'elle est à l'adr 1, met ds a1
-li 1       *L1
+*Regarde ds la mem quelle etait la val prec du quartz=q
+*en considerant qu'elle est a l'adr 111, met ds a1
+li 111       *L1
 mvar 00
 load 00
 
 *Teste si a1 = 0, saut si a1 = 1
 iio 01
 
-jfra 11    *Saute à 10 instr après (à L4)
+jfra 11    *Saute a 10 instr apres (a L4)
 
-*Met à jour la val stockée du q, à l'adr 1
-li 1
+*Met a jour la val stockee du q, a l'adr 111
+li 111
 mvar 00
 input 00
 save 00
 
-*Revient au début (L1), met 0 dans a0 et a1
+*Revient au debut (L1), met 0 dans a0 et a1
 li 0
 mvar 00
 mvra 01
 li 0 
-jaaa    *revient à L0 
+jaaa    *revient a L0 
+
+
 
 *2e partie
 
-*Si on arrive ici, c'est que le q est à 0
+*Si on arrive ici, c'est que le q est a 0
 *On charge 12 dans r1
-li 0011      *L4
+li 1100      *L4
 mvra 01
 
-*On veut voir si la nouvelle valeur est à 1
+*On veut voir si la nouvelle valeur est a 1
 input 00    *L2
 mvar 00
 mvra 01
@@ -41,348 +43,366 @@ li 1
 and
 iio 10
 
-*Sauté si q = 1, pas sauté sinon, et va 5 instr après
+*Saute si q = 1, pas saute sinon, et va 5 instr apres
 jfra 11
 
-*Si q = 0 encore, on va revenir à L2
+*Si q = 0 encore, on va revenir a L2
 li 10001
-jbra 00     *revient 17 instr avant, à L2
+jbra 00     *revient 17 instr avant, a L2
 
 *3e partie
-*Si on arrive là, c'est qu'on est passé de 0 à 1, on incrémente
+*Si on arrive la, c'est qu'on est passe de 0 a 1, on incremente
 
-* j m a1 a2 h mn s de 10 à 1000
+*valeur -- adresse
+*quartz 111
+*j 0
+*m 1
+*a1 10
+*a2 11
+*h 100
+*mn 101
+*s 110
 
-*s
 
 
-*Lit s dans r1
-li 0001         * adresse de s
+***** s  110
+
+	*Lit s dans r1
+li 110        *
 mvar 00
 load 00
 mvar 01
 
-*Comparer a0 et 59
-li 110111     *59  
-mvra 11
-sub
-*Met r0 -> r1
+	*Comparer a0 = s et 59
+li 111011     *59 dans a0
+mvra 11       *s  dans a1
+sub           *59-s dans r1
 mvra 10
 mvar 01
-*Charge 35 dans a0     *
-li 110001
-*Saute à L5 si r1 <> 0
-iio 11
+li 10001      *Charge 17
+iio 11        *Saute prochaine instr si s <> 59
 
-jbra 00
+jbra 00       *Saute a L5
 
-*Si on est là, c'est que s <> 59, on l'incrémente simplement
-li 0001         *
+	*Si on est la, s <> 59, on l'incremente simplement
+li 110        *
 mvar 00
 load 01
 li 1
 add
-mvra 01
-li 0001         *
+output 011    *Incremente dans la mem spec
+mvra 01       *Incremente dans la mem normale
+li 110        *
 mvar 00
 save 01
-*On retourne ensuite au tout début, L0
+	*On flip et retourne ensuite au tout debut, L0
 li 0
 mvar 00
 mvra 01
-li 0 * <-- adresse de L0
+li 0          * adresse de L0
+flip
 jaaa
 
-*Si on arrive là, s = 59, on met s = 0
-li 0001         *L5
+	*Si on arrive la, s = 59, on met s = 0
+li 110        *L5
 mvar 00
 li 0
 save 00
+output 110    *Mem spec
 
-*mn
 
-*Lit s dans r1
-li 111          *
+
+
+***** mn  101
+
+	*Lit mn dans r1
+li 101        *
 mvar 00
 load 00
 mvar 01
 
-*Comparer a0 et 59
-li 110111     *59  
-mvra 11
-sub
-*Met r0 -> r1
+	*Comparer a0 = mn et 59
+li 111011     *59 dans a0
+mvra 11       *mn dans a1
+sub           *59-mn dans r1
 mvra 10
 mvar 01
-*Charge 15 dans a0     *
-li 1111
-*Saute à L6 si r1 <> 0
-iio 11
+li 10001      *Charge 17
+iio 11        *Saute prochaine instr si s <> 59
 
-jbra 00
+jbra 00       *Saute a L5
 
-*Si on est là, c'est que mn <> 59, on l'incrémente simplement
-li 111         *
+	*Si on est la, mn <> 59, on l'incremente simplement
+li 101        *
 mvar 00
 load 01
 li 1
 add
-mvra 01
-li 111         *
+output 011    *Incremente dans la mem spec
+mvra 01       *Incremente dans la mem normale
+li 101        *
 mvar 00
 save 01
-*On retourne ensuite au tout début, L0
+	*On flip et retourne ensuite au tout debut, L0
 li 0
 mvar 00
 mvra 01
-li 0 * <-- adresse de L0
+li 0          * adresse de L0
+flip
 jaaa
 
-*Si on arrive là, mn = 59, on met mn = 0
-li 111         *L6
+	*Si on arrive la, mn = 59, on met mn = 0
+li 101        *L5
 mvar 00
 li 0
 save 00
+output 101    *Mem spec
 
-*h
 
-*Lit h dans r1
-li 011          *
+
+
+***** h   100
+
+	*Lit s dans r1
+li 100        *
 mvar 00
 load 00
 mvar 01
 
-*Comparer a0 et 23
-li 11101     *23  
-mvra 11
-sub
-*Met r0 -> r1
+	*Comparer a0 = h et 23
+li 11101      *23 dans a0
+mvra 11       *h  dans a1
+sub           *23-h dans r1
 mvra 10
 mvar 01
-*Charge 15 dans a0     *
-li 1111
-*Saute si r1 <> 0
-iio 11
+li 10001      *Charge 17
+iio 11        *Saute prochaine instr si h <> 23
 
-jbra 00
+jbra 00       *Saute a L5
 
-*Si on est là, c'est que h <> 23, on l'incrémente simplement
-li 011         *
+	*Si on est la, h <> 23, on l'incremente simplement
+li 100        *
 mvar 00
 load 01
 li 1
 add
-mvra 01
-li 011         *
+output 110    *Incremente dans la mem spec
+mvra 01       *Incremente dans la mem normale
+li 001        *
 mvar 00
 save 01
-*On retourne ensuite au tout début, L0
+	*On flip et retourne ensuite au tout debut, L0
 li 0
 mvar 00
 mvra 01
-li 0 * <-- adresse de L0
+li 0          * adresse de L0
+flip
 jaaa
 
-*Si on arrive là, h = 23, on met h = 0
-li 011         *
+	*Si on arrive la, h = 23, on met h = 0
+li 100        *L5
 mvar 00
 li 0
 save 00
+output 100    *Mem spec
 
-*j
 
-*Lit j dans r1
-li 01          *
+
+***** j 0
+
+	*Lit j dans r1
+li 0          *
 mvar 00
 load 00
 mvar 01
 
-*Comparer a0 et 30
-li 01111     *30  
-mvra 11
-sub
-*Met r0 -> r1
+	*Comparer a0 = j et 30
+li 11110      *30 dans a0
+mvra 11       *j  dans a1
+sub           *30-j dans r1
 mvra 10
 mvar 01
-*Charge 15 dans a0     *
-li 1111
-*Saute si r1 <> 0
-iio 11
+li 10001      *Charge 17
+iio 11        *Saute prochaine instr si j <> 30
 
-jbra 00
+jbra 00       *Saute a L5
 
-*Si on est là, c'est que j <> 30, on l'incrémente simplement
-li 01         *
+	*Si on est la, j <> 30, on l'incremente simplement
+li 100        *
 mvar 00
 load 01
 li 1
 add
-mvra 01
-li 01         *
+output 110    *Incremente dans la mem spec
+mvra 01       *Incremente dans la mem normale
+li 100        *
 mvar 00
 save 01
-*On retourne ensuite au tout début, L0
+	*On flip et retourne ensuite au tout debut, L0
 li 0
 mvar 00
 mvra 01
-li 0 * <-- adresse de L0
+li 0          * adresse de L0
+flip
 jaaa
 
-*Si on arrive là, j = 30, on met j = 0
-li 01         *
+	*Si on arrive la, j = 30, on met j = 1
+li 100        *L5
 mvar 00
-li 0
+li 1
 save 00
+output 100    *Mem spec
 
-*m
 
-*Lit m dans r1
-li 11          *
+
+***** m 1
+
+	*Lit m dans r1
+li 1          *
 mvar 00
 load 00
 mvar 01
 
-*Comparer a0 et 12
-li 00111     *12  
-mvra 11
-sub
-*Met r0 -> r1
+	*Comparer a0 = m et 12
+li 1100       *12 dans a0
+mvra 11       *m  dans a1
+sub           *12-m dans r1
 mvra 10
 mvar 01
-*Charge 15 dans a0     *
-li 1111
-*Saute si r1 <> 0
-iio 11
+li 10001      *Charge 17
+iio 11        *Saute prochaine instr si m <> 12
 
-jbra 00
+jbra 00       *Saute a L5
 
-*Si on est là, c'est que m <> 12, on l'incrémente simplement
+	*Si on est la, m <> 12, on l'incremente simplement
+li 1          *
+mvar 00
+load 01
+li 1
+add
+output 1      *Incremente dans la mem spec
+mvra 01       *Incremente dans la mem normale
+li 1          *
+mvar 00
+save 01
+	*On flip et retourne ensuite au tout debut, L0
+li 0
+mvar 00
+mvra 01
+li 0          * adresse de L0
+flip
+jaaa
+
+	*Si on arrive la, m = 12, on met m = 1
+li 1          *L5
+mvar 00
+li 1
+save 00
+output 1      *Mem spec
+
+
+
+***** an2  11
+
+	*Lit an2 dans r1
 li 11         *
 mvar 00
-load 01
-li 1
-add
-mvra 01
-li 11         *
-mvar 00
-save 01
-*On retourne ensuite au tout début, L0
-li 0
-mvar 00
-mvra 01
-li 0 * <-- adresse de L0
-jaaa
-
-*Si on arrive là, m = 12, on met m = 0
-li 11         *
-mvar 00
-li 0
-save 00
-
-
-
-*an2
-
-*Lit an2 dans r1
-li 101          *
-mvar 00
 load 00
 mvar 01
 
-
-
-*Comparer a0 et 99
-*Charger 99 :
+	*Comparer a0 = an2 et 99
+	*Charger 99 (dans a0) :
 li 1
 mvar 00
 mvra 01
 li 110011
 shift
-add * on a déjà 1 dans a1 (hasard)
+add           * on a deja 1 dans a1 (hasard)
 mvra 00
 
-mvra 11
-sub
-*Met r0 -> r1
+mvra 11       *an2 dans a1
+sub           *99-an2 dans r1
 mvra 10
 mvar 01
-*Charge 15 dans a0     *
-li 1111
-*Saute si r1 <> 0
-iio 11
+li 10001      *Charge 17
+iio 11        *Saute prochaine instr si an2 <> 99
 
-jbra 00
+jbra 00       *Saute a L5
 
-*Si on est là, c'est que an1 <> 99, on l'incrémente simplement
-li 101         *
+	*Si on est la, an2 <> 99, on l'incremente simplement
+li 11         *
 mvar 00
 load 01
 li 1
 add
-mvra 01
-li 101         *
+output 1      *Incremente dans la mem spec
+mvra 01       *Incremente dans la mem normale
+li 11         *
 mvar 00
 save 01
-*On retourne ensuite au tout début, L0
+	*On flip et retourne ensuite au tout debut, L0
 li 0
 mvar 00
 mvra 01
-li 0 * <-- adresse de L0
+li 0          * adresse de L0
+flip
 jaaa
 
-*Si on arrive là, an1 = 99, on met an1 = 0
-li 101         *
+	*Si on arrive la, an2 = 99, on met an2 = 0
+li 11         *L5
 mvar 00
 li 0
 save 00
+output 11     *Mem spec
 
-*an1
 
-*Lit an1 dans r1
-li 001          *
+
+
+***** an1 10
+
+	*Lit an1 dans r1
+li 10         *
 mvar 00
 load 00
 mvar 01
 
-*Comparer a0 et 99
-*Charger 99 :
+	*Comparer a0 = an1 et 99
+	*Charger 99 (dans a0) :
 li 1
 mvar 00
 mvra 01
 li 110011
 shift
-add * on a déjà 1 dans a1 (hasard)
+add           * on a deja 1 dans a1 (hasard)
 mvra 00
 
-mvra 11
-sub
-*Met r0 -> r1
+mvra 11       *an2 dans a1
+sub           *99-an2 dans r1
 mvra 10
 mvar 01
-*Charge 15 dans a0     *
-li 1111
-*Saute si r1 <> 0
-iio 11
+li 10001      *Charge 17
+iio 11        *Saute prochaine instr si an1 <> 99
 
-jbra 00
+jbra 00       *Saute a L5
 
-*Si on est là, c'est que an1 <> 99, on l'incrémente simplement
-li 001         *
+	*Si on est la, an1 <> 99, on l'incremente simplement
+li 10         *
 mvar 00
 load 01
 li 1
 add
-mvra 01
-li 001         *
+output 1      *Incremente dans la mem spec
+mvra 01       *Incremente dans la mem normale
+li 10         *
 mvar 00
 save 01
-*On retourne ensuite au tout début, L0
+	*On flip et retourne ensuite au tout debut, L0
 li 0
 mvar 00
 mvra 01
-li 0 * <-- adresse de L0
-jaaa
+li 0          * adresse de L0
+flip
 
-*Si on arrive là, an1 = 99, on est dans la merde
+	*Si on arrive la, an1 = 99, on est dans la mierdasse
 
 end
