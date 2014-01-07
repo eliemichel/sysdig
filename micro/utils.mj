@@ -1,11 +1,15 @@
 (******************************************************************************)
 (* empty                                                                      *)
+(* empty<n>() = (o:[n]) where                                                 *)
+(*   if n=0 then o=[] else o=0.empty<n-1>() end if                            *)
+(* end where                                                                  *)
 empty<n>() = (o:[n]) where
-  if n = 0 then
-    o = []
-  else
-    o = 0 . empty<n-1>()
-  end if
+  if n=0 then o = [] else if n=1 then o = 0 else if n=2 then o = 0.0 else
+    if n=3 then o = 0.0.0 else if n=4 then o = 0.0.0.0 else if n=5 then
+      o = 0.0.0.0.0 else if n=6 then o = 0.0.0.0.0.0 else if n=7 then
+	o = 0.0.0.0.0.0.0 else if n=8 then o = 0.0.0.0.0.0.0.0 else
+	  o = 0 . empty<n-1>() end if end if end if end if end if end if
+	end if end if end if
 end where
 
 
