@@ -1,0 +1,61 @@
+011011 # Li 3 in a0
+001110 # Output a0 to s
+001111 # Flip
+100100 # a0 -> r0
+100001 # r0 -> a1
+011111 # Li 7 in a0
+001101 # Output a0 to min
+001111 # Flip
+010010 # Add a0 a1
+100000 # r0 -> a0
+001100 # Output a0 to h
+001111 # Flip
+111111
+
+
+# load 80 in *29
+# 80 = 4 * 4 * 5
+011100 # Li 4 in a0
+100100 # a0 -> r0
+100001 # r0 -> a1
+010010 # Mult a0 a1
+100001 # r0 -> a1
+011101 # Li 5 in a0
+010010 # Mult a0 a1
+# --- 80 est dans r0
+011001 # Li 1 in a0
+100101 # a0 -> r1
+100000 # r0 -> a0
+##(
+001001 # Output a0 to m
+001111 # Flip
+##)
+101110 # Save a0 in *r1
+101010 # Load a0 from *r1
+##(
+001000 # Output a0 to j
+001111 # Flip
+##)
+# --- 80 est dans *1
+# 29 = 5 * 5 + 4
+100100 # a0 -> r0
+100001 # r0 -> a1
+010010 # Mult a0 a1
+100001 # r0 -> a1
+011100 # Li 4 in a0
+010000 # Add a0 a1
+# --- 29 est dans r0
+011001 # Li 1 in a0
+100101 # a0 -> r1
+101010 # Load a0 from *r1
+101100 # Save a0 in *r0
+# C'est bon !
+011000 # Li 0 in a0
+# Puis on vérifie
+101000 # Load a0 from *r0
+001110 # Output a0 to s
+001111 # Flip
+111111 # End
+
+
+
