@@ -191,7 +191,8 @@ d'être envoyées sur la sortie.
 
 \section{Architecture détaillée}
 
-\paragraph{Le jeu d'instructions}~
+\subsection{Le jeu d'instructions}
+
 \begin{savenotes}
 \begin{longtable}{|c|l|l|}
   
@@ -202,7 +203,6 @@ d'être envoyées sur la sortie.
   Code & Nom & Description \\
   \hline\hline
   \endhead
-
 
   \hline\hline
   00 ** ** & \multicolumn{2}{|l|}{SYS} \\
@@ -232,7 +232,6 @@ d'être envoyées sur la sortie.
   
   \hline\hline
   10 ** ** & \multicolumn{2}{|l|}{MEM} \\
-  \hline
   \hline
   10 0* ** & \multicolumn{2}{|l|}{entre registres} \\
   \hline
@@ -274,7 +273,8 @@ On ne pouvait leur donner de rôle sans aboutir à un jeu d'instruction complèt
 incohérent. Elles pouront cependant s'avérer utiles si on ajoute d'autres entrées
 au circuit : des entrées permettant le contrôle de l'horloge.
 
-\paragraph{Interactions entre les différentes unités}~\\
+\subsection{Interactions entre les différentes unités}
+
 On envoit à chaque unité son code opération (les quatre bits qui ne servent pas
 à définir l'unité), et elle exécute cette opération. L'ALU par exemple, envoit
 les valeurs \$a0 et \$a1 à chaque opérations, et reçoit tous les \$r0 et \$r1
