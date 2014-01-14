@@ -2,6 +2,17 @@ open Netlist_ast
 
 exception Exit
 
+
+let oldTime = ref (Unix.gettimeofday ())
+let curTime = ref (Unix.gettimeofday ())
+let debug_time m =
+	oldTime := !curTime;
+	curTime := Unix.gettimeofday ();
+	let delta = !curTime -. !oldTime in
+		Format.eprintf "[time]%f (%s)@." delta m
+
+
+
 let default_rom_file = "rom.sim"
 let schedule_only = ref false
 let sim_only = ref false

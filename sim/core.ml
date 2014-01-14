@@ -1,5 +1,24 @@
 open Netlist_ast
 
+
+
+let eval_exp = ref 0.
+let appel_rec = ref 0.
+let env_add = ref 0.
+
+let oldTime = ref (Unix.gettimeofday ())
+let curTime = ref (Unix.gettimeofday ())
+let debug_delta () =
+	oldTime := !curTime;
+	curTime := Unix.gettimeofday ();
+	!curTime -. !oldTime
+
+let debug_time m =
+	Format.eprintf "[time]%f (%s)@." (debug_delta ()) m
+
+
+
+
 exception Sim_error of string
 let ramUp = ref []
 
@@ -231,13 +250,17 @@ let tic oldEnv ram rom p =
 		| []                -> env
 		| (ident, exp) :: q ->
 			let eval = (
-				try evalExp env oldValue ram rom ident exp
+				try
+					appel_rec := !appel_rec +. debug_delta ();
+					evalExp env oldValue ram rom ident exp
 				with Sim_error s -> raise (
 					Sim_error
 					(s ^ " (in definition of " ^ ident ^ ")")
 					)
 			) in
+			eval_exp := !eval_exp +. debug_delta ();
 			let env' = Env.add ident eval env in
+				env_add := !env_add +. debug_delta ();
 				applyEq env' q
 	in
 	
@@ -246,7 +269,15 @@ let tic oldEnv ram rom p =
 		| o :: q -> (Env.find o env) :: (getOutput env q)
 	in
 	
-	let env = applyEq (addInput p p.p_inputs) p.p_eqs in (
+	let inputs = addInput p p.p_inputs in
+	debug_time "-- autre --";
+	eval_exp := 0.;
+	appel_rec := 0.;
+	env_add := 0.;
+	let env = applyEq inputs p.p_eqs in (
+		Format.eprintf "%f (eval_exp)@." !eval_exp;
+		Format.eprintf "%f (appel_rec)@." !appel_rec;
+		Format.eprintf "%f (env_add)@." !env_add;
 		updateRam env;
 		env, getOutput env p.p_outputs
 		)
