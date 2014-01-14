@@ -10,7 +10,7 @@
 \usepackage[top=2cm, bottom=2.5cm, left=1.5cm, right=1.5cm]{geometry}
 
 \title{Système Digital\\Rapport court microprossesseur}
-\author{Elie Michel, Louis Garigue, Nicolas Jeannerod et Aurélien Delobelle}
+\author{Elie Michel, Louis Garrigue, Nicolas Jeannerod et Aurélien Delobelle}
 \date{7 janvier 2013}
 
 \begin{document}
@@ -19,19 +19,18 @@
 
 \section{Introduction}
 
-\paragraph{}
 Nous avons commencé par nous baser sur le fonctionnement des microprocesseurs
 MIPS étant donné que c'était la seule architecture que nous connaissions.
 Nous avons cependant tenu à faire quelque chose de différent.
 
-\paragraph{Ligne de conduite}
+\subsection{Ligne de conduite}
 Notre premier choix important a été de décider que chaque fonction du
 microprocesseur prendrait ses arguments dans les mêmes registres prévus à cet effet
 (à savoir les \$a*), et renverrait ses résultats dans les registres prévus à
 cet effet (les \$r*), à l'instar des appels système de MIPS qui regardent
 toujours \$v0 et \$a0.
 
-\paragraph{Densité}
+\subsection{Densité}
 Ce choix nous a dirigé vers un objectif de densité. Nous avons alors constaté
 qu'il était possible de ne conserver que 4 registres
 \footnote{\$a0, \$a1, \$r0, \$r1}, réduisant par là énormément le nombre
@@ -47,7 +46,7 @@ codées sur 6 bits.
 
 \section{Architecture générale}
 
-\paragraph{Taille des valeurs}
+\subsection{Taille des valeurs}
 Le choix de la taille en bit des valeurs manipulées par le microprocesseur est
 un choix important et l'un des premiers que l'on ait fait. Il nous fallait trouver
 un compromis entre petite taille et maniabilité.
@@ -62,6 +61,7 @@ Ce choix a par la même occasion déterminé le nombre de cases mémoire puisque
 utilisons un registre pour choisir l'adresse. Une RAM de 256 adresses est largement
 suffisante pour programmer une horloge.
 
+\paragraph{Dans la ROM}
 Il n'était par contre pas possible de se limiter à des programmes de 256 instructions
 seulement, d'autant plus que notre jeu d'instructions extrêmement bas niveau nous
 oblige à produire de longs programmes. Le curseur d'instructions est donc représenté
@@ -71,7 +71,7 @@ entre la taille des mots machine et celle du curseur d'instructions nous a contr
 possible de spécifier des tailles absolues dans des cas où c'est nécessaire en
 utilisant deux registres.
 
-\paragraph{Séparation en unités}
+\subsection{Séparation en unités}
 Nous avons séparé les instructions en 4 unités en fonction de leurs
 deux premiers bits en langage machine :
 \begin{itemize}
@@ -101,12 +101,15 @@ par unité, ce qui a amené quelques choix discutables :
     END (termine le programme)
 \end{itemize}
 
-\paragraph{Notes sur le load immediat}
+\subsection{Notes détaillés de certaines instructions}
+
+\subsubsection{Notes sur le load immediat}
 Le LI est une instruction qui nous a posé problème car elle est contradictoire
 avec la petite taille de nos instructions. En effet, l'instruction doit contenir
 la valeur que l'on veut charger, ce qui n'est pas possible avec des instructions
 plus petites que les mots machine.
 
+\paragraph{}
 Une première idée fut d'interpréter l'instruction suivante non pas comme une
 instruction mais comme une valeur. En utilisant les 2 derniers bits de l'instruction
 LI puis les 6 bits de l'instruction suivante, on pouvait charger toute valeur.
@@ -116,6 +119,7 @@ et complexifiait le processeur. Gérer des tailles variables pour une seule inst
 manquait de cohérence et nous avons préféré faire un chargement partiel, ne gérant
 pas toutes les valeurs possibles.
 
+\paragraph{}
 Il s'est ensuite posé la question du choix valeurs à gérer. La réponse la plus immédiate
 est de charger les bits de poids faible seulement. Une autre solution aurait
 pu être de choisir des valeurs que l'on est plus susceptible d'utiliser pour l'horloge,
@@ -127,7 +131,7 @@ pouvait aller que jusqu'à 11 (ou 13 sans 0), ce qui ne permet pas de décompose
 tout nombre représenté sur 8 bits. Finalement, nous avons donc conservé la première
 solution.
 
-\paragraph{Notes sur le shift}
+\subsubsection{Notes sur le shift}
 Une autre instruction à laquelle notre choix de densité a donné un comportement
 particulier est le shift. On ne choisi pas à l'appel de cette fonction le sens dans
 lequel se fait le décalage et pour cause, il se fait toujours vers les poids forts.
@@ -135,7 +139,7 @@ Si on veut faire un décalage de $n$ vers les poids faibles, il suffit en fait d
 faire un décalage de $8 - n$ puis de regarder les poids forts du résultat seulement
 (c'est-à-dire le registre \$r1).
 
-\paragraph{Note sur les sauts conditionnels}
+\subsubsection{Notes sur les sauts conditionnels}
 La densité joue également un rôle dans le fonctionnement des sauts conditionnels.
 Plutôt que de faire une instruction \emph{branch if equal zero} prenant en argument
 à la fois une adresse et un registre à tester, on ne regarde qu'un registre et on
@@ -160,7 +164,7 @@ Il est à noter que ce comportement peut être simulé en enregistrant dans une 
 mémoire facilement accessible (entre 0 et 7, pour qu'un LI suffise à charger son
 adresse) une valeur élevée dès le début du programme, on peut émuler cette fonctionnalité.
 
-\paragraph{Stockage de la date/heure}
+\subsubsection{Stockage de la date/heure}
 Nous imaginions d'abord réserver des adresses particulières de la RAM pour
 stocker les valeurs de la date/heure. Le problème de cette méthode est que l'on
 ne peut faire qu'un seul accès simultané à la RAM et il n'était donc pas possible
@@ -168,6 +172,7 @@ d'afficher ces valeurs en même temps. Nous avons donc utilisé une mémoire
 spécifique : 7 registres en écriture seule branchés à la sortie font office
 de mémoire graphique.
 
+\paragraph{}
 Ces registres ne peuvent cependant pas être modifiés simultanément, du fait de
 notre jeu d'instruction réduit et de l'absence de 7 mémoire lisible simultanément.
 Nous avons donc doublé la mémoire graphique afin de créer un système de \emph{double
@@ -175,6 +180,7 @@ buffering} : les modifications sont apportées à une mémoire tampon au fur et 
 du code et lorsque l'on appelle la commande FLIP, tous les registres d'affichage
 sont modifiés simultanément. La date/heure est ainsi affichée en une seule instruction.
 
+\paragraph{}
 Nous tenions à implémenter l'intégralité de la logique en netlist, c'est pourquoi
 la sortie de celle-ci est une suite de chiffre sous forme 7 segments, telle que l'on
 pourrait imaginer la brancher directement sur les segments de l'afficheur sans
@@ -185,7 +191,8 @@ d'être envoyées sur la sortie.
 
 \section{Architecture détaillée}
 
-\paragraph{Le jeu d'instructions}~
+\subsection{Le jeu d'instructions}
+
 \begin{savenotes}
 \begin{longtable}{|c|l|l|}
   
@@ -196,7 +203,6 @@ d'être envoyées sur la sortie.
   Code & Nom & Description \\
   \hline\hline
   \endhead
-
 
   \hline\hline
   00 ** ** & \multicolumn{2}{|l|}{SYS} \\
@@ -226,7 +232,6 @@ d'être envoyées sur la sortie.
   
   \hline\hline
   10 ** ** & \multicolumn{2}{|l|}{MEM} \\
-  \hline
   \hline
   10 0* ** & \multicolumn{2}{|l|}{entre registres} \\
   \hline
@@ -268,7 +273,8 @@ On ne pouvait leur donner de rôle sans aboutir à un jeu d'instruction complèt
 incohérent. Elles pouront cependant s'avérer utiles si on ajoute d'autres entrées
 au circuit : des entrées permettant le contrôle de l'horloge.
 
-\paragraph{Interactions entre les différentes unités}~\\
+\subsection{Interactions entre les différentes unités}
+
 On envoit à chaque unité son code opération (les quatre bits qui ne servent pas
 à définir l'unité), et elle exécute cette opération. L'ALU par exemple, envoit
 les valeurs \$a0 et \$a1 à chaque opérations, et reçoit tous les \$r0 et \$r1
