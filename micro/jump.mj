@@ -39,7 +39,7 @@ jump (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrS
 	absAddr = mux_n<instrAddrSize>(r0r . r1r, a0r . a1r, op3);
 	
 	instrAddr = makeJump(isJumping, isAbs, jumpSize, absAddr, addOrSub);
-	regAddr = mux_n<3>(1.0.0, 1.1.1, op0 and op1 and op2 and not(op3));
+	regAddr = mux_n<3>(1.0.0, 1.1.1, isJUMP and op0 and op1 and op2 and not(op3));
 end where
 
 
