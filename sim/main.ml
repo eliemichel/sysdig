@@ -80,7 +80,7 @@ let simulate filename =
 		    passée à 0, le simulateur s'arrête. *)
 		output o;
 		match o with
-			| (VBit b) :: q -> if not b then raise Exit
+			| (VBit b) :: q -> ()(*if not b then raise Exit*)
 			| o -> ()
 	in
 	
@@ -95,15 +95,15 @@ let simulate filename =
 			exit 0
 	else
 		Format.eprintf "Running simulation...@.";
-		let rec run env =
-			let new_env, o =
-				Core.tic env ram rom p
+		let rec run () =
+			let o =
+				Core.tic ram rom p
 			in (
 				check_power o;
-				run new_env
+				run ()
 				)
 		in
-		try run Env.empty
+		try run ()
 		with
 			| Exit -> (
 				Format.eprintf "Simulation done.@.";

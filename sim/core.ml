@@ -16,13 +16,12 @@ let debug_delta () =
 let debug_time m =
 	Format.eprintf "[time]%f (%s)@." (debug_delta ()) m
 
-
+let env = ref (Hashtbl.create 97)
+let oldEnv = ref (Hashtbl.create 97)
 
 
 exception Sim_error of string
 let ramUp = ref []
-
-
 
 let array_of_value = function
 	| VBit b      -> [|b|]
@@ -43,9 +42,9 @@ let string_of_ty = function
 	| TBit        -> "TBit"
 	| TBitArray n -> "TBitArray " ^ string_of_int n
 
-let evalArg env = function
+let evalArg = function
 	| Avar ident -> (
-		try Env.find ident env
+		try Hashtbl.find !env ident
 		with Not_found ->
 			raise (Sim_error ("Unknown identifier : " ^ ident))
 		)
@@ -83,8 +82,8 @@ let getWord mem addr wordSize =
 			with Not_found -> VBit false
 		)
 
-let setWord env mem wa wordSize data =
-	let data = fixSize wordSize (evalArg env data) in
+let setWord mem wa wordSize data =
+	let data = fixSize wordSize (evalArg data) in
 		Hashtbl.replace mem wa data
 
 let getAddr addrSize addr =
@@ -124,11 +123,9 @@ let rec getRamTable ram ident =
 		getRamTable ram ident
 		)
 
-let evalExp env oldValue ram rom ident =
-	(** evalExp [env] [oldValue] [ram] [rom] [ident] [exp] evaluates [exp] with
+let evalExp oldValue ram rom ident = function
+	(** evalExp [oldValue] [ram] [rom] [ident] [exp] evaluates [exp] with
 	the values bounded in [env], [rom], [ram] *)
-	let evalArg = evalArg env in
-	function
 	| Earg arg   -> evalArg arg
 	| Ereg ident -> oldValue ident
 	| Enot arg   -> (match evalArg arg with
@@ -189,8 +186,8 @@ let addInput p vars =
 			aux_array next a (k + 1)
 		)
 	in
-	let rec aux next env = function
-		| [] -> env
+	let rec aux next = function
+		| [] -> ()
 		| var :: q ->
 			let value = match Env.find var p.p_vars with
 				| TBit        -> VBit (next ())
@@ -200,8 +197,8 @@ let addInput p vars =
 						VBitArray a
 					)
 			in
-			let env' =  Env.add var value env in
-				aux next env' q
+			Hashtbl.replace !env var value;
+			aux next q
 	in
 	let next =
 		let l = var_list_length p vars in
@@ -214,11 +211,10 @@ let addInput p vars =
 			else raise (Sim_error ("End of pipe (" ^ (string_of_int n) ^ ")"))
 		in fun () -> let c = input.[!cur] in incr cur ; c = '1'
 	in
-		aux next Env.empty vars
+		aux next vars
 
-let tic oldEnv ram rom p =
-	(** tic [in_stream] [oldEnv] [ram] [rom] [p] computes the programm p with
-	input stream [in_stream], the environnement [oldEnv] (for registers) and the
+let tic ram rom p =
+	(** tic [ram] [rom] [p] computes the programm [p] with the
 	hash tables [ram] and [rom] containing RAM and ROM values and then returns
 	the output vector. *)
 	
@@ -236,50 +232,43 @@ let tic oldEnv ram rom p =
 	
 	
 	let oldValue ident =
-		try Env.find ident oldEnv
+		try Hashtbl.find !oldEnv ident
 		with Not_found -> evalDefault ident
 	in
 	
-	let updateRam env =
+	let updateRam =
 		List.iter
-			(fun (ramTable, wa, ws, d) -> setWord env ramTable wa ws d)
+			(fun (ramTable, wa, ws, d) -> setWord ramTable wa ws d)
 			!ramUp
 	in
 	
-	let rec applyEq env = function
-		| []                -> env
+	let rec applyEq = function
+		| []                -> ()
 		| (ident, exp) :: q ->
 			let eval = (
 				try
-					appel_rec := !appel_rec +. debug_delta ();
-					evalExp env oldValue ram rom ident exp
+					evalExp oldValue ram rom ident exp
 				with Sim_error s -> raise (
 					Sim_error
 					(s ^ " (in definition of " ^ ident ^ ")")
 					)
 			) in
-			eval_exp := !eval_exp +. debug_delta ();
-			let env' = Env.add ident eval env in
-				env_add := !env_add +. debug_delta ();
-				applyEq env' q
+			Hashtbl.replace !env ident eval;
+			applyEq q
 	in
 	
-	let rec getOutput env = function
+	let rec getOutput = function
 		| []     -> []
-		| o :: q -> (Env.find o env) :: (getOutput env q)
+		| o :: q -> (Hashtbl.find !env o) :: (getOutput q)
 	in
 	
-	let inputs = addInput p p.p_inputs in
-	debug_time "-- autre --";
-	eval_exp := 0.;
-	appel_rec := 0.;
-	env_add := 0.;
-	let env = applyEq inputs p.p_eqs in (
-		Format.eprintf "%f (eval_exp)@." !eval_exp;
-		Format.eprintf "%f (appel_rec)@." !appel_rec;
-		Format.eprintf "%f (env_add)@." !env_add;
-		updateRam env;
-		env, getOutput env p.p_outputs
-		)
+	debug_time "--";
+	oldEnv := !env;
+	addInput p p.p_inputs;
+	debug_time "addInput";
+	applyEq p.p_eqs;
+	debug_time "applyEq";
+	updateRam;
+	getOutput p.p_outputs
 
 
