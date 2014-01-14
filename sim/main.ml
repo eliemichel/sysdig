@@ -80,7 +80,7 @@ let simulate filename =
 		    passée à 0, le simulateur s'arrête. *)
 		output o;
 		match o with
-			| (VBit b) :: q -> ()(*if not b then raise Exit*)
+			| (VBit b) :: q -> if not b then raise Exit
 			| o -> ()
 	in
 	

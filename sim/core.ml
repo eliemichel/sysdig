@@ -262,12 +262,9 @@ let tic ram rom p =
 		| o :: q -> (Hashtbl.find !env o) :: (getOutput q)
 	in
 	
-	debug_time "--";
 	oldEnv := !env;
 	addInput p p.p_inputs;
-	debug_time "addInput";
 	applyEq p.p_eqs;
-	debug_time "applyEq";
 	updateRam;
 	getOutput p.p_outputs
 
