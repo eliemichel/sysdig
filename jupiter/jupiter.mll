@@ -8,19 +8,18 @@ let print s =
 let print_li s =
   let n = String.length s in
   let str = 
-    if n >= 1 && n <= 3 then "011"^s^(String.make (3-n) '0')^" # li "^s^"\n"
+    if n >= 1 && n <= 3 then "011"^(String.make (3-n) '0')^s^" # li "^s^"\n"
     else if n >= 4 && n <= 6 then 
-      let p1 = (String.sub s 3 (n-3))^(String.make (6-n) '0') in
-      let p2 = (String.sub s 0 3) in
+      let p1 = (String.make (6-n) '0') ^ (String.sub s 0 (n-3)) in
+      let p2 = (String.sub s (n-3) 3) in
       "# li " ^ s ^"\n"^
-	"011110 # li 3 \n"^ (* li 3 *)
+	"011011 # li 3 \n"^ (* li 3 *)
 	"100100 # 2 pour move a0 -> a1 \n"^ (* move a0 -> a1 *)
 	"100001 \n"^
-	"011"^p1^" # 1er li \n"^ (* li *)
+	"011"^p1^" # 1er li : "^p1^"\n"^ (* li *)
 	"010111 # shift \n"^ (* shift *)
-	"100100 # 2 pour move a0 -> a1 \n"^ (* move a0 -> a1 *)
-	"100001 \n"^
-	"011"^p2^" # 2nd li \n"^
+	"100001 # move r0 -> a1 \n"^ (* move r0 -> a1 *)
+	"011"^p2^" # 2nd li : "^p2^" \n"^
 	"010000 # add \n"^ (* add *)
 	"100000 # move r0 -> a0 \n"^ (* move r0 -> a0 *)
 	"# end li \n"
@@ -32,11 +31,11 @@ let print_li s =
 let print_output s =
   let n = String.length s in
   let str =  
-    if n >= 1 && n <= 3 then "001"^s^(String.make (3-n) '0')
+    if n >= 1 && n <= 3 then "001"^(String.make (3-n) '0')^s
     else (Printf.printf "Problème ligne %d \n" !line ; 
 	  failwith "Mauvais format") 
   in
-  txt := !txt ^ str ^ "# output **\n"
+  txt := !txt ^ str ^ " # output " ^ s ^ "\n"
 
 let print_ij s ij com =
   txt := !txt ^ s ^ ij ^ " # " ^ com ^ " " ^ ij ^ "\n"
@@ -47,12 +46,13 @@ let print_com com =
 
 let space = [' ' '\t' '\r']
 let bit = ['0' '1']+
-let alpha = ['a'-'z' 'A'-'Z' '-' '<' '>' ''' '*' '+' '!' '?' ' ' '\t' '\r' '0'-'9' '(' ')' '=' ',' ';' ':']
+let alpha = ['a'-'z' 'A'-'Z' '-' '<' '>' ''' '*' '+' '!' '?' ' ' '\t' '\r' '0'-'9' '(' ')' '=' ',' ';' ':' '.']
+let mul = ('\n')+
 
 rule scan = parse
   | space { scan lexbuf }
-  | '\n' { incr line ; scan lexbuf }
-  | "*" { txt := !txt ^ "\n # " ; com lexbuf }
+  | mul { incr line ; scan lexbuf }
+  | "*" { txt := !txt ^ "# " ; com lexbuf }
   | "input" (space?) (bit as ij) { print_ij "0001" ij "input"; scan lexbuf }
   | "output" (space?) (bit as b) { print_output b ; scan lexbuf }
   | "flip" { print "001111 # flip \n" ; scan lexbuf }
@@ -82,7 +82,7 @@ rule scan = parse
 	exit 1 }
 
 and com = parse
-  | '\n' { txt := !txt ^ "\n" ; incr line ; scan lexbuf }
+  | mul { txt := !txt ^ "\n" ; incr line ; scan lexbuf }
   | eof { }
   | (alpha as a) { print_com a ; com lexbuf }
   | _ { Printf.printf "Problème ligne %d \n" !line ; 

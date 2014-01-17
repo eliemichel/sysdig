@@ -1,30 +1,31 @@
-* Met 10 dans r1 (pr sauter 10 instr + tard)
-li 1010      *L0    !ce li prend 10 instr
+* jaaa li(3 et 6) jfra jbra input output flip iio ecrase r0, pas r1, pas a1, pas a0
+
+	*Met 10 ds r1
+li 1010      *L0
 mvar 01
 
 *Regarde ds la mem quelle etait la val prec du quartz=q
 *en considerant qu'elle est a l'adr 111, met ds a1
 li 111       *L1
 mvar 00
-load 00
+load 01
 
-*Teste si a1 = 0, saut si a1 = 1
+li 0         *remet 0 dans r0 (il y avait 111). Pq marche pas qd ya pas ca ?!
+mvar 00
+
+li 110       *charge 6 dans a0, pour sauter (jfra 6)
+
+*Teste si a1 = 0, saut du jfra si a1 = 1
 iio 01
 
-jfra 11    *Saute a 10 instr apres (a L4)
+jfra 00      *Saute a 6 instr apres (a L4)
 
 *Met a jour la val stockee du q, a l'adr 111
 li 111
 mvar 00
 input 00
 save 00
-
-*Revient au debut (L1), met 0 dans a0 et a1
-li 0
-mvar 00
-mvra 01
-li 0 
-jaaa    *revient a L0 
+jbra 11      *revient a L1
 
 
 
@@ -32,6 +33,10 @@ jaaa    *revient a L0
 
 *Si on arrive ici, c'est que le q est a 0
 *On charge 12 dans r1
+li 11
+output 110
+flip
+
 li 1100      *L4
 mvra 01
 
@@ -68,6 +73,9 @@ jbra 00     *revient 17 instr avant, a L2
 ***** s  110
 
 	*Lit s dans r1
+li 100
+output 0
+flip
 li 110        *
 mvar 00
 load 00
