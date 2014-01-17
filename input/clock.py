@@ -14,7 +14,7 @@ while ellapsed < max_t :
 		stdout.write('0')
 """
 
-for i in range(50):
+for i in range(500):
 	stdout.write('1')
 for i in range(10):
 	stdout.write('0')

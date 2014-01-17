@@ -26,7 +26,7 @@ jump (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrS
 	op2 = op[2];
 	op3 = op[3];
 	
-	rr = mux4_n<wordSize>(a0r, a1r, r0r, r1r, op3, op2);
+	rr = mux4_n<wordSize>(a0r, a1r, r0r, r1r, op2, op3);
 	deux = 0.1 . empty<wordSize-2>();
 	jumpSize = mux_n<wordSize>(deux, rr, op0);
 	
