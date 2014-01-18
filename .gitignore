@@ -2,6 +2,8 @@
 # de backup et fichiers temporaires.
 *~
 
+sim/sim
+mjdep/mjdep
 
 
 # Mettez ensuite les fichiers qui ne doivent pas être gérés par git

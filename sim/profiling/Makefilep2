@@ -1,7 +1,7 @@
-CMX=debug.cmx netlist_ast.cmx netlist_parser.cmx netlist_lexer.cmx netlist.cmx \
-netlist_printer.cmx graph.cmx scheduler.cmx core.cmx sim_lexer.cmx main.cmx
+cmo=debug.cmo netlist_ast.cmo netlist_parser.cmo netlist_lexer.cmo netlist.cmo \
+netlist_printer.cmo graph.cmo scheduler.cmo core.cmo sim_lexer.cmo main.cmo
 GEN=netlist_parser.ml netlist_parser.mli netlist_lexer.ml sim_lexer.ml
-LIBS = unix.cmxa
+LIBS = unix.cma
 BIN=sim
 
 
@@ -15,18 +15,18 @@ all: $(BIN)
 	@echo "$(HIGHLIGHT_COLOR)  ./$(BIN) test/test.net$(NO_COLOR)"
 	@./$(BIN) test/test.net
 
-$(BIN): $(CMX)
+$(BIN): $(cmo)
 	@echo "Linking for $(BIN)..."
-	@ocamlopt -o $(BIN) $(LIBS) $(CMX)
+	@ocamlcp -o $(BIN) $(LIBS) $(cmo)
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
-.SUFFIXES: .mli .ml .cmi .cmx .mll .mly
+.SUFFIXES: .mli .ml .cmi .cmo .mll .mly
 
 .mli.cmi:
-	ocamlopt -c $<
+	ocamlcp -c $<
 
-.ml.cmx: 
-	ocamlopt -c $<
+.ml.cmo: 
+	ocamlcp -c $<
 
 .mll.ml:
 	ocamllex $<
@@ -41,7 +41,7 @@ $(BIN): $(CMX)
 
 clean:
 	@echo "Cleaning directory..."
-	@rm -v -f .depend *.cmi *.cmo *.o *.automaton *~ $(CMX) $(GEN)
+	@rm -v -f .depend *.cmi *.o *.automaton *~ $(cmo) $(GEN)
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
 .depend: $(GEN)
