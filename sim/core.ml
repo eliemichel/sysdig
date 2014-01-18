@@ -113,7 +113,7 @@ let ramHandler ram addrSize wordSize rAddr writeEnable wAddr data =
 	let wa = getAddr addrSize wAddr in
 		if bool_of_value writeEnable
 		then ramUp := (ram, wa, wordSize, data) :: !ramUp;
-			getWord ram ra wordSize
+		getWord ram ra wordSize
 
 
 let rec getRamTable ram ident =
@@ -236,7 +236,7 @@ let tic ram rom p =
 		with Not_found -> evalDefault ident
 	in
 	
-	let updateRam =
+	let updateRam () =
 		List.iter
 			(fun (ramTable, wa, ws, d) -> setWord ramTable wa ws d)
 			!ramUp
@@ -265,7 +265,7 @@ let tic ram rom p =
 	oldEnv := !env;
 	addInput p p.p_inputs;
 	applyEq p.p_eqs;
-	updateRam;
+	updateRam ();
 	getOutput p.p_outputs
 
 
