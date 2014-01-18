@@ -62,28 +62,12 @@ let evalBinop a b = match a, b with
 		"Binary operator can not be applied to a VBitArray"
 		)
 
-let fixSize ws d =
-	let d = match d with
-		| VBit b      -> [|b|]
-		| VBitArray a -> a
-	in
-	let diff = Array.length d - ws in
-	VBitArray (
-		if diff > 0
-		then Array.sub d diff ws (* On suppose les poids faibles à droite *)
-		else Array.append (Array.make (-diff) false) d
-	)
-
 let getWord mem addr wordSize =
-	fixSize
-		wordSize
-		(
-			try Hashtbl.find mem addr
-			with Not_found -> VBit false
-		)
+	try Hashtbl.find mem addr
+	with Not_found -> VBitArray (Array.make wordSize false)
 
 let setWord mem wa wordSize data =
-	let data = fixSize wordSize (evalArg data) in
+	let data = evalArg data in
 		Hashtbl.replace mem wa data
 
 let getAddr addrSize addr =

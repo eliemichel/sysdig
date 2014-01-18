@@ -5,12 +5,20 @@
 	let input = ref []
 	let current_array = ref []
 	let empty = ref true
+	let ws = ref (-1)
 	
 	let bool_of_char c = c = '1'
 	
 	let handleNewline () =
-		let line =
-			Netlist_ast.VBitArray (Array.of_list (List.rev !current_array))
+		let line = (* Correction de la taille *)
+			let d = Array.of_list (List.rev !current_array) in
+			if !ws = -1 then ws := Array.length d;
+			let diff = Array.length d - !ws in
+			Netlist_ast.VBitArray (
+				if diff > 0
+				then Array.sub d diff !ws (* On suppose les poids faibles à droite *)
+				else Array.append (Array.make (-diff) false) d
+			)
 		in
 		input := line :: !input;
 		current_array := [];
