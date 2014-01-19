@@ -4,6 +4,8 @@
 
 sim/sim
 mjdep/mjdep
+jupiter/jupiter
+jupiter/prog_clock.bin
 
 
 # Mettez ensuite les fichiers qui ne doivent pas être gérés par git
