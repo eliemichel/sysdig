@@ -29,7 +29,7 @@ registers (a0w:[wordSize], a1w:[wordSize], r0w:[wordSize], r1w:[wordSize], write
 end where
 
 
-main (input) = (power, output:[outputSize]) where
+main (input) = (power, os1:[7], os2:[7], omin1:[7], omin2:[7], oh1:[7], oh2:[7], oj1:[7], oj2:[7], om1:[7], om2:[7], oa1:[7], oa2:[7], oa3:[7], oa4:[7]) where
 	instr = rom<instrAddrSize, instrSize>(instrAddr);
 	unit0 = instr[0];
 	unit1 = instr[1];
@@ -38,7 +38,7 @@ main (input) = (power, output:[outputSize]) where
 	(a0r, a1r, r0r, r1r) = registers(a0, a1, r0, r1, regAddr);
 	
 	isSYS = not(unit0) and not(unit1);
-	(regAddrSys, output) = sys(a0r, op, input, isSYS);
+	(regAddrSys, os1, os2, omin1, omin2, oh1, oh2, oj1, oj2, om1, om2, oa1, oa2, oa3, oa4) = sys(a0r, op, input, isSYS);
 	
 	(*output = a0r . a1r . r0r . r1r;*)
 	

@@ -2,26 +2,28 @@
  (* From TD1 *)
  open Netlist_ast
 
- let bool_of_string s = match s with
-  | "t" | "1" -> true
-  | "f" | "0" -> false
+ let bit_of_string s = match s with
+  | "t" | "1" -> 1
+  | "f" | "0" -> 0
   | _ -> raise Parsing.Parse_error
 
- let bool_array_of_string s =
-   let a = Array.make (String.length s) false in
-   for i = 0 to String.length s - 1 do
-     a.(i) <- bool_of_string (String.sub s i 1)
+ let val_array_of_string s =
+   let n = String.length s - 1 in
+   let a = ref 0 in
+   for i = n downto 0 do
+     a := !a lsl 1;
+     a := !a lor (bit_of_string (String.sub s i 1))
    done;
-   a
+   !a, n + 1
 
  let value_of_const s =
    let n = String.length s in
    if n = 0 then
      raise Parsing.Parse_error
    else if n = 1 then
-     VBit (bool_of_string s)
+     bit_of_string s, 0
    else
-     VBitArray (bool_array_of_string s)
+     val_array_of_string s
 %}
 
 %token <string> CONST
@@ -70,8 +72,9 @@ arg:
 
 var: x=NAME ty=ty_exp { (x, ty) }
 ty_exp:
-  | /*empty*/ { TBit }
-  | COLON n=int { TBitArray n }
+  | /*empty*/ { 0 }
+  | COLON n=int { n }
 
 int:
   | c=CONST { int_of_string c }
+

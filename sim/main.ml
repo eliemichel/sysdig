@@ -62,13 +62,16 @@ let simulate filename =
 	
 	
 	let output o =
-		let aux b =
-			ignore (Unix.write Unix.stdout (if b then "1" else "0") 0 1)
+		let aux i =
+			ignore (Unix.write Unix.stdout (if i = 1 then "1" else "0") 0 1)
 		in
 		List.iter
-			(function
-				| VBit      b -> aux b
-				| VBitArray a -> Array.iter aux a
+			(fun (v, n) ->
+				let a = ref v in
+				for i = 0 to (max n 1) - 1 do
+					aux (!a mod 2);
+					a := !a lsr 1;
+				done
 			)
 			o;
 	in
@@ -80,7 +83,7 @@ let simulate filename =
 		    passée à 0, le simulateur s'arrête. *)
 		output o;
 		match o with
-			| (VBit b) :: q -> if not b then raise Exit
+			| (v, 0) :: q -> if v = 0 then raise Exit
 			| o -> ()
 	in
 	
@@ -94,6 +97,11 @@ let simulate filename =
 			Format.eprintf "Done.@.";
 			exit 0
 	else
+		Format.eprintf "Initializing simulation...@.";
+		let p = 
+			Init.init p
+		in
+		
 		Format.eprintf "Running simulation...@.";
 		let rec run () =
 			let o =

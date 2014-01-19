@@ -3,23 +3,23 @@
 	exception Sim_lexing_error of string
 	
 	let input = ref []
-	let a = ref 0
-	let n = ref 0
+	let current_array = ref []
 	let empty = ref true
 	let ws = ref (-1)
 	
-	let bool_of_char c = c = '1'
+	let bit_of_char c = if c = '1' then 1 else 0
 	
-	let int_rev v n =
-		v
-	
+	let int_of_list =
+		let rec aux a = function
+			| []     -> a
+			| t :: q -> aux ((a lsl 1) + t) q
+		in aux 0
 	
 	let handleNewline () =
-		if !ws = -1 then ws := !n;
-		a := int_rev !a n;
-		input := (!a, !ws) :: !input;
-		a := 0;
-		n := 0;
+		if !ws = -1 then ws := List.length !current_array;
+		let v = int_of_list !current_array in
+		input := (v, !ws) :: !input;
+		current_array := [];
 		empty := true
 }
 
@@ -36,8 +36,7 @@ rule token = parse
 		}
 	| value as v {
 		empty := false;
-		a := (!a lsl 1) lor int_of_char v;
-		incr n;
+		current_array := (bit_of_char v) :: !current_array;
 		token lexbuf
 		}
 	| '#'        { if not !empty then handleNewline () ; comment lexbuf }
@@ -60,8 +59,7 @@ and comment = parse
 				)
 		in
 			input := [];
-			a := 0;
-			n := 0;
+			current_array := [];
 			token (Lexing.from_channel ic);
 			List.rev !input
 	

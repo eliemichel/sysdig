@@ -40,3 +40,4 @@ rule token = parse
         try List.assoc s keyword_list
         with Not_found -> NAME id }
   | eof            { EOF }
+

@@ -2,7 +2,7 @@
 (* #require(param utils gpu) *)
 
 sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
-		(regAddr:[3], output:[outputSize]) where
+		(regAddr:[3], os1:[7], os2:[7], omin1:[7], omin2:[7], oh1:[7], oh2:[7], oj1:[7], oj2:[7], om1:[7], om2:[7], oa1:[7], oa2:[7], oa3:[7], oa4:[7]) where
 	
 	op0 = op[0] and isSYS;
 	op1 = op[1];
@@ -45,7 +45,7 @@ sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
 	min = enableReg<wordSize>(bufmin, isFLIP);
 	s   = enableReg<wordSize>(bufs,   isFLIP);
 	
-	output = gpu(j, m, a0, a1, h, min, s);
+	(os1, os2, omin1, omin2, oh1, oh2, oj1, oj2, om1, om2, oa1, oa2, oa3, oa4) = gpu(j, m, a0, a1, h, min, s);
 end where
 
 

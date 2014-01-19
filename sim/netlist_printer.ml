@@ -21,8 +21,8 @@ let rec print_list print lp sep rp ff = function
       fprintf ff "%s" rp
 
 let print_ty ff ty = match ty with
-  | TBit -> ()
-  | TBitArray n -> fprintf ff " : %d" n
+  | 0 -> ()
+  | n -> fprintf ff " : %d" n
 
 let print_bool ff b =
   if b then
@@ -30,9 +30,12 @@ let print_bool ff b =
   else
     fprintf ff "0"
 
-let print_value ff v = match v with
-  | VBit b -> print_bool ff b
-  | VBitArray a -> Array.iter (print_bool ff) a
+let print_value ff (v, n) =
+  let a = ref v in
+  for i = 0 to (max n 1) - 1 do
+    print_bool ff (!a mod 2 = 1);
+    a := !a lsr 1
+  done
 
 let print_arg ff arg = match arg with
   | Aconst v -> print_value ff v
