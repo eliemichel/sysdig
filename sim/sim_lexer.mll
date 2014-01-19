@@ -3,25 +3,23 @@
 	exception Sim_lexing_error of string
 	
 	let input = ref []
-	let current_array = ref []
+	let a = ref 0
+	let n = ref 0
 	let empty = ref true
 	let ws = ref (-1)
 	
 	let bool_of_char c = c = '1'
 	
+	let int_rev v n =
+		v
+	
+	
 	let handleNewline () =
-		let line = (* Correction de la taille *)
-			let d = Array.of_list (List.rev !current_array) in
-			if !ws = -1 then ws := Array.length d;
-			let diff = Array.length d - !ws in
-			Netlist_ast.VBitArray (
-				if diff > 0
-				then Array.sub d diff !ws (* On suppose les poids faibles à droite *)
-				else Array.append (Array.make (-diff) false) d
-			)
-		in
-		input := line :: !input;
-		current_array := [];
+		if !ws = -1 then ws := !n;
+		a := int_rev !a n;
+		input := (!a, !ws) :: !input;
+		a := 0;
+		n := 0;
 		empty := true
 }
 
@@ -38,7 +36,8 @@ rule token = parse
 		}
 	| value as v {
 		empty := false;
-		current_array := (bool_of_char v) :: !current_array;
+		a := (!a lsl 1) lor int_of_char v;
+		incr n;
 		token lexbuf
 		}
 	| '#'        { if not !empty then handleNewline () ; comment lexbuf }
@@ -61,7 +60,8 @@ and comment = parse
 				)
 		in
 			input := [];
-			current_array := [];
+			a := 0;
+			n := 0;
 			token (Lexing.from_channel ic);
 			List.rev !input
 	
