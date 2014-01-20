@@ -1,4 +1,10 @@
-(* From TD1 *)
+(*
+ * Sysdig -- netlist.ml
+ * ====================
+ *
+ * This modules handles netlist loading, calling the lexer and parser.
+ *)
+
 exception Parse_error of string
 
 let find_file filename =

@@ -1,3 +1,13 @@
+(*
+ * Sysdig -- terminal_out.ml
+ * =========================
+ *
+ * This little program has been designed to test the piping from `sim`.
+ * It loops and convert 7-segments encoded information from the simulator before
+ * printing it.
+ * It can displays additionnal features such as the simulator frequency.
+ *)
+
 
 (* 11111100110011011000011011010110000111101111110111111001110110111110011111110101101101100001101101 *)
 

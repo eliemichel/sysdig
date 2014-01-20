@@ -1,4 +1,12 @@
-(* From TD1 *)
+(*
+ * Sysdig -- netlist_ast.ml
+ * ========================
+ *
+ * This file describes the types for both ASTs present in the simulator (one for
+ * the parser and one for simulation).
+ * Originaly given for the first TD.
+ *)
+
 type ident = string
 
 module Env = struct

@@ -1,3 +1,11 @@
+(*
+ * Sysdig -- graph.ml
+ * ==================
+ *
+ * This module provides a graph structure and manipulation functions.
+ * It is used by the scheduler.
+ *)
+
 exception Cycle
 type mark = NotVisited | InProgress | Visited
 
@@ -32,22 +40,6 @@ let find_roots g =
   List.filter (fun n -> n.n_linked_by = []) g.g_nodes
 
 
-(*
-let has_cycle g =
-	clear_marks g;
-	let rec aux n =
-		if n.n_mark = InProgress then raise Cycle
-		else 
-			n.n_mark <- InProgress;
-			List.iter aux n.n_link_to;
-			n.n_mark <- Visited;
-	in
-	try
-		List.iter aux (find_roots g);
-		false
-	with Cycle -> true
-*)
-
 let has_cycle g =
 	clear_marks g;
 	let rec aux = function
@@ -59,8 +51,6 @@ let has_cycle g =
 				(n.n_mark <- Visited ; aux q)
 			)
 	in not (aux g.g_nodes)
-
-
 
 
 let topological g =
@@ -80,24 +70,6 @@ let topological g =
 				in aux l' q
 		in aux [] g.g_nodes
 
-(*
-let topological g =
-	if has_cycle g then raise Cycle
-	else
-		clear_marks g;
-		let rec aux = function
-			| []   -> []
-			| n::q ->
-				if n.n_mark = Visited
-				then aux q
-				else (
-					n.n_mark <- Visited;
-					let dep = aux n.n_link_to in
-					dep @ (n.n_label :: aux q)
-				)
-		in aux g.g_nodes
-*)
-
 
 let print_graph g =
 	List.iter
@@ -107,6 +79,7 @@ let print_graph g =
 			print_string "\n"
 		)
 		g.g_nodes
+
 
 let print_graph2 g =
 	List.iter

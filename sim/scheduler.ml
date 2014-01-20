@@ -1,3 +1,11 @@
+(*
+ * Sysdig -- scheduler.ml
+ * ======================
+ *
+ * The scheduler aims to reorder the netlist according to net links dependencies
+ * and can detect if there are combinatory cycles.
+ *)
+
 open Netlist_ast
 open Graph
 exception Combinational_cycle

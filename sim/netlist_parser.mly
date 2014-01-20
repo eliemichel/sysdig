@@ -1,5 +1,12 @@
 %{
- (* From TD1 *)
+(*
+ * Sysdig -- netlist_parser.mly
+ * ============================
+ *
+ * This netlist parser mainly comes from the one given for the first TD.
+ * It has been modified to handle values with integers instead of bool arrays.
+ *)
+
  open Netlist_ast
 
  let bit_of_string s = match s with

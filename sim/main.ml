@@ -1,3 +1,10 @@
+(*
+ * Sysdig -- main.ml
+ * =================
+ *
+ * Sim main file : parse call arguments and launch `sim` parts.
+ *)
+
 open Netlist_ast
 
 exception Exit

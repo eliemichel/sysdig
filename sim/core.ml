@@ -1,3 +1,12 @@
+(*
+ * Sysdig -- core.ml
+ * =================
+ *
+ * This is the core simulation module.
+ * Its main function, `tic`, needs an initialized ROM/RAM and a scheduled
+ * integer-based program AST.
+ *)
+
 open Netlist_ast
 
 

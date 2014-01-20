@@ -1,4 +1,14 @@
 {
+(*
+ * Sysdig -- sim_lexer.mll
+ * =======================
+ *
+ * Although it has originaly been designed for input file lexing, this module
+ * is now dedicated to ROM loading since there is no more input file.
+ * In the ROM file, the first line determine the word size for the whole memory.
+ * Specify it carefully !
+ *)
+
 	exception EOF
 	exception Sim_lexing_error of string
 	

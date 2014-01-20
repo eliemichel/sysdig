@@ -1,4 +1,10 @@
-(* From TD1 *)
+(*
+ * Sysdig -- netlist_printer.ml
+ * ============================
+ *
+ * This module provides netlist pretty printing for scheduled netlist export.
+ *)
+
 open Netlist_ast
 open Format
 

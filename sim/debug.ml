@@ -1,6 +1,9 @@
 (*
-	Usual debug functions
-*)
+ * Sysdig -- debug.ml
+ * ==================
+ *
+ * Some debug utilities.
+ *)
 
 let print_array f a =
 	(** print_array [f] [a] displays the 'a array [a] with the string_of_'a

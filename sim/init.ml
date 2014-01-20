@@ -1,3 +1,12 @@
+(*
+ * Sysdig -- init.ml
+ * =================
+ *
+ * This module converts the AST comming from the parser into a more efficient
+ * to simulate one, in which nets are described by integers instead of strings.
+ * This enable the use of array to store simulated nets state.
+ *)
+
 open Netlist_ast
 open Bigarray
 

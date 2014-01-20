@@ -1,5 +1,11 @@
 {
- (* From TD1 *)
+(*
+ * Sysdig -- netlist_lexer.mll
+ * ===========================
+ *
+ * Netlist lexer, from TD 1
+ *)
+
 open Lexing
 open Netlist_parser
 exception Eof
