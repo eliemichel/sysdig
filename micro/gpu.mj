@@ -80,7 +80,7 @@ end where
 (* Précision pour 2012 par exemple : a01 = 20 et a02 = 12           *)
 (* Format j1 j2 / m1 m2 / a1 a2 a3 a4     h1 h2 : min1 min2 : s1 s2 *)
 gpu (j:[8], m:[8], a01:[8], a02:[8], h:[8], min:[8], s:[8]) =
-		(os1:[7], os2:[7], omin1:[7], omin2:[7], oh1:[7], oh2:[7], oj1:[7], oj2:[7], om1:[7], om2:[7], oa1:[7], oa2:[7], oa3:[7], oa4:[7]) where
+		(out1:[28], out2:[28], out3:[28], out4:[14]) where
 	
 	
 	(s2, s1) = div10<8>(s);
@@ -91,20 +91,27 @@ gpu (j:[8], m:[8], a01:[8], a02:[8], h:[8], min:[8], s:[8]) =
 	(a2, a1) = div10<8>(a01);
 	(a4, a3) = div10<8>(a02);
 	
-	os1   = seg(s1);
-	os2   = seg(s2);
-	omin1 = seg(min1);
-	omin2 = seg(min2);
-	oh1   = seg(h1);
-	oh2   = seg(h2);
-	oj1   = seg(j1);
-	oj2   = seg(j2);
-	om1   = seg(m1);
-	om2   = seg(m2);
-	oa1   = seg(a1);
-	oa2   = seg(a2);
-	oa3   = seg(a3);
-	oa4   = seg(a4);
+	out1
+	= seg(s1)
+	. seg(s2)
+	. seg(min1)
+	. seg(min2);
+	
+	out2
+	= seg(h1)
+	. seg(h2)
+	. seg(j1)
+	. seg(j2);
+	
+	out3
+	= seg(m1)
+	. seg(m2)
+	. seg(a1)
+	. seg(a2);
+	
+	out4
+	= seg(a3)
+	. seg(a4);
 end where
 
 

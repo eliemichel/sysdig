@@ -1,8 +1,8 @@
 
 (* #require(param utils gpu) *)
 
-sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
-		(regAddr:[3], os1:[7], os2:[7], omin1:[7], omin2:[7], oh1:[7], oh2:[7], oj1:[7], oj2:[7], om1:[7], om2:[7], oa1:[7], oa2:[7], oa3:[7], oa4:[7]) where
+sys (value:[wordSize], cr:[wordSize], op:[instrSize-2], input, isSYS) =
+		(cw:[wordSize], regAddr:[3], out1:[28], out2:[28], out3:[28], out4:[14]) where
 	
 	op0 = op[0] and isSYS;
 	op1 = op[1];
@@ -12,6 +12,11 @@ sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
 	nop1 = not(op1);
 	nop2 = not(op2);
 	nop3 = not(op3);
+	
+	incr_c = incr_n<wordSize>(cr);
+	(decr_c, t) = decr_n<wordSize>(cr);
+	new_c = mux_n<wordSize>(decr_c, incr_c, op3);
+	cw    = mux_n<wordSize>(new_c, cr, isSYS and nop0 and nop1 and op2);
 	
 	isINPUT = nop0 and op1;
 	regAddr = mux_n<3>(0.op2.op3, 1.1.1, isINPUT);
@@ -45,7 +50,7 @@ sys (value:[wordSize], op:[instrSize-2], input, isSYS) =
 	min = enableReg<wordSize>(bufmin, isFLIP);
 	s   = enableReg<wordSize>(bufs,   isFLIP);
 	
-	(os1, os2, omin1, omin2, oh1, oh2, oj1, oj2, om1, om2, oa1, oa2, oa3, oa4) = gpu(j, m, a0, a1, h, min, s);
+	(out1, out2, out3, out4) = gpu(j, m, a0, a1, h, min, s);
 end where
 
 
