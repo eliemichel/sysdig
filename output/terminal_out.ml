@@ -17,6 +17,21 @@ let int_of_7seg = function
 	| _ -> -1
 in
 
+let oldTime = ref (Unix.gettimeofday ()) in
+let curTime = ref (Unix.gettimeofday ()) in
+let average = ref 0. in
+let n = ref (-1) in (* évite la première valeur qui est absurde *)
+let fps () =
+		oldTime := !curTime;
+		curTime := Unix.gettimeofday ();
+		let f = 1. /. (!curTime -. !oldTime) in
+			if !n >= 0 then (
+				let nf = float_of_int !n in
+				average := (nf *. !average +. f) /. (nf +. 1.)
+			);
+			incr n;
+			int_of_float f
+in
 
 let s = ref "" in
 let buff = String.create 1 in
@@ -28,11 +43,11 @@ let buff = String.create 1 in
 				| n -> s := !s ^ buff
 		done;
 		let aux i = (int_of_7seg (String.sub !s (7 * i + 1) 7)) in
-		let byte i = String.sub !s (8 * i + 1) 8 in
+		(*let byte i = String.sub !s (8 * i + 1) 8 in*)
 			
-			Format.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d@?"
+			Format.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d       (%d Hz - %f Hz)@?"
 				(aux 7) (aux 6) (aux 9) (aux 8) (aux 11) (aux 10) (aux 13) (aux 12)
-				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0)
+				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0) (fps ()) !average
 			(*
 			Format.printf "%s %s %s %s@."
 				(byte 0) (byte 1) (byte 2) (byte 3)

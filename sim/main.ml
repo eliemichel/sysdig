@@ -3,16 +3,6 @@ open Netlist_ast
 exception Exit
 
 
-let oldTime = ref (Unix.gettimeofday ())
-let curTime = ref (Unix.gettimeofday ())
-let debug_time m =
-	oldTime := !curTime;
-	curTime := Unix.gettimeofday ();
-	let delta = !curTime -. !oldTime in
-		Format.eprintf "[time]%f (%s)@." delta m
-
-
-
 let default_rom_file = "rom.sim"
 let schedule_only = ref false
 let sim_only = ref false
@@ -20,7 +10,7 @@ let separateur = "\n"
 
 let rom_file = ref default_rom_file
 
-let (ram : (ident, (int, Netlist_ast.value) Hashtbl.t) Hashtbl.t) = Hashtbl.create 17
+let (ram : (int, (int, Netlist_ast.value) Hashtbl.t) Hashtbl.t) = Hashtbl.create 17
 let (rom : (int, Netlist_ast.value) Hashtbl.t) = Hashtbl.create 97
 
 let loadRom () =
@@ -36,6 +26,29 @@ let loadRom () =
 		Printf.eprintf "Warning: No ROM loaded: %s\n" s
 
 
+let output o =
+	let aux i =
+		ignore (Unix.write Unix.stdout (if i = 1 then "1" else "0") 0 1)
+	in
+	List.iter
+		(fun (v, n) ->
+			let a = ref v in
+			for i = 0 to (max n 1) - 1 do
+				aux (!a mod 2);
+				a := !a lsr 1;
+			done
+		)
+		o
+
+let check_power o =
+	(** Si la première sortie est un bit, elle est utilisée pour indiquer
+	    si la machine virtuelle est allumée. Lorsque cette sortie est
+	    passée à 0, le simulateur s'arrête. *)
+	output o;
+	match o with
+		| (v, 0) :: q -> if v = 0 then raise Exit
+		| o -> ()
+
 let simulate filename =
 	loadRom ();
 	
@@ -43,7 +56,7 @@ let simulate filename =
 	let p =
 		try Netlist.read_file filename
 		with Netlist.Parse_error s -> (
-			Printf.eprintf "An error occurred: %s\n" s;
+			Format.eprintf "An error occurred: %s@." s;
 			exit 1
 			)
 	in
@@ -53,38 +66,11 @@ let simulate filename =
 			Format.eprintf "Schedule...@.";
 			try Scheduler.schedule p
 			with Scheduler.Combinational_cycle -> (
-				Printf.eprintf "The netlist has a combinatory cycle.\n";
+				Format.eprintf "The netlist has a combinatory cycle.@.";
 				exit 1
 				)
 		)
 		else p
-	in
-	
-	
-	let output o =
-		let aux i =
-			ignore (Unix.write Unix.stdout (if i = 1 then "1" else "0") 0 1)
-		in
-		List.iter
-			(fun (v, n) ->
-				let a = ref v in
-				for i = 0 to (max n 1) - 1 do
-					aux (!a mod 2);
-					a := !a lsr 1;
-				done
-			)
-			o;
-	in
-	
-	
-	let check_power o =
-		(** Si la première sortie est un bit, elle est utilisée pour indiquer
-		    si la machine virtuelle est allumée. Lorsque cette sortie est
-		    passée à 0, le simulateur s'arrête. *)
-		output o;
-		match o with
-			| (v, 0) :: q -> if v = 0 then raise Exit
-			| o -> ()
 	in
 	
 	if !schedule_only
@@ -99,7 +85,11 @@ let simulate filename =
 	else
 		Format.eprintf "Initializing simulation...@.";
 		let p = 
-			Init.init p
+			try Init.init p
+			with Init.VarUndef id -> (
+				Format.eprintf "Undefined net : %s@." id;
+				exit 1
+				)
 		in
 		
 		Format.eprintf "Running simulation...@.";

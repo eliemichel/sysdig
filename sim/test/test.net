@@ -1,10 +1,7 @@
 INPUT i
-OUTPUT o, o2
+OUTPUT o
 VAR
-  i, j:2, o2:2, a, b
+  i, o
 IN
-a = 0011
-b = 0101
-o2 = NAND a b
 o = NOT i
 

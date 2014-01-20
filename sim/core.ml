@@ -6,20 +6,6 @@ let eval_exp = ref 0.
 let appel_rec = ref 0.
 let env_add = ref 0.
 
-let oldTime = ref (Unix.gettimeofday ())
-let curTime = ref (Unix.gettimeofday ())
-let debug_delta () =
-	oldTime := !curTime;
-	curTime := Unix.gettimeofday ();
-	!curTime -. !oldTime
-
-let debug_time m =
-	Format.eprintf "[time]%f (%s)@." (debug_delta ()) m
-
-let env = ref (Hashtbl.create 97)
-let oldEnv = ref (Hashtbl.create 97)
-
-
 exception Sim_error of string
 let ramUp = ref []
 
@@ -37,13 +23,9 @@ let string_of_ty = function
 let mask v n =
 	v land (lnot (-1 lsl (max n 1))), n
 
-let evalArg = function
-	| Avar ident -> (
-		try Hashtbl.find !env ident
-		with Not_found ->
-			raise (Sim_error ("Unknown identifier : " ^ ident))
-		)
-	| Aconst v   -> v
+let evalArg p = function
+	| Ivar index -> p.i_env.(index)
+	| Iconst v   -> v
 
 let evalBinop (a, na) (b, nb) op =
 	if na <> nb
@@ -62,8 +44,8 @@ let getWord mem addr wordSize =
 	try Hashtbl.find mem addr
 	with Not_found -> 0, wordSize
 
-let setWord mem wa wordSize data =
-	Hashtbl.replace mem wa (evalArg data)
+let setWord p mem wa wordSize data =
+	Hashtbl.replace mem wa (evalArg p data)
 
 let getAddr addrSize addr = fst addr
 
@@ -87,14 +69,16 @@ let rec getRamTable ram ident =
 		getRamTable ram ident
 		)
 
-let evalExp oldValue ram rom ident = function
-	(** evalExp [oldValue] [ram] [rom] [ident] [exp] evaluates [exp] with
+let evalExp p ram rom index =
+	let evalArg = evalArg p in
+	(** evalExp [p] [ram] [rom] [index] [exp] evaluates [exp] in program [p] with
 	the values bounded in [env], [rom], [ram] *)
-	| Earg arg   -> evalArg arg
-	| Ereg ident -> oldValue ident
-	| Enot arg   -> let v, n = evalArg arg in mask (lnot v) n
-	| Ebinop (op, arg1, arg2) -> evalBinop (evalArg arg1) (evalArg arg2) op
-	| Emux (arg1, arg2, arg3) ->
+	function
+	| Iarg arg   -> evalArg arg
+	| Ireg index -> p.i_old_env.(index)
+	| Inot arg   -> let v, n = evalArg arg in mask (lnot v) n
+	| Ibinop (op, arg1, arg2) -> evalBinop (evalArg arg1) (evalArg arg2) op
+	| Imux (arg1, arg2, arg3) ->
 		let a, na = evalArg arg1 in
 		let b, nb = evalArg arg2 in
 		let c, nc = evalArg arg3 in
@@ -103,9 +87,9 @@ let evalExp oldValue ram rom ident = function
 			else if na <> nb
 			then raise (Sim_error "The first two arguments of Mux must have the same type")
 			else (if c <> 0 then a else b), na
-	| Erom (addr, ws, ra)            -> romHandler rom addr ws (evalArg ra)
-	| Eram (addr, ws, ra, we, wa, d) ->
-		let ramTable = getRamTable ram ident in
+	| Irom (addr, ws, ra)            -> romHandler rom addr ws (evalArg ra)
+	| Iram (addr, ws, ra, we, wa, d) ->
+		let ramTable = getRamTable ram index in
 		ramHandler
 			ramTable
 			addr
@@ -114,13 +98,13 @@ let evalExp oldValue ram rom ident = function
 			(evalArg we)
 			(evalArg wa)
 			d
-	| Econcat (arg1, arg2) ->
+	| Iconcat (arg1, arg2) ->
 		let v1, n1 = evalArg arg1 in
 		let v2, n2 = evalArg arg2 in
 		let n1 = max n1 1 in
 		let n2 = max n2 1 in
 			v1 lor (v2 lsl n1),  n1 + n2
-	| Eslice (i, j, arg)   ->
+	| Islice (i, j, arg)   ->
 		let v, n = evalArg arg in
 		let n' = j - i + 1 in
 		if i > j || i < 0 || j >= n
@@ -129,7 +113,7 @@ let evalExp oldValue ram rom ident = function
 			if n = 0
 			then raise (Sim_error "Single bit can not be sliced")
 			else mask (v lsr i) n'
-	| Eselect (i, arg)     ->
+	| Iselect (i, arg)     ->
 		let v, n = evalArg arg in
 			if i >= max n 1
 			then raise (Sim_error "Index out of bound")
@@ -138,14 +122,14 @@ let evalExp oldValue ram rom ident = function
 
 let rec var_list_length p = function
 	| [] -> 0
-	| var :: q -> var_list_length p q + (max (Env.find var p.p_vars) 1)
+	| var :: q -> var_list_length p q + (max (snd p.i_env.(var)) 1)
 
 
 let addInput p vars =
 	let rec aux next = function
 		| [] -> ()
 		| var :: q ->
-			let value = match Env.find var p.p_vars with
+			let value = match snd p.i_env.(var) with
 				| 0 -> next (), 0
 				| n ->
 					let a = ref 0 in
@@ -153,7 +137,7 @@ let addInput p vars =
 							a := (!a lsl 1) lor next ()
 						done; !a, n
 			in
-			Hashtbl.replace !env var value;
+			p.i_env.(var) <- value;
 			aux next q
 	in
 	let next =
@@ -172,6 +156,18 @@ let addInput p vars =
 	in
 		aux next vars
 
+let getOutput p =
+	let rec aux = function
+		| []     -> []
+		| o :: q -> p.i_env.(o) :: (aux q)
+	in aux p.i_outputs
+
+let updateRam p =
+	List.iter
+		(fun (ramTable, wa, ws, d) -> setWord p ramTable wa ws d)
+		!ramUp
+
+
 let tic ram rom p =
 	(** tic [ram] [rom] [p] computes the programm [p] with the
 	hash tables [ram] and [rom] containing RAM and ROM values and then returns
@@ -179,51 +175,31 @@ let tic ram rom p =
 	
 	ramUp := [];
 	
-	let oldValue ident =
-		try Hashtbl.find !oldEnv ident
-		with Not_found -> (
-			try 0, Env.find ident p.p_vars
-			with Not_found ->
-			raise (Sim_error ("Undeclared net : " ^ ident))
-		)
-	in
-	
-	let updateRam () =
-		List.iter
-			(fun (ramTable, wa, ws, d) -> setWord ramTable wa ws d)
-			!ramUp
-	in
-	
 	let rec applyEq = function
 		| []                -> ()
-		| (ident, exp) :: q ->
+		| (index, exp) :: q ->
 			let eval = (
 				try
-					evalExp oldValue ram rom ident exp
+					evalExp p ram rom index exp
 				with Sim_error s -> raise (
 					Sim_error
-					(s ^ " (in definition of " ^ ident ^ ")")
+					(s ^ " (in definition of #" ^ (string_of_int index) ^ ")")
 					)
 			) in
-			Hashtbl.replace !env ident eval;
+			p.i_env.(index) <- eval;
 			applyEq q
 	in
 	
-	let rec getOutput = function
-		| []     -> []
-		| o :: q -> (Hashtbl.find !env o) :: (getOutput q)
+	let swap () =
+		let t = p.i_env in
+		p.i_env <- p.i_old_env;
+		p.i_old_env <- t
 	in
 	
-	let swap a b =
-		let t = !a in
-		a := !b;
-		b := t
-	in
-	
-	swap oldEnv env;
-	addInput p p.p_inputs;
-	applyEq p.p_eqs;
-	updateRam ();
-	getOutput p.p_outputs
+	swap ();
+	addInput p p.i_inputs;
+	applyEq p.i_eqs;
+	updateRam p;
+	getOutput p
 
 
