@@ -184,19 +184,15 @@ let tic ram rom p =
 	
 	ramUp := [];
 	
-	let rec applyEq = function
-		| []                -> ()
-		| (index, exp) :: q ->
-			let eval = (
-				try
-					evalExp p ram rom index exp
-				with Sim_error s -> raise (
-					Sim_error
-					(s ^ " (in definition of #" ^ (string_of_int index) ^ ")")
-					)
-			) in
-			p.i_env.(index) <- eval;
-			applyEq q
+	let applyEq (index, exp) =
+		p.i_env.(index) <- (
+			try
+				evalExp p ram rom index exp
+			with Sim_error s -> raise (
+				Sim_error
+				(s ^ " (in definition of #" ^ (string_of_int index) ^ ")")
+				)
+		)
 	in
 	
 	let swap () =
@@ -207,7 +203,7 @@ let tic ram rom p =
 	
 	swap ();
 	addInput p p.i_inputs;
-	applyEq p.i_eqs;
+	List.iter applyEq p.i_eqs;
 	updateRam p;
 	getOutput p
 
