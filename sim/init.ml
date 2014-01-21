@@ -59,7 +59,7 @@ let init p =
 	in
 	
 	{
-		i_eqs     = List.map (i_eq_of_eq int_of_ident) p.p_eqs;
+		i_eqs     = Array.map (i_eq_of_eq int_of_ident) (Array.of_list p.p_eqs);
 		i_inputs  = List.map int_of_ident p.p_inputs;
 		i_outputs = List.map int_of_ident p.p_outputs;
 		i_old_env = old_env;

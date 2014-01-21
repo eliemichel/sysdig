@@ -73,7 +73,7 @@ type i_exp =
 type i_equation = int * i_exp
 
 type i_program =
-    { i_eqs     : i_equation list;
+    { i_eqs     : i_equation array;
       i_inputs  : int list;
       i_outputs : int list;
       mutable i_old_env : value array;

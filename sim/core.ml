@@ -176,6 +176,11 @@ let updateRam p =
 		(fun (ramTable, wa, ws, d) -> setWord p ramTable wa ws d)
 		!ramUp
 
+let swap p =
+	let t = p.i_env in
+	p.i_env <- p.i_old_env;
+	p.i_old_env <- t
+
 
 let tic ram rom p =
 	(** tic [ram] [rom] [p] computes the programm [p] with the
@@ -183,31 +188,19 @@ let tic ram rom p =
 	the output vector. *)
 	
 	ramUp := [];
-	
-	let rec applyEq = function
-		| []                -> ()
-		| (index, exp) :: q ->
-			let eval = (
-				try
-					evalExp p ram rom index exp
-				with Sim_error s -> raise (
-					Sim_error
-					(s ^ " (in definition of #" ^ (string_of_int index) ^ ")")
-					)
-			) in
-			p.i_env.(index) <- eval;
-			applyEq q
-	in
-	
-	let swap () =
-		let t = p.i_env in
-		p.i_env <- p.i_old_env;
-		p.i_old_env <- t
-	in
-	
-	swap ();
+	swap p;
 	addInput p p.i_inputs;
-	applyEq p.i_eqs;
+	for i = 0 to Array.length p.i_eqs - 1 do
+		let index, exp = p.i_eqs.(i) in
+		p.i_env.(index) <- (
+			try
+				evalExp p ram rom index exp
+			with Sim_error s -> raise (
+				Sim_error
+				(s ^ " (in definition of #" ^ (string_of_int index) ^ ")")
+				)
+		)
+	done;
 	updateRam p;
 	getOutput p
 
