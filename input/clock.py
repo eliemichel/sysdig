@@ -13,9 +13,9 @@ while ellapsed < max_t :
 	else :
 		stdout.write('0')
 """
-while 1: stdout.write('1')
-for i in range(500):
-	stdout.write('1')
-for i in range(10):
-	stdout.write('0')
+while 1:
+	for i in range(500):
+		stdout.write('1')
+	for i in range(500):
+		stdout.write('0')
 #"""
