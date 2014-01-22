@@ -9,6 +9,7 @@
 
 open Netlist_ast
 open Format
+open Unix
 
 
 let eval_exp = ref 0.
@@ -134,7 +135,7 @@ let rec var_list_length p = function
 	| var :: q -> var_list_length p q + (max (snd p.i_env.(var)) 1)
 
 
-let addInput p vars =
+let addInput async p vars =
 	let rec aux next = function
 		| [] -> ()
 		| var :: q ->
@@ -160,6 +161,18 @@ let addInput p vars =
 			then raise (Sim_error ("End of pipe"))
 			else m := !m + n;
 		done;
+		if async then ((* clear input buffer *)
+			Unix.set_nonblock stdin;
+			(try
+				while !m > 0 do
+					m := Unix.read stdin "               " 0 15
+				done
+			with
+				| Unix_error (EAGAIN, _, _)
+				| Unix_error (EWOULDBLOCK, _, _) -> ()
+			);
+			Unix.clear_nonblock stdin
+		);
 		fun () ->
 			let c = input.[!cur] in
 				incr cur;
@@ -184,14 +197,14 @@ let swap p =
 	p.i_old_env <- t
 
 
-let tic ram rom p =
+let tic async ram rom p =
 	(** tic [ram] [rom] [p] computes the programm [p] with the
 	hash tables [ram] and [rom] containing RAM and ROM values and then returns
 	the output vector. *)
 	
 	ramUp := [];
 	swap p;
-	addInput p p.i_inputs;
+	addInput async p p.i_inputs;
 	for i = 0 to Array.length p.i_eqs - 1 do
 		let index, exp = p.i_eqs.(i) in
 		p.i_env.(index) <- (

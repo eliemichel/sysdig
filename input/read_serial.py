@@ -3,6 +3,7 @@
 import serial
 import struct
 import time
+from sys import stdout
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
@@ -16,12 +17,15 @@ oldB = 0
 
 while True :
 	b = struct.unpack('B', ser.read())[0]
-	#print(b)
+	stdout.write(str(b))
+	"""
 	if (b != oldB) :
-		nt = time.time()
-		print(nt - t)
-		t = nt
+		if oldB == 1 :
+			nt = time.time()
+			print(nt - t)
+			t = nt
 		oldB = b
+	"""
 
 
 

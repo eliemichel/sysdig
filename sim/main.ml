@@ -13,6 +13,7 @@ exception Exit
 let default_rom_file = "rom.sim"
 let schedule_only = ref false
 let sim_only = ref false
+let async = ref false
 let separateur = "\n"
 
 let rom_file = ref default_rom_file
@@ -102,7 +103,7 @@ let simulate filename =
 		Format.eprintf "Running simulation...@.";
 		let rec run () =
 			let o =
-				Core.tic ram rom p
+				Core.tic !async ram rom p
 			in (
 				check_power o;
 				run ()
@@ -131,6 +132,10 @@ let () =
 		 "--sim-only", Arg.Set sim_only,
 		 "Simulate netlist assuming that it has already been scheduled. Use it \
 		  carefully.";
+		 
+		 "--async", Arg.Set async,
+		 "Read input asynchronously. Use it to avoid input accumulation when the\
+		  input program runs faster than sim.";
 		]
 		simulate
 		"sim [filename] schedule and simulates the circuit described in the \

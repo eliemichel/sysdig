@@ -8,5 +8,5 @@ void setup() {
 void loop() {
   int v = digitalRead(2);
   
-  Serial.write(v);
+  Serial.print(v);
 }

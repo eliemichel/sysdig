@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 
-python ../input/clock.py
+#python ../input/clock.py
+#python ../input/read_serial.py
+stty -F /dev/ttyACM0 9600 cs8 -cstopb -parenb && # setup serial port
+cat < /dev/ttyACM0
 
 #echo "1 0000 1 1000 1 0100 1 1100 1 0010 1 1010 1 0110 1 1110 1 0001 1 1001 0 0000"
 #echo "10000110001010011100100101101010110111101000101001"

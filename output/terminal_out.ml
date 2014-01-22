@@ -31,12 +31,14 @@ let initTime = Unix.gettimeofday () in
 let oldTime = ref initTime in
 let curTime = ref initTime in
 let average = ref 0 in
+let sec = ref 0 in
 let n = ref 0 in
 let fps () =
 		oldTime := !curTime;
 		curTime := Unix.gettimeofday ();
 		incr n;
 		average := int_of_float ((float_of_int !n) /. (!curTime -. initTime));
+		sec := int_of_float (!curTime -. initTime);
 		int_of_float (1. /. (!curTime -. !oldTime))
 in
 
@@ -52,9 +54,9 @@ let buff = String.create 1 in
 		let aux i = (int_of_7seg (String.sub !s (7 * i + 1) 7)) in
 		(*let byte i = String.sub !s (8 * i + 1) 8 in*)
 			
-			Format.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d       (instant: %d Hz - average: %d Hz)@?"
+			Format.printf "\r%d%d/%d%d/%d%d%d%d  %d%d:%d%d:%d%d     [%d](instant: %d Hz - average: %d Hz)@?"
 				(aux 7) (aux 6) (aux 9) (aux 8) (aux 11) (aux 10) (aux 13) (aux 12)
-				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0) (fps ()) !average
+				(aux 5) (aux 4) (aux 3) (aux 2) (aux 1) (aux 0) !sec (fps ()) !average
 			(*
 			Format.printf "%s %s %s %s@."
 				(byte 0) (byte 1) (byte 2) (byte 3)
