@@ -52,7 +52,9 @@ let init p =
 		with Not_found ->
 		try
 			let c = !head in
-				env.(c) <- (0, Env.find id p.p_vars);
+			let n = Env.find id p.p_vars in
+				env.(c) <- (0, n);
+				old_env.(c) <- (0, n);
 				incr head;
 				Hashtbl.add idtable c id;
 				Hashtbl.add table id c;

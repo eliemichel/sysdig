@@ -117,7 +117,7 @@ let evalExp p ram rom index =
 		let v, n = evalArg arg in
 		let n' = j - i + 1 in
 		if i > j || i < 0 || j >= n
-		then raise (Sim_error "Index out of bound")
+		then raise (Sim_error (sprintf "Index out of bound in slice (%d-%d in %d)" i j n))
 		else
 			if n = 0
 			then raise (Sim_error "Single bit can not be sliced")
@@ -125,7 +125,7 @@ let evalExp p ram rom index =
 	| Iselect (i, arg)     ->
 		let v, n = evalArg arg in
 			if i >= max n 1
-			then raise (Sim_error "Index out of bound")
+			then raise (Sim_error (sprintf "Index out of bound in select (%d in %d)" i n))
 			else mask (v lsr i) 0
 
 
@@ -152,13 +152,15 @@ let addInput p vars =
 	let next =
 		let l = var_list_length p vars in
 		let cur = ref 0 in
-		let input =
-			let buff = String.create l in
-			let n = Unix.read Unix.stdin buff 0 l in
-			if n = l
-			then buff
-			else raise (Sim_error ("End of pipe (" ^ (string_of_int n) ^ ")"))
-		in fun () ->
+		let input = String.create l in
+		let m = ref 0 in
+		while !m < l do
+			let n = Unix.read Unix.stdin input !m l in
+			if n = 0
+			then raise (Sim_error ("End of pipe"))
+			else m := !m + n;
+		done;
+		fun () ->
 			let c = input.[!cur] in
 				incr cur;
 				if c = '1' then 1 else 0
