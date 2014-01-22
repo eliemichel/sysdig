@@ -1,5 +1,5 @@
 CMX=debug.cmx netlist_ast.cmx netlist_parser.cmx netlist_lexer.cmx netlist.cmx \
-netlist_printer.cmx graph.cmx scheduler.cmx core.cmx sim_lexer.cmx init.cmx \
+netlist_printer.cmx graph.cmx scheduler.cmx init.cmx core.cmx sim_lexer.cmx \
 main.cmx
 GEN=netlist_parser.ml netlist_parser.mli netlist_lexer.ml sim_lexer.ml
 LIBS = unix.cmxa bigarray.cmxa

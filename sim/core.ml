@@ -8,7 +8,7 @@
  *)
 
 open Netlist_ast
-
+open Format
 
 
 let eval_exp = ref 0.
@@ -32,20 +32,35 @@ let string_of_ty = function
 let mask v n =
 	v land (lnot (-1 lsl (max n 1))), n
 
-let evalArg p = function
-	| Ivar index -> p.i_env.(index)
-	| Iconst v   -> v
+let evalArg p ty table h =
+	if ty land 1 = 1
+	then p.i_env.(table.(h)), h + 1
+	else (table.(h), table.(h + 1)), h + 2
+
+let evalPointer p ty table h =
+	if ty land 1 = 1
+	then (table.(h), -1), h + 1
+	else (table.(h), table.(h + 1)), h + 2
+
+let evalDeref p (a, n) =
+	if n = -1
+	then p.i_env.(a)
+	else a, n
+
 
 let evalBinop (a, na) (b, nb) op =
 	if na <> nb
-	then raise (Sim_error "Arguments of binary operators must have the same type")
+	then raise (Sim_error
+		(sprintf "Arguments of binary operators must have the same type (tried %d with %d)" na nb)
+	)
 	else
 		mask
 			(match op with
-			| Or   -> a lor b
-			| Xor  -> a lxor b
-			| And  -> a land b
-			| Nand -> lnot (a land b)
+			| 0 -> a lor b
+			| 1 -> a lxor b
+			| 2 -> a land b
+			| 3 -> lnot (a land b)
+			| _ -> assert false
 			)
 			na
 
@@ -54,7 +69,7 @@ let getWord mem addr wordSize =
 	with Not_found -> 0, wordSize
 
 let setWord p mem wa wordSize data =
-	Hashtbl.replace mem wa (evalArg p data)
+	Hashtbl.replace mem wa (evalDeref p data)
 
 let getAddr addrSize addr = fst addr
 
@@ -78,55 +93,74 @@ let rec getRamTable ram ident =
 		getRamTable ram ident
 		)
 
-let evalExp p ram rom index =
+let evalExp p ram rom table h =
+	(**evalExp [p] [ram] [rom] [table] [head] evaluates exp at address [head]
+	 * in program table [table] from program [p] with the values bounded in
+	 * [env], [rom], [ram]
+	 *)
+	let instr = table.(h) in
 	let evalArg = evalArg p in
-	(** evalExp [p] [ram] [rom] [index] [exp] evaluates [exp] in program [p] with
-	the values bounded in [env], [rom], [ram] *)
-	function
-	| Iarg arg   -> evalArg arg
-	| Ireg index -> p.i_old_env.(index)
-	| Inot arg   -> let v, n = evalArg arg in mask (lnot v) n
-	| Ibinop (op, arg1, arg2) -> evalBinop (evalArg arg1) (evalArg arg2) op
-	| Imux (arg1, arg2, arg3) ->
-		let a, na = evalArg arg1 in
-		let b, nb = evalArg arg2 in
-		let c, nc = evalArg arg3 in
+	match instr lsr 4 with
+	| 0x1 -> evalArg instr table (h + 1)
+	| 0x2 -> let v, n = p.i_old_env.(table.(h + 1)) in
+		if table.(h-1) = 2657 then printf "n=%d@." n; (v, n), h + 2
+	| 0x3 ->
+		let (v, n), h1 = evalArg instr table (h + 1) in
+			mask (lnot v) n, h1
+	| 0x4 | 0x5 | 0x6 | 0x7 ->
+		let a, h1 = evalArg (instr lsr 2) table (h + 1) in
+		let b, h2 = evalArg instr table h1 in
+			let v, n = evalBinop a b (instr lsr 4 land 3) in
+			if table.(h-1) = Hashtbl.find Init.table "a'_9122"
+	then eprintf "@@%d: n = %d@." table.(h-1) n;
+			(v, n), h2
+	| 0x8 ->
+		let (a, na), h1 = evalArg (instr lsr 2) table (h + 1) in
+		let (b, nb), h2 = evalArg (instr lsr 1) table h1 in
+		let (c, nc), h3 = evalArg instr table h2 in
 			if nc <> 0
 			then raise (Sim_error "Mux selector must be a single bit")
 			else if na <> nb
 			then raise (Sim_error "The first two arguments of Mux must have the same type")
-			else (if c <> 0 then a else b), na
-	| Irom (addr, ws, ra)            -> romHandler rom addr ws (evalArg ra)
-	| Iram (addr, ws, ra, we, wa, d) ->
-		let ramTable = getRamTable ram index in
-		ramHandler
-			ramTable
-			addr
-			ws
-			(evalArg ra)
-			(evalArg we)
-			(evalArg wa)
-			d
-	| Iconcat (arg1, arg2) ->
-		let v1, n1 = evalArg arg1 in
-		let v2, n2 = evalArg arg2 in
+			else ((if c <> 0 then a else b), na), h3
+	| 0x9 ->
+		let addr = table.(h + 1) in
+		let ws = table.(h + 2) in
+		let ra, h1 = evalArg instr table (h + 3) in
+			romHandler rom addr ws ra, h1
+	| 0xa ->
+		let addr = table.(h + 1) in
+		let ws = table.(h + 2) in
+		let ra, h1 = evalArg (instr lsr 3) table (h + 3) in
+		let we, h2 = evalArg (instr lsr 2) table h1 in
+		let wa, h3 = evalArg (instr lsr 1) table h2 in
+		let d, h4 = evalPointer p instr table h3 in
+		let ramTable = getRamTable ram table.(h - 1) in
+			ramHandler ramTable addr ws ra we wa d, h4
+	| 0xb ->
+		let (v1, n1), h1 = evalArg (instr lsr 1) table (h + 1) in
+		let (v2, n2), h2 = evalArg instr table h1 in
 		let n1 = max n1 1 in
 		let n2 = max n2 1 in
-			v1 lor (v2 lsl n1),  n1 + n2
-	| Islice (i, j, arg)   ->
-		let v, n = evalArg arg in
+			(v1 lor (v2 lsl n1),  n1 + n2), h2
+	| 0xc ->
+		let i = table.(h + 1) in
+		let j = table.(h + 2) in
+		let (v, n), h1 = evalArg instr table (h + 3) in
 		let n' = j - i + 1 in
 		if i > j || i < 0 || j >= n
 		then raise (Sim_error "Index out of bound")
 		else
 			if n = 0
 			then raise (Sim_error "Single bit can not be sliced")
-			else mask (v lsr i) n'
-	| Iselect (i, arg)     ->
-		let v, n = evalArg arg in
+			else mask (v lsr i) n', h1
+	| 0xd ->
+		let i = table.(h + 1) in
+		let (v, n), h1 = evalArg instr table (h + 2) in
 			if i >= max n 1
 			then raise (Sim_error "Index out of bound")
-			else mask (v lsr i) 0
+			else mask (v lsr i) 0, h1
+	| _ -> assert false
 
 
 let rec var_list_length p = function
@@ -138,7 +172,7 @@ let addInput p vars =
 	let rec aux next = function
 		| [] -> ()
 		| var :: q ->
-			let value = match snd p.i_env.(var) with
+			let value = match snd p.i_old_env.(var) with
 				| 0 -> next (), 0
 				| n ->
 					let a = ref 0 in
@@ -178,21 +212,25 @@ let updateRam p =
 
 
 let tic ram rom p =
-	(** tic [ram] [rom] [p] computes the programm [p] with the
-	hash tables [ram] and [rom] containing RAM and ROM values and then returns
-	the output vector. *)
+	(**tic [ram] [rom] [p] computes the programm [p] with the hash tables [ram]
+	 * and [rom] containing RAM and ROM values and then returns the output vector.
+	 *)
 	
 	ramUp := [];
 	
-	let applyEq (index, exp) =
-		p.i_env.(index) <- (
+	let applyEq h =
+		let eval, h' = (
 			try
-				evalExp p ram rom index exp
+				evalExp p ram rom p.i_eqs (h + 1)
 			with Sim_error s -> raise (
-				Sim_error
-				(s ^ " (in definition of #" ^ (string_of_int index) ^ ")")
+				Sim_error (
+					sprintf "%s (in definition of #%d = %s)"
+						s p.i_eqs.(h) (Hashtbl.find Init.idtable p.i_eqs.(h))
+					)
 				)
-		)
+		) in
+		p.i_env.(p.i_eqs.(h)) <- eval;
+		h'
 	in
 	
 	let swap () =
@@ -203,7 +241,11 @@ let tic ram rom p =
 	
 	swap ();
 	addInput p p.i_inputs;
-	List.iter applyEq p.i_eqs;
+	let n = Array.length p.i_eqs in
+	let head = ref 0 in
+	while !head < n do
+		head := applyEq !head
+	done;
 	updateRam p;
 	getOutput p
 
