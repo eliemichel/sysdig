@@ -198,8 +198,9 @@ let tic ram rom p =
 			with Sim_error s -> raise (
 				Sim_error (
 					sprintf "%s (in definition of #%d = %s)"
-						s p.i_eqs.(index)
-						(Hashtbl.find Init.idtable p.i_eqs.(index))
+						s
+						index
+						(Hashtbl.find Init.idtable index)
 					)
 				)
 		)
