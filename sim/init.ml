@@ -12,6 +12,8 @@ open Bigarray
 
 exception VarUndef of ident
 
+let idtable = Hashtbl.create 97
+let table = Hashtbl.create 97
 
 let i_arg_of_arg int_of_ident = function
 	| Avar id -> Ivar (int_of_ident id)
@@ -43,7 +45,6 @@ let init p =
 	let old_env = Array.make n (0, -1) in
 	let env     = Array.make n (0, -1) in
 	
-	let table = Hashtbl.create 97 in
 	let head = ref 0 in
 	
 	let int_of_ident id =
@@ -53,6 +54,7 @@ let init p =
 			let c = !head in
 				env.(c) <- (0, Env.find id p.p_vars);
 				incr head;
+				Hashtbl.add idtable c id;
 				Hashtbl.add table id c;
 				c
 		with Not_found -> raise (VarUndef id)

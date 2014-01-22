@@ -8,7 +8,7 @@
  *)
 
 open Netlist_ast
-
+open Format
 
 
 let eval_exp = ref 0.
@@ -196,8 +196,10 @@ let tic ram rom p =
 			try
 				evalExp p ram rom index exp
 			with Sim_error s -> raise (
-				Sim_error
-				(s ^ " (in definition of #" ^ (string_of_int index) ^ ")")
+				Sim_error (
+					sprintf "%s (in definition of #%d = %s)"
+						s p.i_eqs.(h) (Hashtbl.find Init.idtable p.i_eqs.(h))
+					)
 				)
 		)
 	done;
