@@ -8,7 +8,7 @@
  *)
 
 open Netlist_ast
-open Bigarray
+open Format
 
 exception VarUndef of ident
 
@@ -72,7 +72,7 @@ let i_exp_of_exp int_of_ident push =
 			push v0a;
 			if ba = 0 then push v1a;
 			push v0b;
-			if bb = 0 then push v1a
+			if bb = 0 then push v1b
 		| Emux (a, b, c) ->
 			let ba, v0a, v1a = arg a in
 			let bb, v0b, v1b = arg b in
@@ -137,7 +137,7 @@ let init p =
 	let n_eqs = List.length p.p_eqs in
 	let n_inputs = List.length p.p_inputs in
 	let n = n_eqs + n_inputs in
-	Format.eprintf "%d logical gates loaded@." n_eqs;
+	eprintf "%d logical gates loaded@." n_eqs;
 	let old_env = Array.make n (0, -1) in
 	let env     = Array.make n (0, -1) in
 	
@@ -145,7 +145,7 @@ let init p =
 	
 	let m = eqs_length p.p_eqs in
 	let table_eqs = Array.make m 0 in
-	Format.eprintf "%d instructions@." m;
+	eprintf "%d instructions@." m;
 	let head_eqs = ref 0 in
 	let push x =
 		table_eqs.(!head_eqs) <- x;
@@ -158,7 +158,7 @@ let init p =
 		try
 			let c = !head in
 			let n = Env.find id p.p_vars in
-				(*Format.eprintf "Init %s -> %d (type: %d)@." id c n;*)
+				(*eprintf "Init %s -> %d (type: %d)@." id c n;*)
 				env.(c) <- (0, n);
 				old_env.(c) <- (0, n);
 				incr head;
@@ -170,8 +170,8 @@ let init p =
 	
 	List.iter (i_eq_of_eq int_of_ident push) p.p_eqs;
 	
-	(*Debug.print_array (fun (a,b) -> Printf.sprintf "%x %x\n" a b) env;*)
-	(*Debug.print_array (Printf.sprintf "%x\n") table_eqs;*)
+	(*Debug.print_array (fun (a,b) -> sprintf "%x %x\n" a b) env;*)
+	(*Debug.print_array (sprintf "%x\n") table_eqs;*)
 	
 	{
 		i_eqs     = table_eqs;

@@ -102,18 +102,14 @@ let evalExp p ram rom table h =
 	let evalArg = evalArg p in
 	match instr lsr 4 with
 	| 0x1 -> evalArg instr table (h + 1)
-	| 0x2 -> let v, n = p.i_old_env.(table.(h + 1)) in
-		if table.(h-1) = 2657 then printf "n=%d@." n; (v, n), h + 2
+	| 0x2 -> p.i_old_env.(table.(h + 1)), h + 2
 	| 0x3 ->
 		let (v, n), h1 = evalArg instr table (h + 1) in
 			mask (lnot v) n, h1
 	| 0x4 | 0x5 | 0x6 | 0x7 ->
-		let a, h1 = evalArg (instr lsr 2) table (h + 1) in
+		let a, h1 = evalArg (instr lsr 1) table (h + 1) in
 		let b, h2 = evalArg instr table h1 in
-			let v, n = evalBinop a b (instr lsr 4 land 3) in
-			if table.(h-1) = Hashtbl.find Init.table "a'_9122"
-	then eprintf "@@%d: n = %d@." table.(h-1) n;
-			(v, n), h2
+			evalBinop a b (instr lsr 4 land 3), h2
 	| 0x8 ->
 		let (a, na), h1 = evalArg (instr lsr 2) table (h + 1) in
 		let (b, nb), h2 = evalArg (instr lsr 1) table h1 in
