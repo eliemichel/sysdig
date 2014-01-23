@@ -378,7 +378,7 @@ add
 mvra 00
 output 0      *Incremente dans la mem spec
 mvra 01       *Incremente dans la mem normale
-li 100
+li 0
 mvar 00
 save 01
 incr
