@@ -37,7 +37,7 @@ let print_load addr c a01 = (* load dans addr à c = 0 ou 1, dans a0 ou a1 *)
       "000011\n"^l^"000010\n" else l) in
   let str2 =
     "# load2 " ^ addr ^ " " ^ c^" "^a01 ^"\n"^ (* titre *)
-      str^ " # li " ^addr^ "\n"^ (* li addr *)
+      str^ (* li addr *)
       "100100\n"^ (* mvar 00 *)
       l2 ^
       "# end load2 \n"
@@ -53,7 +53,7 @@ let print_save addr c = (* save à addr à c = 0 ou 1, la val de a1 *)
       "000011\n"^l^"000010\n" else l) in
   let str2 =
     "# save2 " ^ addr ^ " " ^ c ^"\n"^ (* titre *)
-      str^ " # li " ^addr^ "\n"^ (* li addr *)
+      str^ (* li addr *)
       "100100\n"^ (* mvar 00 *)
       l2 ^
       "# end save2 \n"
