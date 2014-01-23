@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
-ocaml ../output/terminal_out.ml | tee run.out.log
-
+ocaml ../output/terminal_out.ml #| tee run.out.log
+#nodejs ../output/serveur.js
