@@ -157,7 +157,7 @@ li 0
 mvar 00
 save 01
 
-*****
+***** 1ere partie (savoir quand on passe de 0 a 1)
 decr        *L0
 li 111      *old q dans a0
 mvar 00     *L1
@@ -170,7 +170,7 @@ iio 11
 jbra 00     *revient a L1, pas besoin de recharger 111 dans a0
 
 
-***** 3e partie
+***** 2e partie (incrementation)
 *Si on arrive la, c'est qu'on est passe de 0 a 1, on incremente
 *c = 0 verifie
 
