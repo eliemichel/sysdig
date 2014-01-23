@@ -14,29 +14,11 @@
   | "f" | "0" -> 0
   | _ -> raise Parsing.Parse_error
 
- let val_array_of_string s =
-   let n = String.length s - 1 in
-   let a = ref 0 in
-   for i = n downto 0 do
-     a := !a lsl 1;
-     a := !a lor (bit_of_string (String.sub s i 1))
-   done;
-   !a, n + 1
-
- let value_of_const s =
-   let n = String.length s in
-   if n = 0 then
-     raise Parsing.Parse_error
-   else if n = 1 then
-     bit_of_string s, 0
-   else
-     val_array_of_string s
 %}
 
 %token <string> CONST
 %token <string> NAME
 %token AND MUX NAND OR RAM ROM XOR REG NOT
-%token CONCAT SELECT SLICE
 %token COLON EQUAL COMMA VAR IN INPUT OUTPUT
 %token EOF
 
@@ -66,21 +48,16 @@ exp:
     { Erom(addr, word, ra) }
   | RAM addr=int word=int ra=arg we=arg wa=arg data=arg
     { Eram(addr, word, ra, we, wa, data) }
-  | CONCAT x=arg y=arg
-     { Econcat(x, y) }
-  | SELECT idx=int x=arg
-     { Eselect (idx, x) }
-  | SLICE min=int max=int x=arg
-     { Eslice (min, max, x) }
+
 
 arg:
-  | n=CONST { Aconst (value_of_const n) }
+  | n=CONST { Aconst (bit_of_string n) }
   | id=NAME { Avar id }
 
 var: x=NAME ty=ty_exp { (x, ty) }
 ty_exp:
-  | /*empty*/ { 0 }
-  | COLON n=int { n }
+  | /*empty*/ { () }
+  | COLON int { () }
 
 int:
   | c=CONST { int_of_string c }

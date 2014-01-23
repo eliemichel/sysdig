@@ -13,7 +13,6 @@ exception Eof
 let keyword_list =
 [
   "AND", AND;
-  "CONCAT", CONCAT;
   "IN", IN;
   "INPUT", INPUT;
   "MUX", MUX;
@@ -24,8 +23,6 @@ let keyword_list =
   "RAM", RAM;
   "REG", REG;
   "ROM", ROM;
-  "SELECT", SELECT;
-  "SLICE", SLICE;
   "VAR", VAR;
   "XOR", XOR;
 ]

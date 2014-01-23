@@ -19,8 +19,8 @@ module Env = struct
     List.fold_left (fun env (x, ty) -> add x ty env) empty l
 end
 
-type ty = int
-type value = int * int
+type ty = unit
+type value = int
 
 type binop = Or | Xor | And | Nand
 
@@ -38,9 +38,6 @@ type exp =
     | Eram of int (*addr size*) * int (*word size*)
         * arg (*read_addr*) * arg (*write_enable*)
         * arg (*write_addr*) * arg (*data*)
-    | Econcat of arg * arg
-    | Eslice of int * int * arg
-    | Eselect of int * arg
 
 type equation = ident * exp
 

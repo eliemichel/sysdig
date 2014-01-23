@@ -28,7 +28,7 @@
 	let handleNewline () =
 		if !ws = -1 then ws := List.length !current_array;
 		let v = int_of_list !current_array in
-		input := (v, !ws) :: !input;
+		input := v :: !input;
 		current_array := [];
 		empty := true
 }

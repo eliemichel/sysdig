@@ -24,9 +24,6 @@ let read_exp f eq =
     | Erom (_, _, a) -> read_arg a
     | Eram (_, _, a, b, c, d) ->
       read_arg a ; read_arg b ; read_arg c
-    | Econcat (a, b) -> read_arg a ; read_arg b
-    | Eslice (_, _, a) -> read_arg a
-    | Eselect (_, a) -> read_arg a
 
 let schedule p =
   let g = mk_graph () in
@@ -109,12 +106,6 @@ let auto_search_replace p =
 	     Erom(i1,i2, replace_arg a)
 	 | Eram(i1,i2,a1,a2,a3,a4) ->
 	     Eram(i1, i2, replace_arg a1, replace_arg a2, replace_arg a3, replace_arg a4)
-	 | Econcat(a1, a2) ->
-	     Econcat(replace_arg a1, replace_arg a2)
-	 | Eslice(i1, i2, a) ->
-	     Eslice(i1, i2, replace_arg a)
-	 | Eselect(i, a) ->
-	     Eselect(i, replace_arg a)
       ) :: (replace t)
   in
   { p_eqs     = replace p.p_eqs;

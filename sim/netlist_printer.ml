@@ -26,9 +26,7 @@ let rec print_list print lp sep rp ff = function
       List.iter (fprintf ff "%s %a" sep print) l;
       fprintf ff "%s" rp
 
-let print_ty ff ty = match ty with
-  | 0 -> ()
-  | n -> fprintf ff " : %d" n
+let print_ty ff ty = ()
 
 let print_bool ff b =
   if b then
@@ -36,12 +34,8 @@ let print_bool ff b =
   else
     fprintf ff "0"
 
-let print_value ff (v, n) =
-  let a = ref v in
-  for i = 0 to (max n 1) - 1 do
-    print_bool ff (!a mod 2 = 1);
-    a := !a lsr 1
-  done
+let print_value ff v =
+  print_bool ff (v mod 2 = 1)
 
 let print_arg ff arg = match arg with
   | Aconst v -> print_value ff v
@@ -64,9 +58,6 @@ let print_exp ff e = match e with
       fprintf ff "RAM %d %d %a %a %a %a" addr word
         print_arg ra  print_arg we
         print_arg wa  print_arg data
-  | Eselect (idx, x) -> fprintf ff "SELECT %d %a" idx print_arg x
-  | Econcat (x, y) ->  fprintf ff  "CONCAT %a %a" print_arg x  print_arg y
-  | Eslice (min, max, x) -> fprintf ff "SLICE %d %d %a" min max print_arg x
 
 let print_eq ff (x, e) =
   fprintf ff "%s = %a@." x print_exp e

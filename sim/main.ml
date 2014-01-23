@@ -13,7 +13,7 @@ exception Exit
 let default_rom_file = "rom.sim"
 let schedule_only = ref false
 let sim_only = ref false
-let separateur = "\n"
+let async = ref false
 
 let rom_file = ref default_rom_file
 
@@ -35,17 +35,9 @@ let loadRom () =
 
 let output o =
 	let aux i =
-		ignore (Unix.write Unix.stdout (if i = 1 then "1" else "0") 0 1)
+		ignore (Unix.write Unix.stdout (if i mod 2 = 1 then "1" else "0") 0 1)
 	in
-	List.iter
-		(fun (v, n) ->
-			let a = ref v in
-			for i = 0 to (max n 1) - 1 do
-				aux (!a mod 2);
-				a := !a lsr 1;
-			done
-		)
-		o
+		List.iter aux o
 
 let check_power o =
 	(** Si la première sortie est un bit, elle est utilisée pour indiquer
@@ -53,7 +45,7 @@ let check_power o =
 	    passée à 0, le simulateur s'arrête. *)
 	output o;
 	match o with
-		| (v, 0) :: q -> if v = 0 then raise Exit
+		| v :: _ -> if v = 0 then raise Exit
 		| o -> ()
 
 let simulate filename =
@@ -102,7 +94,7 @@ let simulate filename =
 		Format.eprintf "Running simulation...@.";
 		let rec run () =
 			let o =
-				Core.tic ram rom p
+				Core.tic !async ram rom p
 			in (
 				check_power o;
 				run ()
@@ -131,6 +123,10 @@ let () =
 		 "--sim-only", Arg.Set sim_only,
 		 "Simulate netlist assuming that it has already been scheduled. Use it \
 		  carefully.";
+		 
+		 "--async", Arg.Set async,
+		 "Read input asynchronously. Use it to avoid input accumulation when the\
+		  input program runs faster than sim.";
 		]
 		simulate
 		"sim [filename] schedule and simulates the circuit described in the \
