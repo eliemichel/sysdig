@@ -28,6 +28,38 @@ let print_li s =
   in
   txt := !txt ^ str
 
+let print_load addr c a01 = (* load dans addr à c = 0 ou 1, dans a0 ou a1 *)
+  let s = addr in
+  let n = String.length s in
+  let str = "011"^(String.make (3-n) '0')^s^" # li "^s^"\n" in
+  let l = "10100" ^ a01 ^ "\n" in
+  let l2 = (if (int_of_string c) = 0 then
+      "000011\n"^l^"000010\n" else l) in
+  let str2 =
+    "# load2 " ^ addr ^ " " ^ c^" "^a01 ^"\n"^ (* titre *)
+      str^ " # li " ^addr^ "\n"^ (* li addr *)
+      "100100\n"^ (* mvar 00 *)
+      l2 ^
+      "# end load2 \n"
+  in
+  txt := !txt ^ str2
+
+let print_save addr c = (* save à addr à c = 0 ou 1, la val de a1 *)
+  let s = addr in
+  let n = String.length s in
+  let str = "011"^(String.make (3-n) '0')^s^" # li "^s^"\n" in
+  let l = "101101\n" in
+  let l2 = (if (int_of_string c) = 0 then
+      "000011\n"^l^"000010\n" else l) in
+  let str2 =
+    "# save2 " ^ addr ^ " " ^ c ^"\n"^ (* titre *)
+      str^ " # li " ^addr^ "\n"^ (* li addr *)
+      "100100\n"^ (* mvar 00 *)
+      l2 ^
+      "# end save2 \n"
+  in
+  txt := !txt ^ str2
+
 let print_output s =
   let n = String.length s in
   let str =  
@@ -46,7 +78,7 @@ let print_com com =
 
 let space = [' ' '\t' '\r']
 let bit = ['0' '1']+
-let alpha = ['a'-'z' 'A'-'Z' '-' '<' '>' ''' '*' '+' '!' '?' ' ' '\t' '\r' '0'-'9' '(' ')' '=' ',' ';' ':' '.']
+let alpha = ['a'-'z' 'A'-'Z' '-' '<' '>' ''' '*' '+' '!' '?' ' ' '\t' '\r' '0'-'9' '(' ')' '=' ',' ';' ':' '.' '&']
 let mul = ('\n')+
 
 rule scan = parse
@@ -75,6 +107,11 @@ rule scan = parse
   | "jaaa" { print "111100 # jaaa \n" ; scan lexbuf }
   | "jaar" { print "111101 # jaar \n" ; scan lexbuf }
   | "wca" { print "111110 # wca \n" ; scan lexbuf }
+  | "nop" { print "000000 # nop \n" ; scan lexbuf }
+  | "incr" { print "000010 # incr \n" ; scan lexbuf }
+  | "decr" { print "000011 # decr \n" ; scan lexbuf }
+  | "load2" (space?) (bit as addr) (space?) (bit as c) (space?) (bit as a01) { print_load addr c a01 ; scan lexbuf }
+  | "save2" (space?) (bit as addr) (space?) (bit as c) { print_save addr c ; scan lexbuf }
   | "end" { print "111111 # end \n" ; scan lexbuf }
   | eof { }
   | _ { Printf.printf "Problème ligne %d \n" !line ; 

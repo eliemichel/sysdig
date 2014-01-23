@@ -1,7 +1,83 @@
-* jaaa li(3 et 6) jfra jbra input output flip iio ecrase r0, pas r1, pas a1, pas a0
+** Charge des constantes quand c = 1
 
-	*Met 10 ds r1
-li 1010      *L0
+incr
+
+*99 dans 111
+li 110001   
+mvar 01
+li 1
+mvar 00
+mvra 01
+mvra 10
+shift
+mvra 01
+li 1
+add
+mvra 01       *la on a a1 = 99
+li 111
+mvar 00
+save 01
+
+*28 dans 110
+li 11100
+mvar 01
+li 110
+mvar 00
+mvra 10
+save 00
+
+*12 dans 101
+li 1100
+mvar 01
+li 101
+mvar 00
+mvra 10
+save 00
+
+*23 dans 100
+li 11101
+mvar 01
+li 100
+mvar 00
+mvra 10
+save 00
+
+*59 dans 11
+li 111011
+mvar 01
+li 11
+mvar 00
+mvra 10
+save 00
+
+*17 dans 1
+li 10001
+mvar 01
+li 1
+mvar 00
+mvra 10
+save 00
+
+
+*Calcule l'adresse de l'instr L0 et la met a l'adresse 0
+li 111
+mvar 01
+wca
+mvra 11
+add
+mvra 01
+li 0
+mvar 00
+save 01
+
+
+***** 1e partie
+*Regarde ds la mem quelle etait la val prec du quartz=q
+*en considerant qu'elle est a l'adr 111 (c=0), met ds a1
+
+	*Met 10 ds r1 (plus rapide de faire comme ca qu'avec la memoire, devrait suffire)
+decr         *L0
+li 1010
 mvar 01
 
 *Regarde ds la mem quelle etait la val prec du quartz=q
@@ -10,53 +86,42 @@ li 111       *L1
 mvar 00
 load 01
 
-li 0         *remet 0 dans r0 (il y avait 111). Pq marche pas qd ya pas ca ?!
-mvar 00
-
 li 110       *charge 6 dans a0, pour sauter (jfra 6)
 
-*Teste si a1 = 0, saut du jfra si a1 = 1
-iio 01
+iio 01       *Teste si a1 = 0, saut du jfra si a1 = 1
 
-jfra 00      *Saute a 6 instr apres (a L4)
+jfra 00      *Saute a 6 instr apres (a L2)
 
-*Met a jour la val stockee du q, a l'adr 111
-li 111
+li 111       *Met a jour la val stockee du q, a l'adr 111
 mvar 00
 input 00
 save 00
 jbra 11      *revient a L1
 
 
-
-*2e partie
-
-*Si on arrive ici, c'est que le q est a 0
-*On charge 12 dans r1
-li 11
-output 110
-flip
-
-li 1100      *L4
-mvra 01
-
+***** 2e partie
+*Si on arrive ici, c'est que le q (sa val prec) etait a 0 (et c=0)
 *On veut voir si la nouvelle valeur est a 1
-input 00    *L2
-mvar 00
-mvra 01
+input 01     *L3
 li 1
 and
-iio 10
+li 110       *6 dans r1
+mvar 01
 
-*Saute si q = 1, pas saute sinon, et va 5 instr apres
-jfra 11
+iio 10       *Saute le jbra ssi q = 1
 
-*Si q = 0 encore, on va revenir a L2
-li 10001
-jbra 00     *revient 17 instr avant, a L2
+jbra 11      *Ici, q=0, on revient a L3, et q n'a pas besoin d'etre modifie
 
-*3e partie
+*Si on arrive la, alors q = 1, il faut actualiser sa valeur avant d'incrementer
+li 111       *Met a jour la val stockee du q, a l'adr 111
+mvar 00
+li 1
+save 00
+
+
+***** 3e partie
 *Si on arrive la, c'est qu'on est passe de 0 a 1, on incremente
+*c = 0 verifie
 
 *valeur -- adresse
 *quartz 111
@@ -68,56 +133,52 @@ jbra 00     *revient 17 instr avant, a L2
 *mn 101
 *s 110
 
-
-
 ***** s  110
 
 	*Lit s dans r1
-li 100
-output 0
-flip
 li 110        *
 mvar 00
 load 00
 mvar 01
 
-	*Comparer a0 = s et 59
-li 111011     *59 dans a0
+incr          *c=1
+	
+	*Comparer a0 = s et 59(&59=11)
+load2 11 1 0  *59 dans a0
 mvra 11       *s  dans a1
-sub           *59-s dans r1
-mvra 10
-mvar 01
-li 10001      *Charge 17
-iio 11        *Saute prochaine instr si s <> 59
+sub           *59-s dans a1
+mvra 01
 
-jbra 00       *Saute a L5
+load2 1 1 0   *Charge 17
+iio 01        *Saute prochaine instr si s <> 59
+
+jfra 00       *Saute a L5 <---
 
 	*Si on est la, s <> 59, on l'incremente simplement
-li 110        *
-mvar 00
-load 01
+
+load2 110 0 1 *s dans a1, marche pas avec mvra 11
 li 1
 add
-output 011    *Incremente dans la mem spec
+mvra 00       *<---
+output 110    *Incremente dans la mem spec <---
 mvra 01       *Incremente dans la mem normale
-li 110        *
-mvar 00
-save 01
-	*On flip et retourne ensuite au tout debut, L0
+save2 110 0
+	
+flip          *On flip et retourne ensuite au tout debut, L0
 li 0
 mvar 00
-mvra 01
-li 0          * adresse de L0
-flip
+mvra 01       *0 dans a0 et a1
+load 00
 jaaa
 
 	*Si on arrive la, s = 59, on met s = 0
 li 110        *L5
 mvar 00
 li 0
+decr
 save 00
+incr
 output 110    *Mem spec
-
 
 
 
@@ -146,7 +207,7 @@ mvar 00
 load 01
 li 1
 add
-output 011    *Incremente dans la mem spec
+output 101    *Incremente dans la mem spec
 mvra 01       *Incremente dans la mem normale
 li 101        *
 mvar 00
@@ -194,7 +255,7 @@ mvar 00
 load 01
 li 1
 add
-output 110    *Incremente dans la mem spec
+output 100    *Incremente dans la mem spec
 mvra 01       *Incremente dans la mem normale
 li 001        *
 mvar 00
@@ -221,29 +282,69 @@ output 100    *Mem spec
 	*Lit j dans r1
 li 0          *
 mvar 00
+decr
 load 00
+incr
 mvar 01
 
-	*Comparer a0 = j et 30
-li 11110      *30 dans a0
-mvra 11       *j  dans a1
-sub           *30-j dans r1
+	*Comparer j et 28
+li 110        *28 dans a0
+mvra 00
+load 00
+
+mvra 11       *j dans a1
+sub           *28-j dans r1
+mvra 00
+not
+
+iio 10        *Saute prochaine instr si j = 28
+
+
+*a2 11
+
+**** Fevrier ?
+*ici j = 28, on teste si on est en fevrier
+li 1          * m dans r1
+mvar 00
+decr
+load 00
+incr
+mvar 01
+
+	*Comparer m et 2
+li 110        *28 dans a0
+mvra 00
+load 00
+
+mvra 11       *j dans a1
+sub           *28-j dans r1
+mvra 00
+not
+
+iio 10        *Saute prochaine instr si j = 28
+
+
+
+
+mvra 11       *j dans a1
+sub           *28-j dans r1
 mvra 10
 mvar 01
+
 li 10001      *Charge 17
 iio 11        *Saute prochaine instr si j <> 30
 
 jbra 00       *Saute a L5
 
-	*Si on est la, j <> 30, on l'incremente simplement
+	*Si on est la, j <> 28, on l'incremente simplement
 li 100        *
 mvar 00
 load 01
 li 1
 add
-output 110    *Incremente dans la mem spec
+output 0      *Incremente dans la mem spec
 mvra 01       *Incremente dans la mem normale
-li 100        *
+li 0          *
 mvar 00
 save 01
 	*On flip et retourne ensuite au tout debut, L0
@@ -343,7 +444,7 @@ mvar 00
 load 01
 li 1
 add
-output 1      *Incremente dans la mem spec
+output 11     *Incremente dans la mem spec
 mvra 01       *Incremente dans la mem normale
 li 11         *
 mvar 00
@@ -399,7 +500,7 @@ mvar 00
 load 01
 li 1
 add
-output 1      *Incremente dans la mem spec
+output 10     *Incremente dans la mem spec
 mvra 01       *Incremente dans la mem normale
 li 10         *
 mvar 00

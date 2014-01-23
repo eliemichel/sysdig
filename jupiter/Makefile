@@ -5,3 +5,4 @@ all:
 	rm -f jupiter.ml
 	rm -f jupiter.cmo
 	./jupiter prog_clock.s
+	./run
