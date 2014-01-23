@@ -31,10 +31,10 @@ for line in f:
 		
 		
 		time.append(t - 1e-9)
-		clock.append(globs - oldt)
+		clock.append(globs - int(oldt))
 		globs += 1
 		time.append(t)
-		clock.append(globs - t)
+		clock.append(globs - int(t))
 		oldt = t
 	olds = s
 
