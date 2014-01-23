@@ -3,7 +3,8 @@ var app = require('express')()
   , io = require('socket.io').listen(server)
   , stdin = process.stdin;
 
-
+var lastSend = new Date().getTime();
+var deltaSend = 500;
 var d = new Date;
 var buff = '';
 stdin.resume();
@@ -31,16 +32,18 @@ function readIn() {
 		}
 	}
 	
-	d.setYear(((conv(11) * 10 + conv(10)) * 10 + conv(13)) * 10 + conv(12));
-	d.setMonth(conv(9) * 10 + conv(8));
-	d.setDate(conv(7) * 10 + conv(6));
-	d.setHours(conv(5) * 10 + conv(4));
-	d.setMinutes(conv(3) * 10 + conv(2));
-	d.setSeconds(conv(1) * 10 + conv(0));
-	
+	var time = new Date().getTime();
+	if (time - lastSend > deltaSend) {
+		lastSend = time;
+		d.setYear(((conv(11) * 10 + conv(10)) * 10 + conv(13)) * 10 + conv(12));
+		d.setMonth(conv(9) * 10 + conv(8));
+		d.setDate(conv(7) * 10 + conv(6));
+		d.setHours(conv(5) * 10 + conv(4));
+		d.setMinutes(conv(3) * 10 + conv(2));
+		d.setSeconds(conv(1) * 10 + conv(0));
+		io.sockets.emit('update', { date: new Date().getTime() });
+	}
 	buff = buff.substring(99);
-	
-	io.sockets.emit('update', { date: new Date().getTime() });
 }
 
 console.log('Clock server listening on port 3616');
