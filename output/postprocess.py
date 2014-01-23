@@ -11,6 +11,7 @@ f = open('log', 'r')
 
 
 t0 = 0.
+oldt = 0.
 s = 0
 olds = -1
 globs = 0
@@ -30,10 +31,11 @@ for line in f:
 		
 		
 		time.append(t - 1e-9)
-		clock.append(globs - t)
+		clock.append(globs - oldt)
 		globs += 1
 		time.append(t)
 		clock.append(globs - t)
+		oldt = t
 	olds = s
 
 f.close()
