@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 
 ocaml ../output/terminal_out.ml #| tee run.out.log
-#nodejs ../output/serveur.js 1>/dev/null
+#tee teed | nodejs ../output/serveur.js
 

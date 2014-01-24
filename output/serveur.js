@@ -7,8 +7,10 @@ var lastSend = new Date().getTime();
 var deltaSend = 500;
 var d = new Date;
 var buff = '';
+
 stdin.resume();
 stdin.setEncoding('utf8');
+io.set('log level', 0);
 
 process.stdin.on('data', function(chunk) {
 	buff += chunk;
@@ -17,7 +19,7 @@ process.stdin.on('data', function(chunk) {
 
 function readIn() {
 	function conv (i) {
-		switch (buff.substring(7 * i + 1, 7 * (i + 1))) {
+		switch (buff.substring(7 * i + 1, 7 * (i + 1) + 1)) {
 		case "1111110": return 0;
 		case "0110000": return 1;
 		case "1101101": return 2;
@@ -35,13 +37,14 @@ function readIn() {
 	var time = new Date().getTime();
 	if (time - lastSend > deltaSend) {
 		lastSend = time;
-		d.setYear(((conv(11) * 10 + conv(10)) * 10 + conv(13)) * 10 + conv(12));
-		d.setMonth(conv(9) * 10 + conv(8));
-		d.setDate(conv(7) * 10 + conv(6));
-		d.setHours(conv(5) * 10 + conv(4));
-		d.setMinutes(conv(3) * 10 + conv(2));
-		d.setSeconds(conv(1) * 10 + conv(0));
-		io.sockets.emit('update', { date: new Date().getTime() });
+		d.a = ((conv(11) * 10 + conv(10)) * 10 + conv(13)) * 10 + conv(12));
+		d.m = conv(9) * 10 + conv(8));
+		d.j = conv(7) * 10 + conv(6));
+		d.h = conv(5) * 10 + conv(4));
+		d.mn(conv(3) * 10 + conv(2));
+		d.s(conv(1) * 10 + conv(0));
+		io.sockets.emit('update', { date: d });
+		process.stdout.write('\r' + d);
 	}
 	buff = buff.substring(99);
 }
