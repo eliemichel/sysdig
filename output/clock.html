@@ -1,150 +1,173 @@
 <!DOCTYPE html>
+<!-- File mainly inspired by the following RaphaëlJS example :
+	http://raphaeljs.com/polar-clock.html -->
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Raphaël · Polar Clock</title>
-        <script src="raphael.js"></script>
-        <script src="socket.io/socket.io.js"></script>
-        <script>
-            window.onload = function () {
-                var d = new Date;
-                var r = Raphael("holder", 600, 600),
-                    R = 200,
-                    init = true,
-                    param = {stroke: "#fff", "stroke-width": 30},
-                    hash = document.location.hash,
-                    marksAttr = {fill: hash || "#444", stroke: "none"},
-                    html = [
-                        document.getElementById("h"),
-                        document.getElementById("m"),
-                        document.getElementById("s"),
-                        document.getElementById("d"),
-                        document.getElementById("mnth"),
-                        document.getElementById("ampm")
-                    ];
-                // Custom Attribute
-                r.customAttributes.arc = function (value, total, R) {
-                    var alpha = 360 / total * value,
-                        a = (90 - alpha) * Math.PI / 180,
-                        x = 300 + R * Math.cos(a),
-                        y = 300 - R * Math.sin(a),
-                        color = "hsb(".concat(Math.round(R) / 200, ",", value / total, ", .75)"),
-                        path;
-                    if (total == value) {
-                        path = [["M", 300, 300 - R], ["A", R, R, 0, 1, 1, 299.99, 300 - R]];
-                    } else {
-                        path = [["M", 300, 300 - R], ["A", R, R, 0, +(alpha > 180), 1, x, y]];
-                    }
-                    return {path: path, stroke: color};
-                };
-
-                drawMarks(d, R, 60);
-                var sec = r.path().attr(param).attr({arc: [0, 60, R]});
-                R -= 40;
-                drawMarks(d, R, 60);
-                var min = r.path().attr(param).attr({arc: [0, 60, R]});
-                R -= 40;
-                drawMarks(d, R, 12);
-                var hor = r.path().attr(param).attr({arc: [0, 12, R]});
-                R -= 40;
-                drawMarks(d, R, 31);
-                var day = r.path().attr(param).attr({arc: [0, 31, R]});
-                R -= 40;
-                drawMarks(d, R, 12);
-                var mon = r.path().attr(param).attr({arc: [0, 12, R]});
-                var pm = r.circle(300, 300, 16).attr({stroke: "none", fill: Raphael.hsb2rgb(15 / 200, 1, .75).hex});
-                html[5].style.color = Raphael.hsb2rgb(15 / 200, 1, .75).hex;
-
-                function updateVal(d, value, total, R, hand, id) {
-                    if (total == 31) { // month
-                        d2 = new Date(d);
-                        d2.setDate(1);
-                        d2.setMonth(d.getMonth() + 1);
-                        d2.setDate(-1);
-                        total = d2.getDate();
-                    }
-                    var color = "hsb(".concat(Math.round(R) / 200, ",", value / total, ", .75)");
-                    if (init) {
-                        hand.animate({arc: [value, total, R]}, 900, ">");
-                    } else {
-                        if (!value || value == total) {
-                            value = total;
-                            hand.animate({arc: [value, total, R]}, 750, "bounce", function () {
-                                hand.attr({arc: [0, total, R]});
-                            });
-                        } else {
-                            hand.animate({arc: [value, total, R]}, 750, "elastic");
-                        }
-                    }
-                    html[id].innerHTML = (value < 10 ? "0" : "") + value;
-                    html[id].style.color = Raphael.getRGB(color).hex;
-                }
-
-                function drawMarks(d, R, total) {
-                    if (total == 31) { // month
-                        d2 = new Date(d);
-                        d2.setDate(1);
-                        d2.setMonth(d.getMonth() + 1);
-                        d2.setDate(-1);
-                        total = d2.getDate();
-                    }
-                    var color = "hsb(".concat(Math.round(R) / 200, ", 1, .75)"),
-                        out = r.set();
-                    for (var value = 0; value < total; value++) {
-                        var alpha = 360 / total * value,
-                            a = (90 - alpha) * Math.PI / 180,
-                            x = 300 + R * Math.cos(a),
-                            y = 300 - R * Math.sin(a);
-                        out.push(r.circle(x, y, 2).attr(marksAttr));
-                    }
-                    return out;
-                }
-
-                function update (d) {
-                        am = (d.getHours() < 12),
-                        h = d.getHours() % 12 || 12;
-                    updateVal(d, d.getSeconds(), 60, 200, sec, 2);
-                    updateVal(d, d.getMinutes(), 60, 160, min, 1);
-                    updateVal(d, h, 12, 120, hor, 0);
-                    updateVal(d, d.getDate(), 31, 80, day, 3);
-                    updateVal(d, d.getMonth() + 1, 12, 40, mon, 4);
-                    pm[(am ? "hide" : "show")]();
-                    html[5].innerHTML = am ? "AM" : "PM";
-                    setTimeout(arguments.callee, 1000);
-                    init = false;
-                }
-                
-                var socket = io.connect('http://localhost');
-                socket.on('update', function (data) {
-                    console.log(data);
-                    update(new Date(data.date));
-                });
-            };
-        </script>
-        <style media="screen">
-            body {
-                background: #333;
-                color: #fff;
-                font: 300 100.1% "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif;
-            }
-            #holder {
-                height: 480px;
-                left: 50%;
-                margin: -240px 0 0 -320px;
-                position: absolute;
-                top: 50%;
-                width: 640px;
-            }
-            #time {
-                text-align: center;
-                font: 100 3em "Helvetica Neue", Helvetica, Arial, sans-serif;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="holder"></div>
-        <div id="time">
-            <span id="h"></span>:<span id="m"></span>:<span id="s"></span> <span id="ampm"></span> · <span id="d"></span>/<span id="mnth"></span>
-        </div>
-    </body>
+	<head>
+		<meta charset="utf-8">
+		<title>Sysdig · Polar Clock</title>
+		<script src="raphael.js"></script>
+		<script src="socket.io/socket.io.js"></script>
+		<script>
+		window.onload = function () {
+			var raphael = Raphael('holder', 600, 600)
+			  , R = 200
+			  , init = true
+			  , circleAttr = { stroke: '#fff', 'stroke-width': 30 }
+			  , markAttr = { fill: '#444', stroke: 'none' }
+			  , text
+			  ;
+			
+			text = [
+				document.getElementById('s'),
+				document.getElementById('mn'),
+				document.getElementById('h'),
+				document.getElementById('j'),
+				document.getElementById('m'),
+				document.getElementById('a')
+			];
+			
+			// Custom Attribute
+			raphael.customAttributes.arc = function (value, total, R) {
+				var alpha = value / total
+				  , pos = polar(R, alpha)
+				  , color = colorGen(R, alpha)
+				  , path
+				  ;
+				
+				if (value >= total) {
+					path = [["M", 300, 300 - R], ["A", R, R, 0, 1, 1, 299.99, 300 - R]];
+				} else {
+					path = [["M", 300, 300 - R], ["A", R, R, 0, +(alpha > 0.5), 1, pos.x, pos.y]];
+				}
+				return {path: path, stroke: color};
+			};
+			
+			var deltaR = 40
+			  , R_s  = 200
+			  , R_mn = R_s  - deltaR
+			  , R_h  = R_mn - deltaR
+			  , R_j  = R_h  - deltaR
+			  , R_m  = R_j  - deltaR
+			  , R_a  = R_m  - deltaR
+			  ;
+			
+			var marks_s  = { 60:drawMarks(R_s , 60) }
+			  , marks_mn = { 60:drawMarks(R_mn, 60) }
+			  , marks_h  = { 24:drawMarks(R_h , 24) }
+			  , marks_j  = { 28:drawMarks(R_j , 28).hide(), 29:drawMarks(R_j, 29).hide(), 30:drawMarks(R_j, 30), 31:drawMarks(R_j, 31).hide() }
+			  , marks_m  = { 12:drawMarks(R_m , 12) }
+			  , marks_a  = { 10:drawMarks(R_a , 10) }
+			  ;
+			
+			var circle_s  = raphael.path().attr(circleAttr).attr({arc:[0,60,R_s]})
+			  , circle_mn = raphael.path().attr(circleAttr).attr({arc:[0,60,R_mn]})
+			  , circle_h  = raphael.path().attr(circleAttr).attr({arc:[0,24,R_h]})
+			  , circle_j  = raphael.path().attr(circleAttr).attr({arc:[0,30,R_j]})
+			  , circle_m  = raphael.path().attr(circleAttr).attr({arc:[0,12,R_m]})
+			  , circle_a  = raphael.path().attr(circleAttr).attr({arc:[0,10,R_a]})
+			  ;
+			
+			function updateVal(d, value, total, R, hand, id) {
+				var dispVal = value
+				  , pos = polar(R, value / total)
+				  ;
+				
+				value = total == 30 || total == 12 ? value - 1 : value;
+				
+				if (!value || value == total) {
+					if (hand.attr('arc')[0] != value) {
+						value = 0;
+						hand.animate({arc:[total, total, R]}, 200, '>', function () {
+							hand.attr({arc:[value, total, R]});
+						});
+					} else {
+						hand.attr({arc:[value, total, R]});
+					}
+				} else {
+					hand.animate({arc:[value, total, R]}, 100, '>');
+				}
+				
+				text[id].innerHTML = (dispVal < 10 ? "0" : "") + dispVal;
+				text[id].style.color = Raphael.getRGB(colorGen(R, 1)).hex;
+			}
+			
+			function update(d) {
+				updateVal(d, d.s,  60, R_s,  circle_s,  0);
+				updateVal(d, d.mn, 60, R_mn, circle_mn, 1);
+				updateVal(d, d.h,  24, R_h,  circle_h,  2);
+				updateVal(d, d.j,  30, R_j,  circle_j,  3);
+				updateVal(d, d.m,  12, R_m,  circle_m,  4);
+				updateVal(d, d.a,  10, R_a,  circle_a,  5);
+			}
+			
+			
+			function drawMarks(R, total) {
+				var out = raphael.set()
+				  , pos
+				  ;
+				
+				for (var value = 0; value < total; value++) {
+					pos = polar(R,  value / total);
+					out.push(raphael.circle(pos.x, pos.y, 2).attr(markAttr));
+				}
+				
+				return out;
+			}
+			
+			function polar(R, alpha) {
+				var a = (90 - alpha * 360) * Math.PI / 180;
+				return {
+					x: 300 + R * Math.cos(a),
+					y: 300 - R * Math.sin(a)
+				};
+			}
+			
+			function colorGen(R, alpha) {
+				R = R == 0 ? R_s * 0.1 : R;
+				return "hsb(".concat(Math.round(R) / R_s, ",", alpha, ", .75)")
+			}
+			
+			
+			
+			io
+			.connect('http://localhost')
+			.on('update', function (date) {
+				if (typeof(date) !== undefined) {
+					update(JSON.parse(date));
+				}
+			});
+			
+		}
+		</script>
+		<style>
+			body {
+				background: #333;
+				color: #fff;
+				font: 300 100.1% "Helvetica Neue", Helvetica, Arial, sans-serif;
+			}
+			#holder {
+				height: 480px;
+				left: 50%;
+				margin: -240px 0 0 -320px;
+				position: absolute;
+				top: 50%;
+				width: 640px;
+			}
+			#time {
+				text-align: center;
+				font: 100 3em "Helvetica Neue", Helvetica, Arial, sans-serif;
+			}
+			
+			#a {
+				margin-right : 25px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="holder"></div>
+		<div id="time">
+			<span id="j"></span>/<span id="m"></span>/<span id="a"></span>
+			<span id="h"></span>:<span id="mn"></span>:<span id="s"></span>
+		</div>
+	</body>
 </html>

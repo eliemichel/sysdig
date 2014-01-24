@@ -4,8 +4,7 @@ var app = require('express')()
   , stdin = process.stdin;
 
 var lastSend = new Date().getTime();
-var deltaSend = 500;
-var d = new Date;
+var deltaSend = 300;
 var buff = '';
 
 stdin.resume();
@@ -37,14 +36,15 @@ function readIn() {
 	var time = new Date().getTime();
 	if (time - lastSend > deltaSend) {
 		lastSend = time;
-		d.a = ((conv(11) * 10 + conv(10)) * 10 + conv(13)) * 10 + conv(12));
-		d.m = conv(9) * 10 + conv(8));
-		d.j = conv(7) * 10 + conv(6));
-		d.h = conv(5) * 10 + conv(4));
-		d.mn(conv(3) * 10 + conv(2));
-		d.s(conv(1) * 10 + conv(0));
-		io.sockets.emit('update', { date: d });
-		process.stdout.write('\r' + d);
+		var d = {};
+		d.a  = ((conv(11) * 10 + conv(10)) * 10 + conv(13)) * 10 + conv(12);
+		d.m  = conv(9) * 10 + conv(8);
+		d.j  = conv(7) * 10 + conv(6);
+		d.h  = conv(5) * 10 + conv(4);
+		d.mn = conv(3) * 10 + conv(2);
+		d.s  = conv(1) * 10 + conv(0);
+		io.sockets.emit('update', JSON.stringify(d));
+		process.stdout.write('\r' + JSON.stringify(d) + '        ');
 	}
 	buff = buff.substring(99);
 }
