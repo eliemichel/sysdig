@@ -72,8 +72,8 @@ let simulate filename =
 	let p =
 		if not !sim_only then (
 			Format.eprintf "Schedule...@.";
-			try Scheduler.schedule p
-			with Scheduler.Combinational_cycle -> (
+			try Optimizer.schedule p
+			with Optimizer.Combinational_cycle -> (
 				Format.eprintf "The netlist has a combinatory cycle.@.";
 				exit 1
 				)
