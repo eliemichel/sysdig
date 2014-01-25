@@ -12,6 +12,7 @@ HIGHLIGHT_COLOR=\033[1m
 clean:
 	@echo "Cleaning directory..."
 	@rm -v -f *~ *.net *_${POSTFIX}.mj
+	@rm -v -f split/*~ split/*.net split/*_${POSTFIX}.mj
 	@echo "$(OK_COLOR)Done.$(NO_COLOR)"
 
 

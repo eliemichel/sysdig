@@ -3222,7 +3222,7 @@ and program : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.program) =
       _menhir_token = _tok;
       _menhir_startp = lexbuf.Lexing.lex_start_p;
       _menhir_endp = lexbuf.Lexing.lex_curr_p;
-      _menhir_shifted = 1073741823;
+      _menhir_shifted = 4611686018427387903;
       } in
     Obj.magic (let _menhir_stack = () in
     assert (Pervasives.(<>) _menhir_env._menhir_shifted (-1));
