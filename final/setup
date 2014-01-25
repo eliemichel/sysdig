@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+
+
+cd ../sim
+echo "[\033[34msetup\033[0m] Building simulator"
+make sim
+cd ../mjdep
+echo "[\033[34msetup\033[0m] Building minijazz dependencies handler"
+make mjdep
+cd ../minijazz/src
+echo "[\033[34msetup\033[0m] Building minijazz to netlist compiler"
+ocamlbuild mjc.byte
+cd ../../jupiter
+echo "[\033[34msetup\033[0m] Building assembler"
+make jupiter
+echo "[\033[34msetup\033[0m] Assembling clock program"
+./jupiter prog_clock.s
+cd ../micro
+echo "[\033[34msetup\033[0m] Making final microprocessor netlist"
+echo "        info: Scheduling can take some time"
+make main
+cp main_full.sch.net main_full.sch.net.backup # Pour pas être obligé de refaire le setup après avoir fait un make clean
+

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 
-#ocaml ../output/terminal_out.ml #| tee run.out.log
-tee teed | nodejs ../output/serveur.js
+ocaml ../output/terminal_out.ml #| tee run.out.log
+#tee teed | nodejs ../output/serveur.js
 

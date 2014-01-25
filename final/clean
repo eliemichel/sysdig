@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+
+cd ../sim
+echo "[\033[34mclean\033[0m] Cleaning sim/"
+make clean
+cd ../mjdep
+echo "[\033[34mclean\033[0m] Cleaning mjdep/"
+make clean
+cd ../micro
+echo "[\033[34mclean\033[0m] Cleaning micro/"
+make clean

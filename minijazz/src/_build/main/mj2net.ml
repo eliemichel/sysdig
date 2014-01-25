@@ -56,7 +56,8 @@ let rec tr_exp e = match e.e_desc with
   | Ecall ("mux", _, [e1; e2; e3]) ->
       Netlist_ast.Emux (expect_arg e1, expect_arg e2, expect_arg e3)
   | Ecall("select", idx::_, [e]) ->
-      Netlist_ast.Eselect (expect_int idx, expect_arg e)
+     Format.eprintf "SELECT %d@." (expect_int idx);
+     Netlist_ast.Eselect (expect_int idx, expect_arg e)
   | Ecall("slice", min::max::_, [e]) ->
       Netlist_ast.Eslice (expect_int min, expect_int max, expect_arg e)
   | Ecall("concat", _, [e1; e2]) ->

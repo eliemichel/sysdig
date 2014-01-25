@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-cd ../micro
-make main
-cp main_full.sch.net main_full.sch.net.backup
-cd ../final
-./run
-notify-send "Sysdig" "Calculs terminés"
-
