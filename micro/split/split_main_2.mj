@@ -1,0 +1,45 @@
+
+(* #require(param utils gpu) *)
+
+main (power, value:[wordSize], op:[instrSize-2], isSYS) =
+		(power', out1:[28], out2:[28], out3:[28], out4:[14]) where
+	power' = power;
+	
+	op0 = op[0] and isSYS;
+	op1 = op[1];
+	op2 = op[2];
+	op3 = op[3];
+	nop0 = not(op0);
+	nop1 = not(op1);
+	nop2 = not(op2);
+	nop3 = not(op3);
+	
+	(* Mémoire graphique *)
+	ej     =  op0 and nop1 and nop2 and nop3;
+	em     =  op0 and nop1 and nop2 and  op3;
+	ea0    =  op0 and nop1 and  op2 and nop3;
+	ea1    =  op0 and nop1 and  op2 and  op3;
+	
+	eh     =  op0 and  op1 and nop2 and nop3;
+	emin   =  op0 and  op1 and nop2 and  op3;
+	es     =  op0 and  op1 and  op2 and nop3;
+	isFLIP =  op0 and  op1 and  op2 and  op3;
+	
+	bufj   = enableReg<wordSize>(value, ej  );
+	bufm   = enableReg<wordSize>(value, em  );
+	bufa0  = enableReg<wordSize>(value, ea0 );
+	bufa1  = enableReg<wordSize>(value, ea1 );
+	bufh   = enableReg<wordSize>(value, eh  );
+	bufmin = enableReg<wordSize>(value, emin);
+	bufs   = enableReg<wordSize>(value, es  );
+	
+	j   = enableReg<wordSize>(bufj,   isFLIP);
+	m   = enableReg<wordSize>(bufm,   isFLIP);
+	a0  = enableReg<wordSize>(bufa0,  isFLIP);
+	a1  = enableReg<wordSize>(bufa1,  isFLIP);
+	h   = enableReg<wordSize>(bufh,   isFLIP);
+	min = enableReg<wordSize>(bufmin, isFLIP);
+	s   = enableReg<wordSize>(bufs,   isFLIP);
+	
+	(out1, out2, out3, out4) = gpu(j, m, a0, a1, h, min, s);
+end where

@@ -1,0 +1,27 @@
+
+(* #require(param utils) *)
+
+sys (cr:[wordSize], op:[instrSize-2], input, isSYS) =
+		(cw:[wordSize], regAddr:[3]) where
+	
+	op0 = op[0] and isSYS;
+	op1 = op[1];
+	op2 = op[2];
+	op3 = op[3];
+	nop0 = not(op0);
+	nop1 = not(op1);
+	nop2 = not(op2);
+	nop3 = not(op3);
+	
+	incr_c = incr_n<wordSize>(cr);
+	(decr_c, t) = decr_n<wordSize>(cr);
+	new_c = mux_n<wordSize>(decr_c, incr_c, op3);
+	cw    = mux_n<wordSize>(new_c, cr, isSYS and nop0 and nop1 and op2);
+	
+	isINPUT = nop0 and op1;
+	regAddr = mux_n<3>(0.op2.op3, 1.1.1, isINPUT);
+	
+end where
+
+
+

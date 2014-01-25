@@ -1,0 +1,268 @@
+(******************************************************************************)
+(* empty                                                                      *)
+(* empty<n>() = (o:[n]) where                                                 *)
+(*   if n=0 then o=[] else o=0.empty<n-1>() end if                            *)
+(* end where                                                                  *)
+empty<n>() = (o:[n]) where
+  if n=0 then o = [] else if n=1 then o = 0 else if n=2 then o = 0.0 else
+    if n=3 then o = 0.0.0 else if n=4 then o = 0.0.0.0 else if n=5 then
+      o = 0.0.0.0.0 else if n=6 then o = 0.0.0.0.0.0 else if n=7 then
+	o = 0.0.0.0.0.0.0 else if n=8 then o = 0.0.0.0.0.0.0.0 else
+	  o = 0 . empty<n-1>() end if end if end if end if end if end if
+	end if end if end if
+end where
+
+
+(******************************************************************************)
+(* null_n( a ) = a == 00...0                                                  *)
+(* full_n( a ) = a == 11...1                                                  *)
+null_n<n>(a:[n]) = (o) where
+  if n = 0 then
+    o = 1
+  else
+    o = not(a[0]) and null_n<n-1>(a[1..]);
+  end if
+end where
+full_n<n>(a:[n]) = (o) where
+  if n = 0 then
+    o = 1
+  else
+    o = a[0] and full_n<n-1>(a[1..]);
+  end if
+end where
+
+
+(******************************************************************************)
+(* full_as                                                                    *)
+(* full_as(a,b,c,0) = fulladder(a,b,c)                                        *)
+(* full_as(a,b,c,1) = fullsuber(a,b,c)                                        *)
+full_as ( a , b , c , op ) = ( s , r ) where
+  s = (a xor b) xor c;
+  a' = op xor a;                              (* 0 xor a = a, 1 xor a = not a *)
+  r = (a' and b) or ((a' xor b) and c)
+end where
+addsuber<n>(a:[n], b:[n], r_in, op) = (o:[n], r_out) where
+  if n=0 then
+    o     = [];
+    r_out = r_in
+  else
+    (s ,r ) = full_as( a[0] , b[0] , r_in , op );
+    (o',r') = addsuber<n-1>( a[1..] , b[1..] , r , op );
+    o = s . o';
+    r_out = r'
+  end if
+end where
+addsub<n>( a:[n] , b:[n] , op ) = ( o:[n] , r_out ) where
+  ( o , r_out ) = addsuber<n>( a , b , 0 , op )
+end where
+
+
+(******************************************************************************)
+(* mux_n                                                                      *)
+(* mux( a, b, c ) = a si c = 1                                                *)
+(*                  b sinon                                                   *)
+mux_n<n>(a:[n], b:[n], c) = (o:[n]) where
+  if n = 0 then
+    o = []
+  else
+    o = mux(a[0], b[0], c) . mux_n<n-1>(a[1..], b[1..], c)
+  end if
+end where
+
+
+(******************************************************************************)
+(* mux_n                                                                      *)
+(* mux( v00, v01, v10, v11, c0, c1 ) = v[c0][c1]                              *)
+(*                  b sinon                                                   *)
+mux4_n<n> (v00:[n], v01:[n], v10:[n], v11:[n], c0, c1) = (v:[n]) where
+  v0 = mux_n<n>(v01, v00, c1);
+  v1 = mux_n<n>(v11, v10, c1);
+  v  = mux_n<n>(v1, v0, c0);
+end where
+
+
+(******************************************************************************)
+(* reg_n                                                                      *)
+reg_n<n>(a:[n]) = (o:[n]) where
+  if n = 0 then
+    o = []
+  else
+    o = (reg a[0]).reg_n<n-1>(a[1..])
+  end if
+end where
+
+
+
+(******************************************************************************)
+(* Multiplication                                                             *)
+mult_abc<n>( a:[n] , b:[n] ) = (c:[n]) where
+  if n=0 then
+    c = [];
+  else
+    (c,pb) = addsub<n>( mux_n<n>( a , empty<n>() , b[0] ) ,
+                        0 . mult_abc<n-1>( a[..n-2] , b[1..] ) ,
+                        0 );
+  end if
+end where
+mult<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
+  r = mult_abc<2*n>( a0 . empty<n>() , a1 . empty<n>() );
+  r0 = r[..n-1];
+  r1 = r[n..];
+end where
+
+
+
+
+(******************************************************************************)
+(* Division euclidienne                                                       *)
+div_mn<n,m>(a:[n],b:[n]) = (q:[m],r:[n]) where
+  if m=0 then
+    q = [];
+    r = a
+  else
+    a' = a[m-1..] . empty<m-1>();
+    (res, con) = addsub<n>(a', b, 1);     (* addsub<n>(a',b,1) = sub<n>(a',b) *)
+    res' = a[..m-2] . res[..n-m];                 (* On recompose le résultat *)
+    a'' = mux_n<n>( a , res' , con );
+    (q', r) = div_mn<n,m-1>( a'', b);
+    q = q' . (not con);
+  end if
+end where
+div<n>(a:[n],b:[n]) = (q:[n],r:[n]) where
+  (q,r) = div_mn<n,n>(a,b)
+end where
+
+
+(******************************************************************************)
+(* not_n                                                                      *)
+not_n<n>(a:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (not a[0]) . (not_n<n-1>(a[1..]))
+  end if
+end where
+
+
+(******************************************************************************)
+(* or_n                                                                       *)
+or_n<n>(a:[n],b:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (a[0] or b[0]) . (or_n<n-1>(a[1..],b[1..]))
+  end if
+end where
+
+
+(******************************************************************************)
+(* and_n                                                                      *)
+and_n<n>(a:[n],b:[n])=(o:[n]) where
+  if n=0 then
+    o = []
+  else
+    o = (a[0] and b[0]) . (and_n<n-1>(a[1..],b[1..]))
+  end if
+end where
+
+
+
+(* /!\ ATTENTION : Les fonctions suivante sont efficace pour une petite valeur*)
+(* de n seulement. Si n > 8, il est préférable d'utiliser add et sub qui sont *)
+(* de complexité linéaire et non quadratique.                                 *)
+
+(******************************************************************************)
+(* incr_n(a) = a+1                                                            *)
+incr_n<n>(a:[n]) = (o:[n]) where
+  if n = 0 then
+    o = []
+  else
+    b = incr_n<n-1>(a[1..]);
+    o = mux_n<n>(0 . b, 1. a[1..], a[0])
+  end if
+end where
+
+(* incr_n et decr_n n'ont pas la même signature malgré la proximité de leur   *)
+(* nom mais c'est dû à leur utilisation totalement différente.                *)
+(******************************************************************************)
+(* decr_n(a) = a-1                                                            *)
+decr_n<n>(a:[n]) = (o:[n], r) where
+  if n = 0 then
+    o = [];
+    r = 1
+  else
+    a0 = a[0];
+    (b, r') = decr_n<n-1>(a[1..]);
+    o = mux_n<n>(0 . a[1..], 1 . b, a0);
+    r = mux(0, r', a0);
+  end if
+end where
+
+
+(******************************************************************************)
+(* Registre à enable de taille n                                              *)
+enableReg<n> (writeVal:[n], enable) = (val:[n]) where
+  newVal = mux_n<n>(writeVal, val, enable);
+  val = reg_n<n>(newVal);
+end where
+
+
+
+(******************************************************************************)
+(* shift                                                                      *)
+(* CHANGEMENT DU SHIFT !                                                      *)
+shift_nm<n,m>( r0_in:[n] , r1_in:[n] , a1:[n] ) =
+	       ( r0_out:[n] , r1_out:[n] ) where
+  if m=0 then
+    r0_out = r0_in;
+    r1_out = r1_in;
+  else
+
+    (da1,d) = decr_n<n>( a1 );
+    (dr0_in,dr1_in) = shift_nm<n,m-1>( 0 . r0_in[..n-2] ,
+                                       r0_in[n-1] . r1_in[..n-2] , da1 );
+
+    r0_out = mux_n<n>( r0_in , dr0_in , d );
+    r1_out = mux_n<n>( r1_in , dr1_in , d );
+  end if
+end where
+shift<n>( a0:[n] , a1:[n] ) = ( r0:[n] , r1:[n] ) where
+  (r0,r1) = shift_nm<n,n>( a0 , empty<n>() , a1 );
+end where
+
+
+(******************************************************************************)
+(*                                                                            *)
+fulladder(a, b, c) = (s, r) where
+  (s,r) = full_as(a,b,c,0);
+end where
+nadder<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
+  (o,r_out) = addsuber<n>(a,b,r_in,0);
+end where
+add<n>(a:[n], b:[n]) = (o:[n], r) where
+  (o, r) = nadder<n>(a, b, 0);
+end where
+
+
+fullsubber(a, b, c) = (s, r) where
+  (s,r) = full_as(a,b,c,1)
+end where
+nsubber<n>(a:[n], b:[n], r_in) = (o:[n], r_out) where
+  (o,r_out) = addsuber<n>(a,b,r_in,1);
+end where
+sub<n>(a:[n], b:[n]) = (o:[n], r) where
+  (o, r) = nsubber<n>(a, b, 0)
+end where
+
+
+
+
+(***** TEST TIME *****)
+main ( a0:[4] , a1:[4] ) = ( r0:[4] , r1:[4] ) where
+  (r0,r1) = mult<4>(a0,a1);
+end where
+
+
+
+
+

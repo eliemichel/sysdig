@@ -1,0 +1,29 @@
+
+(* #require(param utils) *)
+
+mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], cr:[wordSize], op:[instrSize-2], isMEM) =
+		(toBeWritten:[wordSize], regAddr:[3]) where
+	op0 = op[0];
+	op1 = op[1];
+	nop0 = not(op0);
+	nop1 = not(op1);
+	
+	isMOVEright = nop0 and nop1;
+	isMOVEleft  = nop0 and  op1;
+	isLOAD      =  op0 and nop1;
+	isSAVE      =  op0 and  op1  and isMEM;
+	
+	op2 = op[2];
+	op3 = op[3];
+	fromRegA = mux_n<wordSize>(a1r, a0r, op2); (* MOVEleft ou isLOAD *)
+	fromRegR = mux_n<wordSize>(r1r, r0r, op2); (* MOVEright          *)
+	fromReg  = mux_n<wordSize>(fromRegR, fromRegA, isMOVEright);
+	
+	addrFromReg  = mux_n<wordSize>(r1r, r0r, op2);
+	(ramAddr, t) = add<ramAddrSize>(empty<wordSize-3>() . cr . 0.0.0, empty<wordSize>() . addrFromReg);
+	ramData = mux_n<wordSize>(a1r, a0r, op3);
+	fromRam = ram<ramAddrSize, wordSize>(ramAddr, isSAVE, ramAddr, ramData);
+	
+	toBeWritten = mux_n<wordSize>(fromRam, fromReg, op0);
+	regAddr = mux_n<3>(1.1.1, 0 . (isMOVEleft and nop0) . op3, isSAVE);
+end where

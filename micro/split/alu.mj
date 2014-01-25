@@ -1,0 +1,76 @@
+(* Représentation des entiers : [a0...an] : an..a0(2) *)
+(* #require(param utils) *)
+
+(* addsub dans utils *)
+
+multdiv <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) = mult<n>(a0,a1);
+  (r0b,r1b) =  div<n>(a0,a1);
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
+end where
+
+alu_arith <n> ( a0:[n] , a1:[n] , op , op' ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a') = addsub<n>(a0,a1,op');
+  r1a = r1a' . empty<n-1>();
+  (r0b,r1b) = multdiv<n>(a0,a1,op');
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
+end where
+
+andor <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
+  r0a = and_n<n>(a0,a1);
+  r0b = or_n<n>(a0,a1);
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = empty<n>()
+end where
+
+notshift <n> ( a0:[n] , a1:[n] , op ) = ( r0:[n] , r1:[n] ) where
+  r0a = not_n<n>(a0);
+  r1a = not_n<n>(a1);
+  (r0b,r1b) = shift<n>(a0,a1);
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
+end where
+
+alu_logique <n> ( a0:[n] , a1:[n] , op , op' ) = ( r0:[n] , r1:[n] ) where
+  (r0a,r1a) =    andor<n>(a0,a1,op');
+  (r0b,r1b) = notshift<n>(a0,a1,op');
+  r0 = mux_n<n>( r0b , r0a , op );
+  r1 = mux_n<n>( r1b , r1a , op )
+end where
+
+
+(******************************************************************************)
+(* alu prend deux valeurs (celles des registres a0 et a1) et un code          *)
+(* d'opération `op`, et renvoit des valeurs (r0 et r1)                        *)
+(* La nappe de fils op doit représenter ce qu'on voit dans Cheat sheet        *)
+
+alu ( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
+    ( r0:[wordSize] , r1:[wordSize] , regAddr:[3] ) where
+  op0 = op[0];
+  op1 = op[1];
+  op2 = op[2];
+  op3 = op[3];
+  (r0a,r1a) =   alu_arith<wordSize>( a0, a1, op2, op3 );
+  (r0l,r1l) = alu_logique<wordSize>( a0, a1, op2, op3 );
+  
+  r0alu = mux_n<wordSize>( r0l , r0a , op1 );
+  
+  (*r0li = op3 . op2 . op1 . a0[3..];*)
+  r0li = op3 . op2 . op1 . empty<wordSize-3>();
+  
+  r0 = mux_n<wordSize>( r0li , r0alu , op0 );
+  
+  r1 = mux_n<wordSize>( r1l , r1a , op1 );
+  
+  a = not(op0);
+  regAddr = a.a.0;
+end where
+
+
+(* Heure des tests *)
+main( a0:[wordSize] , a1:[wordSize] , op:[instrSize-2] ) =
+    ( r0w:[wordSize] , r1w:[wordSize] ) where
+  (r0w ,r1w, regAddr) = alu(a0,a1,op)
+end where

@@ -1,0 +1,46 @@
+
+(* #require(param utils) *)
+
+makeJump (isJumping, isAbs, jumpSize:[wordSize], absAddr:[instrAddrSize], addOrSub) =
+		(addr:[instrAddrSize]) where
+	addr = reg_n<instrAddrSize>(newAddr);
+	
+	next = incr_n<instrAddrSize>(addr);
+	
+	vide = empty<instrAddrSize-wordSize>();
+	
+	(forward, fr) = add<instrAddrSize>(addr, jumpSize . vide);
+	(backward, br) = sub<instrAddrSize>(addr,jumpSize . vide);
+	
+	jump = mux_n<instrAddrSize>(forward, backward, addOrSub);
+	relAddr = mux_n<instrAddrSize>(jump, next, isJumping);
+	
+	newAddr = mux_n<instrAddrSize>(absAddr, relAddr, isAbs);
+end where
+
+
+jump (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], op:[instrSize-2], isJUMP) =
+		(instrAddr:[instrAddrSize], regAddr:[3]) where
+	op0 = op[0];
+	op1 = op[1];
+	op2 = op[2];
+	op3 = op[3];
+	
+	rr = mux4_n<wordSize>(a0r, a1r, r0r, r1r, op2, op3);
+	deux = 0.1 . empty<wordSize-2>();
+	jumpSize = mux_n<wordSize>(deux, rr, op0);
+	
+	addOrSub = op0 or not(op1);
+	
+	cond = not(op1) and not(null_n<wordSize>(rr));
+	isJumping = isJUMP and (not(op0) or cond);
+	isAbs = isJUMP and op0 and op1 and not(op2);
+	
+	absAddr = mux_n<instrAddrSize>(r0r . r1r, a0r . a1r, op3);
+	
+	instrAddr = makeJump(isJumping, isAbs, jumpSize, absAddr, addOrSub);
+	regAddr = mux_n<3>(1.0.0, 1.1.1, isJUMP and op0 and op1 and op2 and not(op3));
+end where
+
+
+
