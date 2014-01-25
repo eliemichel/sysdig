@@ -72,7 +72,7 @@ let simulate filename =
 	let p =
 		if not !sim_only then (
 			Format.eprintf "Schedule...@.";
-			try Optimizer.schedule p
+			try Optimizer.launch p
 			with Optimizer.Combinational_cycle -> (
 				Format.eprintf "The netlist has a combinatory cycle.@.";
 				exit 1
