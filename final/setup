@@ -16,8 +16,11 @@ make jupiter || exit
 echo "[\033[34msetup\033[0m] Assembling clock program"
 ./jupiter prog_clock.s
 cd ../micro
-echo "[\033[34msetup\033[0m] Making final microprocessor netlist"
-echo "        info: Scheduling can take some time"
+echo "[\033[34msetup\033[0m] Making final microprocessor netlist (mono core)"
 make main || exit
+echo "[\033[34msetup\033[0m] Making final microprocessor netlist (dual core part 1)"
+make split/main1 || exit
+echo "[\033[34msetup\033[0m] Making final microprocessor netlist (dual core part 2)"
+make split/main2 || exit
 cp main_full.sch.net main_full.sch.net.backup # Pour pas être obligé de refaire le setup après avoir fait un make clean
 echo "[\033[34msetup\033[0m] Ready to run !"
