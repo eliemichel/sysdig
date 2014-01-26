@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 
-cd ../sim
+cd sim
 echo "[\033[34msetup\033[0m] Building simulator"
 make sim || exit
 cd ../mjdep

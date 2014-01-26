@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 
-cd ../sim
+cd sim
 echo "[\033[34mclean\033[0m] Cleaning sim/"
 make clean
 cd ../mjdep

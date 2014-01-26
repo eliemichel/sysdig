@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+# Afficheur en terminal
 ocaml ../output/terminal_out.ml #| tee run.out.log
+
+
+# Afficheur graphique
 #nodejs ../output/serveur.js
 

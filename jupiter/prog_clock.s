@@ -336,36 +336,8 @@ incr
 		##### DEBUT DE LA BOUCLE PRINCIPALE
 		flip # -- L0
 		
-		
-		# load old input
-		li 111
-		mvar 00
-		load 00
-		# read & compare input
-		input 01
-		sub # 0->1 ? : dans l'overflow r1
-		# save input
-		li 111
-		mvar 00
-		save 01
-		
-		
-		# branch
-		li 10
-		mvar 00
-		load 01
-		iio 11
-		jfra 00
-		jfra 01
-		# loop
-		li 1
-		mvar 00
-		mvra 01
-		li 0
-		mvar 00
-		load 00
-		jaaa
-		
+#======(
+#======)
 		## INCR s
 		# load s
 		decr
