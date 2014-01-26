@@ -4,9 +4,19 @@
 cd sim
 echo "[\033[34mclean\033[0m] Cleaning sim/"
 make clean
+
 cd ../mjdep
 echo "[\033[34mclean\033[0m] Cleaning mjdep/"
 make clean
+
+cd ../minijazz
+echo "[\033[34mclean\033[0m] Cleaning minijazz/src/"
+echo Cleaning directory...
+rm -rf src/_build
+echo "\033[1;32mDone.\033[0m"
+
 cd ../micro
 echo "[\033[34mclean\033[0m] Cleaning micro/"
 make clean
+
+
