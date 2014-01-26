@@ -6,6 +6,7 @@ sim/sim
 mjdep/mjdep
 jupiter/jupiter
 jupiter/prog_clock.bin
+minijazz/src/_build/
 
 
 # Mettez ensuite les fichiers qui ne doivent pas être gérés par git
