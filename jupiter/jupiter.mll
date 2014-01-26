@@ -78,13 +78,13 @@ let print_com com =
 
 let space = [' ' '\t' '\r']
 let bit = ['0' '1']+
-let alpha = ['a'-'z' 'A'-'Z' '-' '<' '>' ''' '*' '+' '!' '?' ' ' '\t' '\r' '0'-'9' '(' ')' '=' ',' ';' ':' '.' '&']
+let alpha = ['a'-'z' 'A'-'Z' '-' '<' '>' '\'' '#' '+' '!' '?' ' ' '\t' '\r' '0'-'9' '(' ')' '=' ',' ';' ':' '.' '&']
 let mul = ('\n')+
 
 rule scan = parse
   | space { scan lexbuf }
   | mul { incr line ; scan lexbuf }
-  | "*" { txt := !txt ^ "# " ; com lexbuf }
+  | "#" { txt := !txt ^ "# " ; com lexbuf }
   | "input" (space?) (bit as ij) { print_ij "0001" ij "input"; scan lexbuf }
   | "output" (space?) (bit as b) { print_output b ; scan lexbuf }
   | "flip" { print "001111 # flip \n" ; scan lexbuf }
@@ -115,16 +115,14 @@ rule scan = parse
   | "end" { print "111111 # end \n" ; scan lexbuf }
   | eof { }
   | _ { Printf.printf "Problème ligne %d \n" !line ; 
-	failwith "Oubli d'un argument ou caractère inconnu"; 
-	exit 1 }
+	failwith "Oubli d'un argument ou caractère inconnu"}
 
 and com = parse
   | mul { txt := !txt ^ "\n" ; incr line ; scan lexbuf }
   | eof { }
   | (alpha as a) { print_com a ; com lexbuf }
-  | _ { Printf.printf "Problème ligne %d \n" !line ; 
-	failwith "Oubli d'un argument ou caractère inconnu (commentaire)"; 
-	exit 1 }
+  | _ as c { Printf.printf "Problème ligne %d \n" !line ; 
+	failwith ("Oubli d'un argument ou caractère inconnu (commentaire) : " ^ (String.make 1 c))}
 
 {
   let () =

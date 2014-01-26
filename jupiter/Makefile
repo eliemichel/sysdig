@@ -1,6 +1,6 @@
 all: jupiter
 	./jupiter prog_clock.s
-	./run
+	(cd ../final;./run)
 
 
 jupiter:

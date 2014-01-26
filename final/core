@@ -13,3 +13,6 @@
 
 # Dual core simulation
 taskset -c 0 ../sim/sim --sim-only -rom ../jupiter/prog_clock.bin ../micro/split/main1_full.sch.net | taskset -c 1 ../sim/sim --sim-only ../micro/split/main2_full.sch.net
+
+# Remote simulation
+#ssh elmichel@trolle.ens.fr "(cd sysdig/projet/final;./core)"
