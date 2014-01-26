@@ -20,7 +20,7 @@ mem (a0r:[wordSize], a1r:[wordSize], r0r:[wordSize], r1r:[wordSize], cr:[wordSiz
 	fromReg  = mux_n<wordSize>(fromRegR, fromRegA, isMOVEright);
 	
 	addrFromReg  = mux_n<wordSize>(r1r, r0r, op2);
-	(ramAddr, t) = add<ramAddrSize>(empty<wordSize-3>() . cr . 0.0.0, empty<wordSize>() . addrFromReg);
+	(ramAddr, t) = add<ramAddrSize>(0.0.0 . cr . empty<wordSize-3>(), addrFromReg . empty<wordSize>());
 	ramData = mux_n<wordSize>(a1r, a0r, op3);
 	fromRam = ram<ramAddrSize, wordSize>(ramAddr, isSAVE, ramAddr, ramData);
 	

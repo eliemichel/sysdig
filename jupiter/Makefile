@@ -1,4 +1,5 @@
 all: jupiter
+	./preprocess.sh
 	./jupiter prog_clock.s
 	(cd ../final;./run)
 
