@@ -442,10 +442,45 @@ incr
 	li 0
 	mvar 00
 	save 01
+	### LOAD NOMBRE DE JOURS DANS LE MOIS COURANT + 1
+	li 1
+	mvar 00
+	load 00
+	
+	incr
+		# test moitie de l'annee
+		li 10
+		mvar 00
+		load 01
+		and
+		# pre-branch
+		li 10
+		mvar 01
+		load 11
+		mvar 10
+		decr
+	# load m (again)
+	li 1
+	mvar 01
+	load 10
+	# branch
+	iio 10
+	jfra 01
+	# debut de l'annee
+	mvar 00
+	mvra 01
+	li 101
+	and
+	li 101
+	jfra 00
+	nop
+	# fin de l'annee
+	not
+	mvra 01
+	li 101
+	and
+	
 	decr
-# load 31 TODO : gérer le nombre de jours par mois !
-li 100
-mvar 00
 load 00
 incr
 	incr
