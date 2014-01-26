@@ -156,7 +156,7 @@ let addInput async p vars =
 		let input = String.create l in
 		let m = ref 0 in
 		while !m < l do
-			let n = Unix.read Unix.stdin input !m l in
+			let n = Unix.read Unix.stdin input !m (l - !m) in
 			if n = 0
 			then raise (Sim_error ("End of pipe"))
 			else m := !m + n;

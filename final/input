@@ -2,11 +2,11 @@
 
 
 # Horloge de l'ordinateur
-python ../input/clock.py
+#python ../input/clock.py
 
 
 # Horloge externe (lecture sur le port série)
-#stty -F /dev/ttyACM0 9600 cs8 -cstopb -parenb && # setup serial port
-#cat < /dev/ttyACM0
+stty -F /dev/ttyACM0 9600 cs8 -cstopb -parenb && # setup serial port
+cat < /dev/ttyACM0
 
 

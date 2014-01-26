@@ -4,7 +4,7 @@ var app = require('express')()
   , stdin = process.stdin;
 
 var lastSend = new Date().getTime();
-var deltaSend = 20;
+var deltaSend = 100;
 var buff = '';
 
 stdin.resume();

@@ -17,16 +17,12 @@ oldB = 0
 
 while True :
 	b = struct.unpack('B', ser.read())[0]
-	stdout.write(str(b))
-	"""
 	if (b != oldB) :
-		if oldB == 1 :
+		if oldB == 49 :
 			nt = time.time()
 			print(nt - t)
 			t = nt
 		oldB = b
-	"""
-
 
 
 
