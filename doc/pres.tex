@@ -1,9 +1,8 @@
 \documentclass{beamer}
-
-\usepackage[frenchb]{babel}
-\usepackage[T1]{fontenc}
-\usepackage[latin1]{inputenc}
+\usepackage[francais]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
 
 \usetheme{Warsaw}
 
@@ -20,7 +19,7 @@
 \begin{frame}
 \frametitle{Sommaire}
   \tableofcontents
-\end{frame}   
+\end{frame}
 
 
 \begin{frame}
@@ -31,32 +30,32 @@
 \includegraphics{organisation.eps}
 \caption{\label{orga} Organisation du projet}
 \end{figure}
-\end{frame}   
+\end{frame}
 
 \begin{frame}
 \frametitle{Vue d'ensemble}
-\paragraph{}Trois types d'information différents :
+Trois types d'information différents :
 \begin{itemize}
 	\item Le circuit à simuler
 	\item L'état de la ROM
 	\item Les entrées du circuit
 \end{itemize}
-\end{frame}   
+\end{frame}
 
 \begin{frame}
 \frametitle{La ROM}
 \begin{itemize}
 	\item C'est dans la ROM qu'on va placer le programme que nous voulons exécuter par le simulateur.
-		\item On donne un fichier .bin en entrée, suite de 0 et 1, qui peuvent être espacés et commentés à la suite du caractère $#$. 
+		\item On donne un fichier .bin en entrée, suite de 0 et 1, qui peuvent être espacés et commentés à la suite du caractère $\#$. 
 	\item	La ROM sera initialisée au lancement seulement, avec ces valeurs.
 \end{itemize}
-\end{frame}   
+\end{frame}
 
 \section{Fonctionnement interne}
 
 \begin{frame}
 \frametitle{La ROM}
-\paragraph{}Le simulateur peut se décomposer en plusieurs phases :
+Le simulateur peut se décomposer en plusieurs phases :
 \begin{itemize}
 	\item Le parseur de netlist
 	\item L'optimizer, qui ordonne et simplifie les netlists
@@ -65,7 +64,7 @@
 	\item L'initialisation, convertissant l'AST en structure plus adaptée à la simulation
 	\item Le cœur du simulateur
 \end{itemize}
-\end{frame}   
+\end{frame}
 
 
 
@@ -74,26 +73,22 @@
 
 \begin{frame}
 \frametitle{Curseur de lecture}
-\paragraph{}
 \begin{itemize}
 	\item La commande Li ne peut charger directement que de 0 à 7
 	\item Il faut utiliser donc écraser tous les registres pour aller au-delà
 	\item Les adresses mémoire facilement accessibles sont donc seulement de 0 à 7
 	\item On crée donc un pseudo-registre \$c, pour déplacer le curseur de lecture, avec des instructions $incr$ et $decr$
 	\item La RAM comporte non plus 256 mais $2^{16} = 65536$ adresses
-	\end{itemize}
-	\end{frame} 
-	
-	
-	
-	
+\end{itemize}
+\end{frame}
+
+
 \section{Jeu d'instructions}
 \begin{frame}
 \frametitle{Bloc SYS}
-\begin{tabular}{l!{\vrule}cccc} 
+\begin{tabular}{|c|l|l|}
   \hline
   Code & Nom & Description \\
-  \endfirsthead
   \hline
 
   \hline
@@ -106,12 +101,12 @@
   00 1* ** & OUTPUT x & \'Ecrit \$a0 dans la mémoire graphique\\
   00 11 11 & FLIP     & Actualise l'affichage du timer \\
 \end{tabular}
-	\end{frame} 
-	
-	
-	\begin{frame}
+\end{frame}
+
+
+\begin{frame}
 \frametitle{Bloc ALU}
-\begin{tabular}{l!{\vrule}cccc}
+\begin{tabular}{|c|l|l|}
   \hline
   00 ** ** & \multicolumn{2}{|l|}{ALU} \\
 	  \hline
@@ -127,15 +122,15 @@
   01 01 00 & AND   & \$a0 AND \$a1 dans \$r0 (bit à bit) \\
   01 01 01 & OR    & \$a0 OR \$a1 dans \$r0 (bit à bit) \\
   01 01 10 & NOT   & \$r0 = NOT( \$a0 ) et \$r1 = NOT( \$a1 ) \\
-  01 01 11 & SHIFT & \$r0 . \$r1 = \$a0 $*$ $2^{\$a1} \\
+  01 01 11 & SHIFT & \$r0 . \$r1 = \$a0 $*$ $2^{\text{\$a1}}$ \\
   \hline
   01 1* ** & LI x  & \$a0 = x \\
 	\end{tabular}
-	\end{frame} 
+	\end{frame}
 
 	\begin{frame}
 \frametitle{Bloc MEM}
-\begin{tabular}{l!{\vrule}cccc}
+\begin{tabular}{|c|l|l|}
 \hline\hline
   10 ** ** & \multicolumn{2}{|l|}{MEM} \\
   \hline
@@ -148,12 +143,12 @@
   \hline
   10 10 ij & LOAD ij  & Charge la valeur en RAM(\$r[i]) dans \$a[j]. \\
   10 11 ij & SAVE ij  & Enregistre dans RAM(\$r[i]) la valeur \$a[j]. \\
-	\end{tabular}
-	\end{frame} 
-	
-		\begin{frame}
+\end{tabular}
+\end{frame} 
+
+\begin{frame}
 \frametitle{Bloc JUMP}
-\begin{tabular}{l!{\vrule}cccc}
+\begin{tabular}{|c|l|l|}
   \hline\hline
   11 ** ** & \multicolumn{2}{|l|}{JUMP} \\
   \hline
@@ -164,20 +159,20 @@
   11 11 10 & WCA     & \'Ecrit l'adresse courante dans \$a0.\$a1. \\
   11 11 11 & END      & Termine le programme. \\
   \hline
-		\end{tabular}
-	\end{frame} 
-	
-	\section{Programme de l'horloge}
-	
-	
-		\begin{frame}
-		\frametitle{Mémoire}
-	$\overline{\underbrace{\underline{|13|24|29|30|31|32|60|100|}}_{chunk 0}\underbrace{\underline{|j|m|a1|a2|h|mn|s|*|}}_{chunk 1}\underbrace{\underline{|L0|*|L2|*|*|*|*|old|}}_{chunk 2}}$
-	\end{frame} 
-	
-	
-			\begin{frame}
-		\frametitle{Difficultés}
+	\end{tabular}
+\end{frame} 
+
+\section{Programme de l'horloge}
+
+
+\begin{frame}
+\frametitle{Mémoire}
+$\overline{\underbrace{\underline{|13|24|29|30|31|32|60|100|}}_{chunk 0}\underbrace{\underline{|j|m|a1|a2|h|mn|s|*|}}_{chunk 1}\underbrace{\underline{|L0|*|L2|*|*|*|*|old|}}_{chunk 2}}$
+\end{frame} 
+
+
+\begin{frame}
+\frametitle{Difficultés}
 \begin{itemize}
 	\item Difficile de coder avec si peu d'instructions, mais intéressant
 	\item Surtout lorsqu'il a fallu prendre en compte le nombre de jours par mois

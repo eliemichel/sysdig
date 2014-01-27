@@ -9,8 +9,6 @@ all: rapport pres
 	dvipdfmx $@.dvi
 
 clean:
-	rm *.aux
-	rm *.dvi
-	rm *.log
+	@rm -fv *.aux *.dvi *.log *.nav *.out *.snm *.toc
 
 
