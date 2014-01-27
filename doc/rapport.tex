@@ -85,7 +85,7 @@ alors comme suit :
 
 \paragraph{}Par défaut, le Sim utilise le fichier \texttt{rom.sim} pour la rom. Pour modifier le fichier de description de la rom, utiliser l'option \texttt{-rom [filename].sim}.
 
-\paragraph{}L'opération d'ordonnement de la netlist peut s'avérer très coûteuse en temps, c'est pourquoi on peut choisir de sauvegarder la netlist ordonnée à l'aide de l'option \texttt{--schedule-only}. Dans ce cas, l'étape de simulation n'est pas effectuée et la netlist ordonnée est enregistrée dans \texttt{[filename].sch.net}.
+\paragraph{}L'opération d'ordonnement de la netlist a pendant longtemps nécessité d'attendre plusieurs dizaines de secondes, c'est pourquoi on peut choisir de sauvegarder la netlist ordonnée à l'aide de l'option \texttt{--schedule-only}. Dans ce cas, l'étape de simulation n'est pas effectuée et la netlist ordonnée est enregistrée dans \texttt{[filename].sch.net}.
 
 \paragraph{}Lorsque l'on veut utiliser un fichier netlist déjà ordonné, il utiliser l'option \texttt{--sim-only}. À ce moment, si la netlist n'a pas préalablement été ordonnée, il peut y avoir des erreurs diverses. Le plus simple est de n'utilise cette option que lorsque le fichier termine par \texttt{.sch.net} afin d'éviter les confusions.
 
@@ -128,7 +128,7 @@ Presque toutes les nappes ont été supprimées, sauf localement autour des prim
 \paragraph{}Il fait cependant mieux que ça, et ce pour plusieurs raisons.
 En premier lieu, la complexité du travail de Optimizer est  en $\mathcal O(n)$ ou $\mathcal O(n\log n)$, quand celle du Scheduler était de $\mathcal O(n^2)$. Cela  est rendu possible par le fait que l'Optimizer stocke dans son graphe  (qui représente la netlist) plus d'informations (notament l'équation  associée au noeud), ce qui permet donc de retrouver l'équation associée à  un noeud en temps constant, au lieu de devoir chercher dans une liste  (en temps linéaire donc). Sur une netlist de ~25000 portes, cela  multiplie l'efficacité par (au moins) 1000, ce qui se ressent quand on  passe de 50s de préparation à la simulation à moins d'une seconde.
 
-De plus, lors de la construction du graphe représentant la netlist,  l'Optimizer supprime les nappes. Une variable a:3 se verra remplacer par $a_{n0}, a_{n1}, a_{n2}$ (le double tiret bas n'étant pas toléré ?). L'ordre  des variables étant important au niveau des inputs/outputs, ce détail  est bien sûr  contrôlé. Cela permet alors la suppression de la plupart des fonctions  SELECT, SLICE et CONCAT, qui deviennent simplement des égalités  bit-à-bit. À ce stade, le graphe comporte donc beaucoup plus de noeuds  que la netlist d'équations.
+De plus, lors de la construction du graphe représentant la netlist,  l'Optimizer supprime les nappes. Une variable a:3 se verra remplacer par \texttt{a\_n0}, \texttt{a\_n1}, \texttt{a\_n2}. L'ordre  des variables étant important au niveau des inputs/outputs, ce détail  est bien sûr  contrôlé. Cela permet alors la suppression de la plupart des fonctions  SELECT, SLICE et CONCAT, qui deviennent simplement des égalités  bit-à-bit. À ce stade, le graphe comporte donc beaucoup plus de noeuds  que la netlist d'équations.
 Lors  du retour à la netlist, on supprime les branches inutiles de la  netlist, à savoir toutes les équations qui ne servent pas au calcul des  outputs. La netlist est aussi triée par ordre topologique à ce moment.  Elle comporte beaucoup plus d'équations que l'orginal.
 
 En   dernier lieu, on supprime  toutes les équations de la forme y=x (sauf  celles qui concernent une  output) et on remplace la variable y par la  variable x dans la netlist. Cette phase supprime énormément de portes, ce qui permet à la fin d'obtenir une netlist bien plus petite que l'original. Par exemple :
@@ -486,7 +486,7 @@ On ne pouvait lui donner de rôle sans aboutir à un jeu d'instruction complète
 
 Premièrement, minijazz étant un langage très simple, il ne gère pas l'import de fichiers les uns dans les autres. Cette fonctionnalité nous semblait pourtant essentielle, d'une part pour pouvoir utiliser une même portion de circuit dans plusieurs tests distincts (par exemple le gpu et l'alu) et d'autre part pour pouvoir travailler sans se gêner sur le circuit (git gère bien mieux des fichiers séparés).
 
-Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit les « The following constraint is not satisfied: ((8 = 0) ? 1 : (8 = (((0 <= (8 - 1)) ? (((8 - 1) - 0) + 1) : 0) + ((0 <= (8 - 8)) ? (((8 - 8) - 0) + 1) : 0)))) » ou les erreurs localisées « Quelque part entre la première et la dernière ligne du fichier ». Le debogage consistait donc en une longue dichotomie sur tout le code du microprocesseur.
+Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit les « \texttt{The following constraint is not satisfied: ((8 = 0) ? 1 : (8 = (((0 <= (8 - 1)) ? (((8 - 1) - 0) + 1) : 0) + ((0 <= (8 - 8)) ? (((8 - 8) - 0) + 1) : 0))))} » ou les erreurs localisées « Quelque part entre la première et la dernière ligne du fichier ». Le debogage consistait donc en une longue dichotomie sur tout le code du microprocesseur.
 
 
 
@@ -500,6 +500,23 @@ Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit
 \end{center}
 \end{wrapfigure}
 
+\paragraph{}L'assembleur a été nommé « jupiter » et se trouve donc, avec le programme, dans le répertoire du même nom. Le programme a été loin d'être la partie la plus simple du fait des restrictions drastiques imposées au jeu d'instructions. Il a a fallu jongler avec les quatres seuls registres présents et surtout le \emph{load immediat} restreint à 3 bits.
+
+\paragraph{}Nous avons commencé par des tests simples, comme un unique compteur qui nécessitait déjà une vingtaine d'instructions. Dès l'ajout d'un seuil à 60, la difficulté du chargement de constante s'est présentée. Afin d'alléger la boucle principale, il était clair que nous devions charger les constantes à l'avance. Et à force de charger des constantes (60, 24, 30, etc) il a également fallu charger une constante à l'avance pour l'adresse de début de la boucle principale. Notre assembleur n'effectue pas lui-même l'édition des liens car il est important pour l'optimisation de maîtriser où exactement est enregistrée cette constante. Par exemple plutôt que de faire un LI sur plus de 3 bits (donc en plusieurs étapes), on peut préférer exploiter la valeur précédemment chargée et y ajouter une petite valeur.
+
+\paragraph{}Il a également fallu conserver en RAM la valeur des différents compteurs car une fois envoyés au processeur graphique, elles ne peuvent plus être lues. Nous avons alors dû organiser la mémoire de façon cohérente et avons adopté le schéma suivant :
+
+\paragraph{}$\overline{\underbrace{\underline{|13|24|29|30|31|32|60|100|}}_{chunk 0}\underbrace{\underline{|j|m|a1|a2|h|mn|s|*|}}_{chunk 1}\underbrace{\underline{|L0|*|L2|*|*|*|*|oldInput|}}_{chunk 2}}$
+
+\paragraph{}On notera que la constante L2 est à l'adresse 2 et non à l'adresse 1 qui est libre. C'est parce qu'elle sert de valeur de jump pour éviter un retour en début de boucle (situation se répétant souvent dans le code) et que la constante 2 est utilisée systématiquement juste avant dans le code.
+
+\paragraph{}Une convention a été mise en place dans la rédaction du code assembleur : le niveau d'indentation correspond à la valeur du registre \$c. Cette convention quelque peu exotique s'est avérée utile pour éviter des erreurs qui auraient pu être longues à déboguer.
+
+\paragraph{}Une fois le code fait pour un compteur et le chargement bien organisé, il suffisait à peu près de copier-coller pour obtenir les autres compteurs. La principale difficulté fut de gérer le nombre de jours par mois. Nous avons commencé par chercher à partir de la table de vérité à construire par opérations bits à bits l'adresse mémoire contenant le nombre de jours, mais cette opération était, malgré des simplifications heureuses, coûteuse. Nous avons finalement utilisé l'important espace mémoire disponible pour construire lors de la phase d'initialisation une \emph{look up table} contenant le nombre de jour pour chaque mois (enfin l'adresse mémoire la contenant, pour simplifier l'initialisation).
+
+\paragraph{}La dernière difficulté fut de gérer les années bisextiles. Détecter si le mois est février puis si l'année est bisextile demande un grand nombre d'opérations à effectuer chaque mois, surtout que faire un branchement conditionnel nécessite de charger qu préalable le nombre d'opérations à sauter si la condition n'est pas remplie. Nous avons finalement choisi d'éditer la LUT au changement d'année.
+
+\paragraph{}Le code a été réfléchi pour exploiter au maximum la moindre de ses instructions, à l'exception du chargement de la date initiale. En effet, on peut dans des cas particulier accélérer le chargement de constantes (en jouant sur le nombre de bits finaux nuls, des négations, etc) mais nous voulions avoir la possibilité, ne serait-ce que pour les tests, de pouvoir modifier la date initiale facilement. Nous sommes même allé plus loin en écrivant un petit script (\texttt{jupiter/preprocessor.sh}) insérant les constantes au bon endroit (bien qu'il faille tout de même donner les constantes en binaire et 3 bits par 3 bits dans ce script, il n'est pas très \emph{user-friendly}) et supprimant la partie du code attendant la seconde suivante dans le cas où on veut faire tourner l'horloge à pleine vitesse.
 
 
 
