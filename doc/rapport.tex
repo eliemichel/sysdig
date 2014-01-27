@@ -104,7 +104,7 @@ alors comme suit :
 \end{itemize}
 
 \subsubsection{Parseur de netlist}
-Nous avons globalement repris celui donné en TP au début de l'année. Nous avons cependant modifié les types \textt{ty} et \textt{value} pour abandonner les tableaux de booléens, trop peu efficaces et gourmands en mémoire, au profit d'une représentation sur basée sur la représentation binaire d'entiers. Le type est un entier spécifiant la taille de la nappe, ou \texttt0 pour un bit simple, et la valeur est un entier. Le seul problème est qu'on est alors limité dans les nappes par la taille des entiers caml (31 bits sur une architecture 32 bits) mais ce problème est résolu par la phase d'optimisation (sauf pour les accès mémoire).
+Nous avons globalement repris celui donné en TP au début de l'année. Nous avons cependant modifié les types \texttt{ty} et \texttt{value} pour abandonner les tableaux de booléens, trop peu efficaces et gourmands en mémoire, au profit d'une représentation sur basée sur la représentation binaire d'entiers. Le type est un entier spécifiant la taille de la nappe, ou \texttt0 pour un bit simple, et la valeur est un entier. Le seul problème est qu'on est alors limité dans les nappes par la taille des entiers caml (31 bits sur une architecture 32 bits) mais ce problème est résolu par la phase d'optimisation (sauf pour les accès mémoire).
 
 \subsubsection{Optimizer}
 \paragraph{}Les netlist générées depuis minijazz étant relativement longues, nous avons cherché à les optimiser. Nous nous sommes alors posé la question de l'utilité des nappes : leur  implémentation n'apporte aucune fonction spécifique (sauf RAM et ROM),  et n'accélère donc en rien la simulation.
@@ -121,14 +121,14 @@ Presque toutes les nappes ont été supprimées, sauf localement autour des prim
 
 \paragraph{}C'est le travail du module Optimizer du simulateur de faire cela. Ce module améliore le travail de Scheduler :
 \begin{itemize}
-	\item il prend une valeur de type Netlist_ast.program en entrée
-	\item il  ressort une valeur de type Netlist_ast.program, avec les équations  triées dans un ordre topologique au niveau des dépendances.
+	\item il prend une valeur de type \texttt{Netlist\_ast.program} en entrée
+	\item il ressort une valeur de type \texttt{Netlist\_ast.program}, avec les équations  triées dans un ordre topologique au niveau des dépendances.
 \end{itemize}
 
 \paragraph{}Il fait cependant mieux que ça, et ce pour plusieurs raisons.
-En premier lieu, la complexité du travail de Optimizer est  en O(n) ou O(n.log n), quand celle du Scheduler était de O(n²). Cela  est rendu possible par le fait que l'Optimizer stocke dans son graphe  (qui représente la netlist) plus d'informations (notament l'équation  associée au noeud), ce qui permet donc de retrouver l'équation associée à  un noeud en temps constant, au lieu de devoir chercher dans une liste  (en temps linéaire donc). Sur une netlist de ~25000 portes, cela  multiplie l'efficacité par (au moins) 1000, ce qui se ressent quand on  passe de 50s de préparation à la simulation à moins d'une seconde.
+En premier lieu, la complexité du travail de Optimizer est  en $\mathcal O(n)$ ou $\mathcal O(n\log n)$, quand celle du Scheduler était de $\mathcal O(n^2)$. Cela  est rendu possible par le fait que l'Optimizer stocke dans son graphe  (qui représente la netlist) plus d'informations (notament l'équation  associée au noeud), ce qui permet donc de retrouver l'équation associée à  un noeud en temps constant, au lieu de devoir chercher dans une liste  (en temps linéaire donc). Sur une netlist de ~25000 portes, cela  multiplie l'efficacité par (au moins) 1000, ce qui se ressent quand on  passe de 50s de préparation à la simulation à moins d'une seconde.
 
-De  plus, lors de la construction du graphe représentant la netlist,  l'Optimizer supprime les nappes. Une variable a:3 se verra remplacer par  a_n0, a_n1, a_n2 (le double tiret bas n'étant pas toléré ?). L'ordre  des variables étant important au niveau des inputs/outputs, ce détail  est bien sûr  contrôlé. Cela permet alors la suppression de la plupart des fonctions  SELECT, SLICE et CONCAT, qui deviennent simplement des égalités  bit-à-bit. À ce stade, le graphe comporte donc beaucoup plus de noeuds  que la netlist d'équations.
+De plus, lors de la construction du graphe représentant la netlist,  l'Optimizer supprime les nappes. Une variable a:3 se verra remplacer par $a_{n0}, a_{n1}, a_{n2}$ (le double tiret bas n'étant pas toléré ?). L'ordre  des variables étant important au niveau des inputs/outputs, ce détail  est bien sûr  contrôlé. Cela permet alors la suppression de la plupart des fonctions  SELECT, SLICE et CONCAT, qui deviennent simplement des égalités  bit-à-bit. À ce stade, le graphe comporte donc beaucoup plus de noeuds  que la netlist d'équations.
 Lors  du retour à la netlist, on supprime les branches inutiles de la  netlist, à savoir toutes les équations qui ne servent pas au calcul des  outputs. La netlist est aussi triée par ordre topologique à ce moment.  Elle comporte beaucoup plus d'équations que l'orginal.
 
 En   dernier lieu, on supprime  toutes les équations de la forme y=x (sauf  celles qui concernent une  output) et on remplace la variable y par la  variable x dans la netlist. Cette phase supprime énormément de portes, ce qui permet à la fin d'obtenir une netlist bien plus petite que l'original. Par exemple :
@@ -501,12 +501,21 @@ Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit
 \end{wrapfigure}
 
 
+
+
+
+
 \section{Oscillateur}
 
 \begin{figure}[h]
 \centering
 \includegraphics[height=4em]{zoom_input.eps}
 \end{figure}
+
+
+
+
+
 
 \section{Afficheurs}
 
