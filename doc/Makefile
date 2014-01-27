@@ -1,12 +1,16 @@
 
 
-all:
-	latex rapport.tex
-	dvipdfmx rapport.dvi
+.PHONY: clean all
+
+all: rapport pres
+
+%: %.tex
+	latex $@.tex
+	dvipdfmx $@.dvi
 
 clean:
-	rm rapport.aux
-	rm rapport.dvi
-	rm rapport.log
+	rm *.aux
+	rm *.dvi
+	rm *.log
 
 
