@@ -1,11 +1,13 @@
 \documentclass{article}
 \usepackage[francais]{babel}
-\usepackage[utf8]{inputenc}  
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc} 
 \usepackage{multirow}
 \usepackage{footnote}
 \usepackage{longtable}
 \usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{url}
 
 \usepackage[top=2cm, bottom=2.5cm, left=1.5cm, right=1.5cm]{geometry}
 
@@ -33,28 +35,141 @@
 	\item Les entrées du circuit
 \end{itemize}
 
-\paragraph{}Il retourne ensuite les sorites du circuit. Il est intéressant de faire la distinction entre les entrées/sorties du circuit, qui se font en temps réel lors de la simulation et le chargement du circuit et de la ROM qui se font à l'initialisation, depuis des fichiers préalablement générés. Ces deux phases sont appelées respectivement `run` et `setup` et possèdent chacune un script éponyme à la racine de l'archive.
-
-
-\paragraph{}Le simulateur lui-même peut également se décomposer en plusieurs phases :
-\begin{itemize}
-	\item Le parseur de netlist
-	\item L'optimizer, qui ordonne et simplifie les netlists
-	\item Le parseur de fichier de ROM
-	\item L'initialisation, convertissant l'AST en structure plus adaptée à la simulation
-	\item Le cœur du simulateur
-\end{itemize}
+\paragraph{}Il retourne ensuite les sorites du circuit. Il est intéressant de faire la distinction entre les entrées/sorties du circuit, qui se font en temps réel lors de la simulation et le chargement du circuit et de la ROM qui se font à l'initialisation, depuis des fichiers préalablement générés. Ces deux phases sont appelées respectivement \texttt{run} et \texttt{setup} et possèdent chacune un script éponyme à la racine de l'archive.
 
 
 \paragraph{}Le microprocesseur est construit en utilisant minijazz et un préprocesseur permettant l'agrégation de plusieurs fichiers. Le programme est assemblé par le programme jupiter. L'entrée du circuit est reliée par l'intermédiaire du port série à un oscillateur carré réel et la sortie peut être reliée à deux afficheurs, l'un graphique et l'autre non.
 
-
-
 \section{Simulateur}
 
+Les sources et dépendances du simulateur se trouvent dans le répertoire \texttt{sim/}
+
+
+\subsection{Utilisation}
+\subsubsection{Installation}
+\paragraph{}La compilation du simulateur nécessite make, ocamlopt, ocamldep, ocamllex et menhir. Le plus simple est d'utiliser Linux, bien que nous ayons également testé sous Windows \emph{via} cygwin. Il est probable que le simulateur fonctionne sous MacOS bien que nous n'ayons pas eu à disposition de telle machine.
+
+\paragraph{}\texttt{make sim} compile uniquement le simulateur alors que \texttt{make} (ou \texttt{make all}) lance également un exemple d'utilisation. Le programme \texttt{sim} ainsi créé est autonome.
+
+\subsubsection{Fonctionnement général}
+Sim prend en entrée les fichiers suivants :
+\begin{itemize}
+	\item Un fichier netlist contenant la description du circuit (ordonnée ou non)
+	\item Un fichier décrivant la ROM (facultatif)
+\end{itemize}
+
+\paragraph{}Le fichier ROM est facultatif. S'il n'existe pas, un avertissement est affiché dans la console mais la simulation est tout de même effectuée. La ROM est alors identiquement nulle.
+
+
+\subsubsection{Syntaxe des différents fichiers}
+La syntaxe de la netlist peut se trouver ici : (en seconde partie)\\
+\url{http://www.di.ens.fr/~bourke/minijazz.pdf}
+
+\paragraph{}La syntaxe du fichier de description de la ROM est la suivante :
+\begin{itemize}
+	\item Les valeurs sont représentées par des caractères : \texttt1 représente un bit activé tandis qu'un \texttt0 représente un bit désactivé.
+	\item Les espaces et tabulations sont ignorées.
+	\item Les retours à la ligne annoncent une nouvelle adresse mémoire.
+	\item Des commentaires peuvent être ajoutés en fin de ligne après le caractère \texttt\#.
+	\item Une ligne commençant directement par le caractère \texttt\# n'est pas considérée comme correspondant à une adresse.
+	\item Les adresses sont écrite par ordre croissant en partant de 0. Si le fichier est plus long que la taille de la rom, le comportement du simulateur n'est pas défini.
+	\item La première valeur entrée détermine la taille des mots de la mémoire. Les lignes suivantes sont automatiquement tronquées ou complétées par des 0. Veillez donc à ce que la première ligne ne soit pas vide !
+\end{itemize}
+
+\subsubsection{Syntaxe de la commande sim}
+\paragraph{}Le seul paramètre obligatoire est le fichier netlist à simuler. Sim s'appelle
+alors comme suit :
+\begin{verbatim}
+	sim [filename].net
+\end{verbatim}
+
+\paragraph{}Par défaut, le Sim utilise le fichier \texttt{rom.sim} pour la rom. Pour modifier le fichier de description de la rom, utiliser l'option \texttt{-rom [filename].sim}.
+
+\paragraph{}L'opération d'ordonnement de la netlist peut s'avérer très coûteuse en temps, c'est pourquoi on peut choisir de sauvegarder la netlist ordonnée à l'aide de l'option \texttt{--schedule-only}. Dans ce cas, l'étape de simulation n'est pas effectuée et la netlist ordonnée est enregistrée dans \texttt{[filename].sch.net}.
+
+\paragraph{}Lorsque l'on veut utiliser un fichier netlist déjà ordonné, il utiliser l'option \texttt{--sim-only}. À ce moment, si la netlist n'a pas préalablement été ordonnée, il peut y avoir des erreurs diverses. Le plus simple est de n'utilise cette option que lorsque le fichier termine par \texttt{.sch.net} afin d'éviter les confusions.
+
+\paragraph{}Sim lit les valeurs des entrées du circuit sur l'entrée standard et écrit celles des sorties sur la sortie standard (sans retours à la lignes ni espaces dans les deux cas). L'entrée est lue bloc par bloc sans perdre une seule valeur, et donc si elle est générée plus vite qu'elle n'est traitée, un délais s'établit entre la génération et son envoi à la netlist simulée. Si ce comportement n'est pas souhaité, le paramètre \texttt{--async} peut être spécifié au lancement de Sim afin de vider l'entrée après l'avoir lue à chaque itération de la simulation. Ainsi la valeur lue en entrée a toujours été écrite pendant la dernière itération.
+
+\subsection{Fonctionnement interne}
+
+\paragraph{}Le simulateur peut se décomposer en plusieurs phases :
+\begin{itemize}
+	\item Le parseur de netlist
+	\item L'optimizer, qui ordonne et simplifie les netlists
+	\item Le parseur de fichier de ROM
+	\item Le lecture/écriture des entrées/sorties du circuit
+	\item L'initialisation, convertissant l'AST en structure plus adaptée à la simulation
+	\item Le cœur du simulateur
+\end{itemize}
+
+\subsubsection{Parseur de netlist}
+Nous avons globalement repris celui donné en TP au début de l'année. Nous avons cependant modifié les types \textt{ty} et \textt{value} pour abandonner les tableaux de booléens, trop peu efficaces et gourmands en mémoire, au profit d'une représentation sur basée sur la représentation binaire d'entiers. Le type est un entier spécifiant la taille de la nappe, ou \texttt0 pour un bit simple, et la valeur est un entier. Le seul problème est qu'on est alors limité dans les nappes par la taille des entiers caml (31 bits sur une architecture 32 bits) mais ce problème est résolu par la phase d'optimisation (sauf pour les accès mémoire).
+
+\subsubsection{Optimizer}
+\paragraph{}Les netlist générées depuis minijazz étant relativement longues, nous avons cherché à les optimiser. Nous nous sommes alors posé la question de l'utilité des nappes : leur  implémentation n'apporte aucune fonction spécifique (sauf RAM et ROM),  et n'accélère donc en rien la simulation.
+De  plus, de part l'utilisation des circuits définis récursivement, le  nombre de fonctions SELECT, SLICE et CONCAT était vraiment élevé dans la netlist.
+Dès lors, il y avait deux choix possibles :
+\begin{itemize}
+	\item conserver l'idée de nappe, et adapter les fonctions de base, AND OR NOT MUX à leur utilisation
+	\item supprimer les nappes (si cela pouvait apporter de la rapidité)
+\end{itemize}
+
+\paragraph{}La première solution n'ayant pas vraiment de sens physique, nous avons opté pour la deuxième : supprimer la notion de nappe.
+En  fait, nous n'avons pas tout à fait fait ça, dans la mesure ou nous ne  voulions pas supprimer les primitives ROM et RAM, qui utilisent  fondamentalement les nappes.
+Presque toutes les nappes ont été supprimées, sauf localement autour des primitives RAM et ROM, ou elles sont reconstruites.
+
+\paragraph{}C'est le travail du module Optimizer du simulateur de faire cela. Ce module améliore le travail de Scheduler :
+\begin{itemize}
+	\item il prend une valeur de type Netlist_ast.program en entrée
+	\item il  ressort une valeur de type Netlist_ast.program, avec les équations  triées dans un ordre topologique au niveau des dépendances.
+\end{itemize}
+
+\paragraph{}Il fait cependant mieux que ça, et ce pour plusieurs raisons.
+En premier lieu, la complexité du travail de Optimizer est  en O(n) ou O(n.log n), quand celle du Scheduler était de O(n²). Cela  est rendu possible par le fait que l'Optimizer stocke dans son graphe  (qui représente la netlist) plus d'informations (notament l'équation  associée au noeud), ce qui permet donc de retrouver l'équation associée à  un noeud en temps constant, au lieu de devoir chercher dans une liste  (en temps linéaire donc). Sur une netlist de ~25000 portes, cela  multiplie l'efficacité par (au moins) 1000, ce qui se ressent quand on  passe de 50s de préparation à la simulation à moins d'une seconde.
+
+De  plus, lors de la construction du graphe représentant la netlist,  l'Optimizer supprime les nappes. Une variable a:3 se verra remplacer par  a_n0, a_n1, a_n2 (le double tiret bas n'étant pas toléré ?). L'ordre  des variables étant important au niveau des inputs/outputs, ce détail  est bien sûr  contrôlé. Cela permet alors la suppression de la plupart des fonctions  SELECT, SLICE et CONCAT, qui deviennent simplement des égalités  bit-à-bit. À ce stade, le graphe comporte donc beaucoup plus de noeuds  que la netlist d'équations.
+Lors  du retour à la netlist, on supprime les branches inutiles de la  netlist, à savoir toutes les équations qui ne servent pas au calcul des  outputs. La netlist est aussi triée par ordre topologique à ce moment.  Elle comporte beaucoup plus d'équations que l'orginal.
+
+En   dernier lieu, on supprime  toutes les équations de la forme y=x (sauf  celles qui concernent une  output) et on remplace la variable y par la  variable x dans la netlist. Cette phase supprime énormément de portes, ce qui permet à la fin d'obtenir une netlist bien plus petite que l'original. Par exemple :
+\begin{itemize}
+	\item mjc.byte donne une netlist de 22143 portes
+	\item après la suppression des nappes, on passe à 48384 portes
+	\item après la suppression des doublons, 8132 portes.
+\end{itemize}
+
+
+\subsubsection{Parseur de la ROM}
+La lecture des fichiers de description de la ROM est suffisemment simple pour tenir dans un lexer (pas besoin de menhir ici). Ce parseur servait à l'origine à charger le fichier décrivant les entrées au cours du temps.
+
+\subsection{Entrées/sorties du circuit}
+\paragraph{}Les entrées étaient au début écrites à l'avance dans un fichier lu au démarrage du simulateur, mais cette méthode atteint ses limites lorsque les informations envoyées à l'entrées devaient d'une part être infinies et d'autre part ne pouvait pas être prévues à l'avance. Nous avons alors choisi de dialoguer sur l'entrée/sortie standard (bien que ce soit en fait là aussi un fichier), en vue de la communication avec les autres parties du projet.
+
+\paragraph{}Les entrées étaient initialement séparées d'un retour à la ligne entre chaque série et typées (les nappes mises entre crochet) pour vérifier qu'elles correspondent à l'entrée attendu. Pour des raisons de performances, nous nous sommes contenté de lire les entrées successives bout à bout, sans aucune séparation. Dans la pratique, il n'y a en entrée qu'un seul bit et ce choix divise donc par deux la taille des fichiers échangés. Le même allègement est appliqué aux sorties.
+
+\subsubsection{Initialisation}
+Nous avons eu énormément de problèmes d'efficacité avec le simulateur et n'avons de ce fait pas conserver la structure telle qu'elle est chargée pour la simulation. Plutôt que d'indicer les différentes équations par leur nom dans le fichier de netlist, elles sont numérotées et un tableau les contenant est initialisé. Nous avons également tenté d'encoder l'arbre de syntaxe abstraite dans un autre tableau d'entier afin de se rapprocher au maximum du bas niveau mais les gains de performance n'étaient finalement pas intéressants.
+
+\subsubsection{Simulation}
+\paragraph{}Le simulateur se doit d'être le plus rapide possible. Nous avons commencé avec une fréquence d'à peu près 15Hz, ce qui ne permettait vraiment pas de simuler correctement une horloge, surtout avec notre jeu d'instruction extrêmement bas niveau.
+
+\paragraph{}Les raisons de cette lenteur n'ont pas été simples à déterminer. Une première amélioration fut d'abandonner l'utilisation de maps au profit de tables de hachage (passage à 20-25Hz) mais la simulation restait étrangement lente. Ne trouvant pas d'où venait le problème, nous avons, avec l'aide de Tim, fait le profiling d'une simulation. Le profiling fourni par ocaml ne donne que le nombre d'appels à chaque fonction et nous n'avons rien repéré d'anormal. Nous avons cependant constaté que plus de la moitié des opérations étaient des concat/select/slice et c'est ce qui a motivé notre idée de retirer les nappes.
+
+\paragraph{}Un profiling plus poussé à l'aide de \texttt{gprof} et du module \texttt{Gc} a montré que la représentation des nappes sous forme de tableaux de booléens mobilisait un peu trop la mémoire. Nous avons donc décidé de les représenter par des entiers malgré la perte de généralité engendrée (limite de taille des nappes). Un autre point que le profiling a montré est l'utilisation un très grand nombre de fois du hashage, c'est pourquoi nous avons numéroté les équations au lieu de les représenter par une chaîne.
+
+\paragraph{}Les performances se sont améliorées jusqu'à avoisiner les 200Hz mais cette valeur nous semblait encore très faible au vu des capacités d'un ordinateur. Ne pouvant optimiser plus le simulateur sans tout recommencer, nous avons alors entreprit d'optimiser la netlist. Nous avons alors pu dépasser les 400Hz dans certains cas.
+
+\paragraph{}Une dernière optimisation intéressante fut de couper le code du microprocesseur en deux et de simuler les deux parties séparément. Nous n'avons rien eu à modifier sur le simulateur et il a ainsi pu profiter des architectures multi cœurs.
 
 
 \section{Microprocesseur}
+
+\begin{wrapfigure}{r}{0.2\textwidth}
+\begin{center}
+\includegraphics[width=0.2\textwidth]{zoom_micro.eps}
+\end{center}
+\end{wrapfigure}
+
 \subsection{Introduction}
 
 Nous avons commencé par nous baser sur le fonctionnement des microprocesseurs
@@ -253,6 +368,7 @@ Derrière le module SYS se cache en fait un cinquième module : le GPU (\emph{Gr
 
 \paragraph{}La séparation CPU/GPU est un point très intéressant du circuit : il est central puisque le GPU représente la moitié du circuit, mais les liens entre les deux sont d'une part peu nombreux et d'autre part à sens unique. Cela nous a permis de couper la simulation en deux afin d'optimiser l'utilisation de processeurs multi-cœurs en lançant simplement deux occurences du simulateur.
 
+\paragraph{}Notons que nous aurions pu choisir, au vu du son poids important, de gérer la logique du GPU directement dans l'afficheur. Mais nous tenions à jouer le jeu de la simulation jusqu'au bout et imaginer la sortie du simulateur directement branchée fil par fil aux 98 segments de l'afficheur.
 
 \subsection{Ajout récent}
 \label{micro_update}
@@ -263,8 +379,6 @@ Cette partie du microprocesseur n'était pas présente dans l'ancienne version r
 \paragraph{}Les opérations possibles sur ce pointeur \$c sont “ajouter 8” (INCR) et “retirer 8” (DECR), la valeur 8 correspondant au nombre d'adresses faciles d'accès. On enregistre en réalité $\frac{\$c}8$ étant donné que les 3 derniers bits sont toujours à 0. Cette méthode permet de limiter le nombre d'instructions à ajouter.
 
 \paragraph{}Il devient ainsi très simple d'accéder aux adresses au-delà de 8, bien que le temps d'accès ne soit plus constant. On a également pu augmenter la taille de la RAM. Bien que ce système permette de gérer une RAM de taille quelconque, nous nous sommes contenté de $2^16 = 65536$ adresses. Notre programme n'utilise en réalité que 8 chunks (24 adresses) mais par soucis de généralité nous avons voulu montré qu'il était possible de gérer une grande quantité de RAM et donc d'envisager de compiler n'importe quelle programme vers notre assembleur, ce que 256 adresses ne permet pas vraiment.
-
-\paragraph{}Notons que nous aurions pu choisir, au vu du son poids important, de gérer la logique du GPU directement dans l'afficheur. Mais nous tenions à jouer le jeu de la simulation jusqu'au bout et imaginer la sortie du simulateur directement branchée fil par fil aux 98 segments de l'afficheur.
 
 \begin{figure}[h]
 \centering
@@ -380,11 +494,26 @@ Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit
 
 \section{Programme}
 
+\begin{wrapfigure}{r}{0.15\textwidth}
+\begin{center}
+\includegraphics[width=0.15\textwidth]{zoom_prog.eps}
+\end{center}
+\end{wrapfigure}
+
+
 \section{Oscillateur}
+
+\begin{figure}[h]
+\centering
+\includegraphics[height=4em]{zoom_input.eps}
+\end{figure}
 
 \section{Afficheurs}
 
-
+\begin{figure}[h]
+\centering
+\includegraphics[height=4em]{zoom_output.eps}
+\end{figure}
 
 
 
