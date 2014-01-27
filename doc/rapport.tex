@@ -40,6 +40,8 @@
 
 \paragraph{}Le microprocesseur est construit en utilisant minijazz et un préprocesseur permettant l'agrégation de plusieurs fichiers. Le programme est assemblé par le programme jupiter. L'entrée du circuit est reliée par l'intermédiaire du port série à un oscillateur carré réel et la sortie peut être reliée à deux afficheurs, l'un graphique et l'autre non.
 
+\paragraph{}Pour tester le projet, il suffit normalement d'exécuter les scripts \texttt{setup} puis \texttt{run}. Différentes options sont accessibles en ouvrant les fichiers \texttt{final/input}, \texttt{final/core} et \texttt{final/output}.
+
 \section{Simulateur}
 
 Les sources et dépendances du simulateur se trouvent dans le répertoire \texttt{sim/}
@@ -559,7 +561,7 @@ Afin de contrôler la période des oscillation et l'ajuster au plus près d'une 
 \paragraph{}Concernant la lecture du port série depuis l'ordinateur, nous avons tout d'abord rédigé un script python, mais finalement il suffit de faire \texttt{cat < /dev/ttyACM0} pour lire le port série de ttyACM0 (ce nom peut varier d'une machine à l'autre, entre ttyACM* et ttyUSB* généralement). Le seul problème est de configurer correctement le port (baudrate, bit de parité, etc) et pour cela la commande \texttt{stty} est utilisée mais ne donne pas toujours les résultats escomptés. La seule solution trouvée est de lancer \texttt{minicom} et d'y configurer le port en « \texttt{9600 8N1} ». Après l'avoir coupé, les paramètres restent actifs.
 
 
-\paragraph{}Les résultats obtenus sont assez précis (nous avons testé la simulation sur 3h pour vérifier le comportement du circuit (réel) à chaud). Différents graphes et tableaux sont disponibles à cette adresse : \url{https://github.com/eliemichel/sysdig/wiki/Horloge} (je ne les insère pas ici pour éviter de surcharger).
+\paragraph{}Les résultats obtenus sont assez précis (nous avons testé la simulation sur 3h pour vérifier le comportement du circuit (réel) à chaud). Différents graphes et tableaux sont disponibles à cette adresse : \url{https://github.com/eliemichel/sysdig/wiki/Horloge} (je ne les insère pas ici pour éviter de surcharger). On voit qu'il y a une déviation très régulière essentiellement due au maque de précision de notre potentiomètre.
 
 
 \section{Afficheurs}
@@ -568,7 +570,19 @@ Afin de contrôler la période des oscillation et l'ajuster au plus près d'une 
 \centering
 \includegraphics[height=4em]{zoom_output.eps}
 \end{figure}
+Nous avons deux afficheur : l'un graphique, par soucis d'esthétisme et pour rendre quelque chose de présentable ; l'autre en console permettant d'afficher facilement toutes sortes d'informations.
 
+\subsection{Afficheur non graphique}
+\paragraph{}Toute la logique étant dans le micro, l'afficheur est assez simple. Il doit lire son entrée et décoder les 7 segments (juste après qui aient été codés…) pour les afficher sous forme d'entiers dans la console.
+
+\paragraph{}Il calcule et affiche en plus la fréquence (moyenne et instantanée) du simulateur ainsi qu'un compteur affichant les secondes réelles (enfin réelles… selon l'horloge de l'ordinateur). Il peut aussi facilement s'adapter si on demande au micro de donner plus de sorties afin de simplifier le déboguage.
+
+\subsection{Afficheur graphique}
+\paragraph{}Il devait au début être fait en python en illustrant directement le fait que les sorties du micro sont branchées sans aucune autre forme de logique aux segments de l'afficheur, mais nous sommes tombé par hasard sur cette page : \url{raphaeljs.com/polar-clock.html} montrant un exemple de démonstration d'une bibliothèque graphique javascript représentant une horloge !
+
+\paragraph{}Nous avons voulu la « brancher » à notre simulateur, mais ce n'était pas évident car c'est en fait une page web. Nous avons donc codé un petit serveur local avec NodeJS écoutant l'entrée standard pour envoyer, \emph{via} les web sockets (et la bibliothèque \texttt{socket.io}), les informations à la page web lancée dans le navigateur, à l'adresse \texttt{http://localhost:3616}.
+
+\paragraph{}Cet afficheur étant imprévu et fait un peu vite à la fin, il n'est pas totalement au point au niveau du nombre de jours par mois. Les graduations ne changent pas et il est fixé à 30 jours, je qui entraîne un comportement un peu particulier lors de l'envoi d'une date supérieure.
 
 
 
