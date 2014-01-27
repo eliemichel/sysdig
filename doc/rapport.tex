@@ -35,7 +35,7 @@
 	\item Les entrées du circuit
 \end{itemize}
 
-\paragraph{}Il retourne ensuite les sorites du circuit. Il est intéressant de faire la distinction entre les entrées/sorties du circuit, qui se font en temps réel lors de la simulation et le chargement du circuit et de la ROM qui se font à l'initialisation, depuis des fichiers préalablement générés. Ces deux phases sont appelées respectivement \texttt{run} et \texttt{setup} et possèdent chacune un script éponyme à la racine de l'archive.
+\paragraph{}Il retourne ensuite les sorties du circuit. Il est intéressant de faire la distinction entre les entrées/sorties du circuit, qui se font en temps réel lors de la simulation et le chargement du circuit et de la ROM qui se font à l'initialisation, depuis des fichiers préalablement générés. Ces deux phases sont appelées respectivement \texttt{run} et \texttt{setup} et possèdent chacune un script éponyme à la racine de l'archive.
 
 
 \paragraph{}Le microprocesseur est construit en utilisant minijazz et un préprocesseur permettant l'agrégation de plusieurs fichiers. Le programme est assemblé par le programme jupiter. L'entrée du circuit est reliée par l'intermédiaire du port série à un oscillateur carré réel et la sortie peut être reliée à deux afficheurs, l'un graphique et l'autre non.
@@ -52,7 +52,7 @@ Les sources et dépendances du simulateur se trouvent dans le répertoire \textt
 \paragraph{}La compilation du simulateur nécessite make, ocamlopt, ocamldep, ocamllex et menhir. Le plus simple est d'utiliser Linux, bien que nous ayons également testé sous Windows \emph{via} cygwin. Il est probable que le simulateur fonctionne sous MacOS bien que nous n'ayons pas eu à disposition de telle machine.
 
 \paragraph{}\texttt{make sim} compile uniquement le simulateur alors que \texttt{make} (ou \texttt{make all}) lance également un exemple d'utilisation. Le programme \texttt{sim} ainsi créé est autonome.
-
+v
 \subsubsection{Fonctionnement général}
 Sim prend en entrée les fichiers suivants :
 \begin{itemize}
@@ -76,6 +76,7 @@ La syntaxe de la netlist peut se trouver ici : (en seconde partie)\\
 	\item Une ligne commençant directement par le caractère \texttt\# n'est pas considérée comme correspondant à une adresse.
 	\item Les adresses sont écrite par ordre croissant en partant de 0. Si le fichier est plus long que la taille de la rom, le comportement du simulateur n'est pas défini.
 	\item La première valeur entrée détermine la taille des mots de la mémoire. Les lignes suivantes sont automatiquement tronquées ou complétées par des 0. Veillez donc à ce que la première ligne ne soit pas vide !
+          \item Les premiers bits rencontrés sont les bits de poids faible
 \end{itemize}
 
 \subsubsection{Syntaxe de la commande sim}
@@ -130,7 +131,7 @@ Presque toutes les nappes ont été supprimées, sauf localement autour des prim
 \paragraph{}Il fait cependant mieux que ça, et ce pour plusieurs raisons.
 En premier lieu, la complexité du travail de Optimizer est  en $\mathcal O(n)$ ou $\mathcal O(n\log n)$, quand celle du Scheduler était de $\mathcal O(n^2)$. Cela  est rendu possible par le fait que l'Optimizer stocke dans son graphe  (qui représente la netlist) plus d'informations (notament l'équation  associée au noeud), ce qui permet donc de retrouver l'équation associée à  un noeud en temps constant, au lieu de devoir chercher dans une liste  (en temps linéaire donc). Sur une netlist de ~25000 portes, cela  multiplie l'efficacité par (au moins) 1000, ce qui se ressent quand on  passe de 50s de préparation à la simulation à moins d'une seconde.
 
-De plus, lors de la construction du graphe représentant la netlist,  l'Optimizer supprime les nappes. Une variable a:3 se verra remplacer par \texttt{a\_n0}, \texttt{a\_n1}, \texttt{a\_n2}. L'ordre  des variables étant important au niveau des inputs/outputs, ce détail  est bien sûr  contrôlé. Cela permet alors la suppression de la plupart des fonctions  SELECT, SLICE et CONCAT, qui deviennent simplement des égalités  bit-à-bit. À ce stade, le graphe comporte donc beaucoup plus de noeuds  que la netlist d'équations.
+De plus, lors de la construction du graphe représentant la netlist,  l'Optimizer supprime les nappes. Une variable a:3 se verra remplacer par \texttt{a\-n0}, \texttt{a\-n1}, \texttt{a\-n2}. L'ordre  des variables étant important au niveau des inputs/outputs, ce détail  est bien sûr  contrôlé. Cela permet alors la suppression de la plupart des fonctions  SELECT, SLICE et CONCAT, qui deviennent simplement des égalités  bit-à-bit. À ce stade, le graphe comporte donc beaucoup plus de noeuds  que la netlist d'équations.
 Lors  du retour à la netlist, on supprime les branches inutiles de la  netlist, à savoir toutes les équations qui ne servent pas au calcul des  outputs. La netlist est aussi triée par ordre topologique à ce moment.  Elle comporte beaucoup plus d'équations que l'orginal.
 
 En   dernier lieu, on supprime  toutes les équations de la forme y=x (sauf  celles qui concernent une  output) et on remplace la variable y par la  variable x dans la netlist. Cette phase supprime énormément de portes, ce qui permet à la fin d'obtenir une netlist bien plus petite que l'original. Par exemple :
@@ -250,19 +251,19 @@ par unité, ce qui a amené quelques choix discutables :
     si deux arguments sont exigés), alors que pour d'autres on peut choisir
     le(s) registre(s) d'argument(s). Cela est dû au fait que certaines unités
     manquaient de place par rapport à d'autres.
-  \item L'unité JUMP a accueilli les commandes WCA (Write Current Adress) et
+  \item L'unité JUMP a accueilli les commandes WCA (Write Current Address) et
     END (termine le programme)
 \end{itemize}
 
 
-\subsubsection{Notes sur le load immediat}
-Le LI est une instruction qui nous a posé problème car elle est contradictoire
+\subsubsection{Notes sur le load immediate}
+Le LI est une instruction qui nous a posé problème car elle est en contradiction
 avec la petite taille de nos instructions. En effet, l'instruction doit contenir
 la valeur que l'on veut charger, ce qui n'est pas possible avec des instructions
 plus petites que les mots machine.
 
 \paragraph{}
-Une première idée fut d'interpréter l'instruction suivante non pas comme une
+Une première idée fut d'interpréter l'instruction d'après non pas comme une
 instruction mais comme une valeur. En utilisant les 2 derniers bits de l'instruction
 LI puis les 6 bits de l'instruction suivante, on pouvait charger toute valeur.
 
@@ -272,7 +273,7 @@ manquait de cohérence et nous avons préféré faire un chargement partiel, ne 
 pas toutes les valeurs possibles.
 
 \paragraph{}
-Il s'est ensuite posé la question du choix valeurs à gérer. La réponse la plus immédiate
+Il s'est ensuite posé la question du choix des valeurs à gérer. La réponse la plus immédiate
 est de charger les bits de poids faible seulement. Une autre solution aurait
 pu être de choisir des valeurs que l'on est plus susceptible d'utiliser pour l'horloge,
 comme 24 ou 60, mais nous préfèrions conserver un minimum de généralité. Il était
@@ -298,12 +299,12 @@ Plutôt que de faire une instruction \emph{branch if equal zero} prenant en argu
 laisse le choix du type (avant/arrière, absolu/relatif) et de l'amplitude du saut
 à l'instruction suivante.
 
-Une amélioration que nous pourions envisager dans les instructions de saut est
+Une amélioration que nous pourrions envisager dans les instructions de saut est
 l'ajout de sauts de taille fixe. Il y a à cela deux raisons :
 \begin{itemize}
   \item Les instructions de saut relatif permettent de choisir un registre, contrairement
         à la philosophie que nous voulions adopter. C'est uniquement dû au fait qu'il
-        restait de la place dans le jeu d'instructions de l'unité JUMP mais on pourait
+        restait de la place dans le jeu d'instructions de l'unité JUMP mais on pourrait
         parfaitement envisager de retirer certaines de ces instructions.
   \item Les sauts relatifs sont le cas le plus courant où il est nécessaire de charger
         une constante écrite sur plus de 3 bits et est donc fastidieux à programmer.
@@ -380,7 +381,7 @@ Cette partie du microprocesseur n'était pas présente dans l'ancienne version r
 
 \paragraph{}Les opérations possibles sur ce pointeur \$c sont “ajouter 8” (INCR) et “retirer 8” (DECR), la valeur 8 correspondant au nombre d'adresses faciles d'accès. On enregistre en réalité $\frac{\$c}8$ étant donné que les 3 derniers bits sont toujours à 0. Cette méthode permet de limiter le nombre d'instructions à ajouter.
 
-\paragraph{}Il devient ainsi très simple d'accéder aux adresses au-delà de 8, bien que le temps d'accès ne soit plus constant. On a également pu augmenter la taille de la RAM. Bien que ce système permette de gérer une RAM de taille quelconque, nous nous sommes contenté de $2^16 = 65536$ adresses. Notre programme n'utilise en réalité que 8 chunks (24 adresses) mais par soucis de généralité nous avons voulu montré qu'il était possible de gérer une grande quantité de RAM et donc d'envisager de compiler n'importe quelle programme vers notre assembleur, ce que 256 adresses ne permet pas vraiment.
+\paragraph{}Il devient ainsi très simple d'accéder aux adresses au-delà de 8, bien que le temps d'accès ne soit plus constant. On a également pu augmenter la taille de la RAM. Bien que ce système permette de gérer une RAM de taille quelconque, nous nous sommes contenté de $2^{16} = 65536$ adresses. Notre programme n'utilise en réalité que 8 chunks (24 adresses) mais par soucis de généralité nous avons voulu montré qu'il était possible de gérer une grande quantité de RAM et donc d'envisager de compiler n'importe quelle programme vers notre assembleur, ce que 256 adresses ne permet pas vraiment.
 
 \begin{figure}[h]
 \centering
@@ -486,11 +487,9 @@ On ne pouvait lui donner de rôle sans aboutir à un jeu d'instruction complète
 
 \paragraph{}Un compilateur minijazz étant fourni, nous avons choisi la seconde option. Ce choix a cependant posé plusieurs problèmes.
 
-Premièrement, minijazz étant un langage très simple, il ne gère pas l'import de fichiers les uns dans les autres. Cette fonctionnalité nous semblait pourtant essentielle, d'une part pour pouvoir utiliser une même portion de circuit dans plusieurs tests distincts (par exemple le gpu et l'alu) et d'autre part pour pouvoir travailler sans se gêner sur le circuit (git gère bien mieux des fichiers séparés).
+Premièrement, minijazz étant un langage très simple, il ne gère pas l'import de fichiers les uns dans les autres. Cette fonctionnalité nous semblait pourtant essentielle, d'une part pour pouvoir utiliser une même portion de circuit dans plusieurs tests distincts (par exemple le gpu et l'alu) et d'autre part pour pouvoir travailler sans se gêner sur le circuit (git gère bien mieux des fichiers séparés). Nous avons donc rajouté cette fonctionnalité.
 
-Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit les « \texttt{The following constraint is not satisfied: ((8 = 0) ? 1 : (8 = (((0 <= (8 - 1)) ? (((8 - 1) - 0) + 1) : 0) + ((0 <= (8 - 8)) ? (((8 - 8) - 0) + 1) : 0))))} » ou les erreurs localisées « Quelque part entre la première et la dernière ligne du fichier ». Le debogage consistait donc en une longue dichotomie sur tout le code du microprocesseur.
-
-
+Deuxièmement, les messages d'erreur de mjc étaient assez obscurs, que ce soit les « \texttt{The following constraint is not satisfied: ((8 = 0) ? 1 : (8 = (((0 <= (8 - 1)) ? (((8 - 1) - 0) + 1) : 0) + ((0 <= (8 - 8)) ? (((8 - 8) - 0) + 1) : 0))))} » ou les erreurs localisées « Quelque part entre la première et la dernière ligne du fichier ». Le debogage consistait donc en une longue dichotomie sur tout le code du microprocesseur.
 
 
 
@@ -504,7 +503,7 @@ Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit
 
 \paragraph{}L'assembleur a été nommé « jupiter » et se trouve donc, avec le programme, dans le répertoire du même nom. Le programme a été loin d'être la partie la plus simple du fait des restrictions drastiques imposées au jeu d'instructions. Il a a fallu jongler avec les quatres seuls registres présents et surtout le \emph{load immediat} restreint à 3 bits.
 
-\paragraph{}Nous avons commencé par des tests simples, comme un unique compteur qui nécessitait déjà une vingtaine d'instructions. Dès l'ajout d'un seuil à 60, la difficulté du chargement de constante s'est présentée. Afin d'alléger la boucle principale, il était clair que nous devions charger les constantes à l'avance. Et à force de charger des constantes (60, 24, 30, etc) il a également fallu charger une constante à l'avance pour l'adresse de début de la boucle principale. Notre assembleur n'effectue pas lui-même l'édition des liens car il est important pour l'optimisation de maîtriser où exactement est enregistrée cette constante. Par exemple plutôt que de faire un LI sur plus de 3 bits (donc en plusieurs étapes), on peut préférer exploiter la valeur précédemment chargée et y ajouter une petite valeur.
+\paragraph{}Nous avons commencé par des tests simples, comme un unique compteur qui nécessitait déjà une vingtaine d'instructions. Dès l'ajout d'un seuil à 60, la difficulté du chargement de constante s'est présentée. Afin d'alléger la boucle principale, il était clair que nous devions charger les constantes à l'avance. Et à force de charger des constantes (60, 24, 30, etc) il a également fallu charger une constante à l'avance pour l'adresse de début de la boucle principale. Notre assembleur n'effectue pas lui-même l'édition des liens donc il est important pour l'optimisation de maîtriser où exactement est enregistrée cette constante. Par exemple plutôt que de faire un LI sur plus de 3 bits (donc en plusieurs étapes), on peut préférer exploiter la valeur précédemment chargée et y ajouter une petite valeur.
 
 \paragraph{}Il a également fallu conserver en RAM la valeur des différents compteurs car une fois envoyés au processeur graphique, elles ne peuvent plus être lues. Nous avons alors dû organiser la mémoire de façon cohérente et avons adopté le schéma suivant :
 
@@ -553,10 +552,10 @@ Afin de contrôler la période des oscillation et l'ajuster au plus près d'une 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.9\textwidth,height=0.9\textheight,keepaspectratio]{arduino.jpg.eps}
-\caption{\label{schema} Photographie du montage avec l'arduino. Ici l'arduino est branché (par le fil orange) à un bouton servant pour les tests.}
+\caption{\label{arduino_photo} Photographie du montage avec l'arduino. Ici l'arduino est branché (par le fil orange) à un bouton servant pour les tests.}
 \end{figure}
 
-\paragraph{}La deuxième étape consiste à interfacer cet oscillateur avec l'ordinateur. Nous utilisons pour celà un arduino avec un programme extrêmement simple : lire le pin 2 et écrire sa valeur sur le port série. Le port série est ensuite lu pas un programme sur l'ordinateur et envoyé par piping sur l'entrée de la simulation. Le shcéma du montage avec l'arduino est présenté en figure \ref{arduino_schema} et une photographie du montage réel est en figure \ref{arduino_photo}.
+\paragraph{}La deuxième étape consiste à interfacer cet oscillateur avec l'ordinateur. Nous utilisons pour celà un arduino avec un programme extrêmement simple : lire le pin 2 et écrire sa valeur sur le port série. Le port série est ensuite lu par un programme sur l'ordinateur et envoyé par piping sur l'entrée de la simulation. Le schéma du montage avec l'arduino est présenté en figure \ref{arduino_schema} et une photographie du montage réel est en figure \ref{arduino_photo}.
 
 \paragraph{}Concernant la lecture du port série depuis l'ordinateur, nous avons tout d'abord rédigé un script python, mais finalement il suffit de faire \texttt{cat < /dev/ttyACM0} pour lire le port série de ttyACM0 (ce nom peut varier d'une machine à l'autre, entre ttyACM* et ttyUSB* généralement). Le seul problème est de configurer correctement le port (baudrate, bit de parité, etc) et pour cela la commande \texttt{stty} est utilisée mais ne donne pas toujours les résultats escomptés. La seule solution trouvée est de lancer \texttt{minicom} et d'y configurer le port en « \texttt{9600 8N1} ». Après l'avoir coupé, les paramètres restent actifs.
 
@@ -582,10 +581,7 @@ Nous avons deux afficheur : l'un graphique, par soucis d'esthétisme et pour ren
 
 \paragraph{}Nous avons voulu la « brancher » à notre simulateur, mais ce n'était pas évident car c'est en fait une page web. Nous avons donc codé un petit serveur local avec NodeJS écoutant l'entrée standard pour envoyer, \emph{via} les web sockets (et la bibliothèque \texttt{socket.io}), les informations à la page web lancée dans le navigateur, à l'adresse \texttt{http://localhost:3616}.
 
-\paragraph{}Cet afficheur étant imprévu et fait un peu vite à la fin, il n'est pas totalement au point au niveau du nombre de jours par mois. Les graduations ne changent pas et il est fixé à 30 jours, je qui entraîne un comportement un peu particulier lors de l'envoi d'une date supérieure.
-
-
-
+\paragraph{}Cet afficheur étant imprévu et fait un peu vite à la fin, il n'est pas totalement au point au niveau du nombre de jours par mois. Les graduations ne changent pas et il est fixé à 30 jours, ce qui entraîne un comportement un peu particulier lors de l'envoi d'une date supérieure.
 
 
 \end{document}
