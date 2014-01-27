@@ -266,6 +266,16 @@
        y1="187.16653"
        x2="243.44676"
        y2="251.38277" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5833"
+       id="linearGradient4506"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-98.994953,-155.05842)"
+       x1="243.44676"
+       y1="187.16653"
+       x2="243.44676"
+       y2="251.38277" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -275,10 +285,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="239.92592"
-     inkscape:cy="140.58398"
+     inkscape:cx="278.15978"
+     inkscape:cy="132.23528"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g4498"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -365,7 +375,7 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path6138"
-       d="m 366.93791,172.11745 0,29.04189"
+       d="m 366.93791,123.63013 0,77.52921"
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <g
        id="g5889"
@@ -910,7 +920,7 @@
          sodipodi:role="line">web socket</tspan></text>
     <g
        id="g6327"
-       transform="matrix(0.44167768,0,0,0.44167768,91.354242,121.79687)">
+       transform="matrix(0.44167768,0,0,0.44167768,91.354242,120.74839)">
       <rect
          style="fill:url(#linearGradient6335);fill-opacity:1;stroke:#a1a1a1;stroke-opacity:1"
          id="rect6329"
@@ -1085,5 +1095,75 @@
          id="tspan6398"
          x="423.15921"
          y="294.92325">Output</tspan></text>
+    <g
+       transform="matrix(0.44167768,0,0,0.44167768,299.94892,120.74839)"
+       id="g4498">
+      <rect
+         ry="2.2728431"
+         rx="2.2728431"
+         y="33.623344"
+         x="90.913727"
+         height="60.609154"
+         width="122.22845"
+         id="rect4500"
+         style="fill:url(#linearGradient4506);fill-opacity:1;stroke:#a1a1a1;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text4502"
+         y="66.767876"
+         x="150.8485"
+         style="font-size:18.32761383px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#848484;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+         xml:space="preserve"><tspan
+           y="66.767876"
+           x="150.8485"
+           id="tspan4504"
+           sodipodi:role="line">Preprocesseur</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:9.41546059px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#848484;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+         x="151.13"
+         y="78.936043"
+         id="text4520"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan4522"
+           x="151.13"
+           y="78.936043">Paramètres du programme</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:2.62569642px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       x="374.22015"
+       y="123.96761"
+       id="text4508"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4510"
+         x="374.22015"
+         y="123.96761">program.param.s</tspan></text>
+    <g
+       id="g4512"
+       transform="translate(57.234242,108.85028)">
+      <rect
+         style="fill:#fafafa;fill-opacity:1;stroke:#cacaca;stroke-width:0.60000002;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         id="rect4514"
+         width="11.848816"
+         height="15.022607"
+         x="303.83389"
+         y="7.5184565"
+         rx="0"
+         ry="0" />
+      <text
+         xml:space="preserve"
+         style="font-size:6.21887779px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#848484;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+         x="309.47873"
+         y="16.300329"
+         id="text4516"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan4518"
+           x="309.47873"
+           y="16.300329">.s</tspan></text>
+    </g>
   </g>
 </svg>

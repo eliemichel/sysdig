@@ -9,28 +9,66 @@
 
 \usepackage[top=2cm, bottom=2.5cm, left=1.5cm, right=1.5cm]{geometry}
 
-\title{Système Digital\\Rapport court microprossesseur}
+\title{Système Digital\\Rapport de projet}
 \author{Elie Michel, Louis Garrigue, Nicolas Jeannerod et Aurélien Delobelle}
-\date{7 janvier 2013}
+\date{27 janvier 2013}
 
 \begin{document}
 
 \maketitle
 
-\section{Introduction}
+\section{Vue d'ensemble}
+
+\begin{figure}[h]
+\centering
+\includegraphics{organisation.eps}
+\caption{\label{orga} Organisation du projet}
+\end{figure}
+\paragraph{}Le but principal de ce projet est la conception d'un microprocesseur, mais c'est autour du simulateur que le projet s'organise, comme le montre la figure \ref{orga}.
+
+\paragraph{}Ce simulateur reçoit des informations de trois types différents :
+\begin{itemize}
+	\item Le circuit à simuler
+	\item L'état de la ROM (le programme, dans le cas de notre microprocesseur)
+	\item Les entrées du circuit
+\end{itemize}
+
+\paragraph{}Il retourne ensuite les sorites du circuit. Il est intéressant de faire la distinction entre les entrées/sorties du circuit, qui se font en temps réel lors de la simulation et le chargement du circuit et de la ROM qui se font à l'initialisation, depuis des fichiers préalablement générés. Ces deux phases sont appelées respectivement `run` et `setup` et possèdent chacune un script éponyme à la racine de l'archive.
+
+
+\paragraph{}Le simulateur lui-même peut également se décomposer en plusieurs phases :
+\begin{itemize}
+	\item Le parseur de netlist
+	\item L'optimizer, qui ordonne et simplifie les netlists
+	\item Le parseur de fichier de ROM
+	\item L'initialisation, convertissant l'AST en structure plus adaptée à la simulation
+	\item Le cœur du simulateur
+\end{itemize}
+
+
+\paragraph{}Le microprocesseur est construit en utilisant minijazz et un préprocesseur permettant l'agrégation de plusieurs fichiers. Le programme est assemblé par le programme jupiter. L'entrée du circuit est reliée par l'intermédiaire du port série à un oscillateur carré réel et la sortie peut être reliée à deux afficheurs, l'un graphique et l'autre non.
+
+
+
+\section{Simulateur}
+
+
+
+\section{Microprocesseur}
+\subsection{Introduction}
 
 Nous avons commencé par nous baser sur le fonctionnement des microprocesseurs
 MIPS étant donné que c'était la seule architecture que nous connaissions.
 Nous avons cependant tenu à faire quelque chose de différent.
 
-\subsection{Ligne de conduite}
+\subsubsection{Ligne de conduite}
 Notre premier choix important a été de décider que chaque fonction du
 microprocesseur prendrait ses arguments dans les mêmes registres prévus à cet effet
 (à savoir les \$a*), et renverrait ses résultats dans les registres prévus à
 cet effet (les \$r*), à l'instar des appels système de MIPS qui regardent
 toujours \$v0 et \$a0.
 
-\subsection{Densité}
+\subsubsection{Densité}
 Ce choix nous a dirigé vers un objectif de densité. Nous avons alors constaté
 qu'il était possible de ne conserver que 4 registres
 \footnote{\$a0, \$a1, \$r0, \$r1}, réduisant par là énormément le nombre
@@ -44,9 +82,9 @@ trop d'instructions) nous l'avons enrichi. Finalement, les instructions sont
 codées sur 6 bits.
 
 
-\section{Architecture générale}
+\subsection{Architecture générale}
 
-\subsection{Taille des valeurs}
+\subsubsection{Taille des valeurs}
 Le choix de la taille en bit des valeurs manipulées par le microprocesseur est
 un choix important et l'un des premiers que l'on ait fait. Il nous fallait trouver
 un compromis entre petite taille et maniabilité.
@@ -57,9 +95,7 @@ choix raisonnable. Pour la gestion des années, nous avons choisi de découper e
 deux bytes selon son écriture décimale et non binaire afin de simplifier la
 conversion en 7 segments.
 
-Ce choix a par la même occasion déterminé le nombre de cases mémoire puisque nous
-utilisons un registre pour choisir l'adresse. Une RAM de 256 adresses est largement
-suffisante pour programmer une horloge.
+Ce choix a par la même occasion déterminé le nombre de cases mémoire puisque nous utilisons un registre pour choisir l'adresse. Une RAM de 256 adresses est largement suffisante pour programmer une horloge. Nous sommes cependant revenu sur ce choix par la suite. (\emph{cf}~\ref{micro_update})
 
 \paragraph{Dans la ROM}
 Il n'était par contre pas possible de se limiter à des programmes de 256 instructions
@@ -71,7 +107,7 @@ entre la taille des mots machine et celle du curseur d'instructions nous a contr
 possible de spécifier des tailles absolues dans des cas où c'est nécessaire en
 utilisant deux registres.
 
-\subsection{Séparation en unités}
+\subsubsection{Séparation en unités}
 Nous avons séparé les instructions en 4 unités en fonction de leurs
 deux premiers bits en langage machine :
 \begin{itemize}
@@ -101,7 +137,6 @@ par unité, ce qui a amené quelques choix discutables :
     END (termine le programme)
 \end{itemize}
 
-\subsection{Notes détaillés de certaines instructions}
 
 \subsubsection{Notes sur le load immediat}
 Le LI est une instruction qui nous a posé problème car elle est contradictoire
@@ -189,9 +224,57 @@ graphique passent donc dans un module de conversion en affichage à 7 segments a
 d'être envoyées sur la sortie.
 
 
-\section{Architecture détaillée}
+\subsubsection{Interactions entre les différentes unités}
 
-\subsection{Le jeu d'instructions}
+On envoit à chaque unité son code opération (les quatre bits qui ne servent pas
+à définir l'unité), et elle exécute cette opération. L'ALU par exemple, envoit
+les valeurs \$a0 et \$a1 à chaque opérations, et reçoit tous les \$r0 et \$r1
+associés. Elle mux alors selon le code opération qu'elle a reçu. De même, les
+résultats des unités sont mux pour n'effectuer que l'action voulue. Selon
+l'unité, ces résultats peuvent changer différents choses (les valeurs des
+registres pour l'ALU, l'emplacement de la tête de lecture pour JUMP, etc).
+Les instructions ayant généralement des effets de bord (le flip pour SYS,
+la modification de la RAM pour MEM, les sauts pour JUMP), on indique à chaque
+unité si elle doit agir ou pas.\\
+
+\begin{figure}[h]
+\centering
+\includegraphics{archi.eps}
+\caption{\label{archi} Architecture microprocesseur}
+\end{figure}
+\paragraph{}La figure \ref{archi} présente l'architecture microprocesseur et l'interaction
+entre les différentes unités.
+
+
+\subsubsection{GPU}
+Derrière le module SYS se cache en fait un cinquième module : le GPU (\emph{Graphical Processing Unit}, je précise par principe bien que je me doute que vous en connaissiez le sens). Le GPU représente en nombre de portes la moitié de notre processeur et a pour rôle de convertir les entiers codés en binaire en une série de codages 7 segments. Le poids important de cette partie du circuit vient du fait qu'il doit gérer simultanément les 7 entiers affichés.
+
+\paragraph{}Les deux actions les plus effectuées par le GPU sont les divisions euclidiennes par 10 et les conversions 4 bits binaires vers 7 segments (le comportement en cas de valeur supérieure à 9 n'étant pas spécifié). Nous avons tenté d'optimiser les divisions par 10, le diviseur étant connu statiquement, mais il s'est avéré que le nombre de portes n'était pas diminué. Il se peut que cette absence de différence entre la division générale et la division par une constante connue d'avance disparaisse lors de la phase d'optimisation du simulateur, mais nos tests datent d'avant l'existence de cette phase.
+
+\paragraph{}La séparation CPU/GPU est un point très intéressant du circuit : il est central puisque le GPU représente la moitié du circuit, mais les liens entre les deux sont d'une part peu nombreux et d'autre part à sens unique. Cela nous a permis de couper la simulation en deux afin d'optimiser l'utilisation de processeurs multi-cœurs en lançant simplement deux occurences du simulateur.
+
+
+\subsection{Ajout récent}
+\label{micro_update}
+Cette partie du microprocesseur n'était pas présente dans l'ancienne version rendue le 7 janvier mais s'est avéré être indispensable pour limiter le taille du programme.
+
+\paragraph{}On a déjà remarqué que les premières adresses mémoire (de 0 à 7) sont relativement simple d'accès (un \emph{load immediat} suffit) alors que les adresses suivantes sont presque impossible à atteindre sans effacer presque tous les registres en pratique et donc inutilisables. L'idée que l'on a eu pour y remédier est d'ajouter un pseudo-registre, noté \$c, qui serait un curseur vers une adresse donnée de la RAM à partir duquel tous les accès mémoire se feraient. Un accès à l'adresse $x$ se fait ainsi en réalité à l'adresse \$c + $x$.
+
+\paragraph{}Les opérations possibles sur ce pointeur \$c sont “ajouter 8” (INCR) et “retirer 8” (DECR), la valeur 8 correspondant au nombre d'adresses faciles d'accès. On enregistre en réalité $\frac{\$c}8$ étant donné que les 3 derniers bits sont toujours à 0. Cette méthode permet de limiter le nombre d'instructions à ajouter.
+
+\paragraph{}Il devient ainsi très simple d'accéder aux adresses au-delà de 8, bien que le temps d'accès ne soit plus constant. On a également pu augmenter la taille de la RAM. Bien que ce système permette de gérer une RAM de taille quelconque, nous nous sommes contenté de $2^16 = 65536$ adresses. Notre programme n'utilise en réalité que 8 chunks (24 adresses) mais par soucis de généralité nous avons voulu montré qu'il était possible de gérer une grande quantité de RAM et donc d'envisager de compiler n'importe quelle programme vers notre assembleur, ce que 256 adresses ne permet pas vraiment.
+
+\paragraph{}Notons que nous aurions pu choisir, au vu du son poids important, de gérer la logique du GPU directement dans l'afficheur. Mais nous tenions à jouer le jeu de la simulation jusqu'au bout et imaginer la sortie du simulateur directement branchée fil par fil aux 98 segments de l'afficheur.
+
+\begin{figure}[h]
+\centering
+\includegraphics{archi_update.eps}
+\caption{\label{archi_update} Architecture microprocesseur mise à jour}
+\end{figure}
+\paragraph{}La figure \ref{archi_update} met en évidence la modification approtée sur le schéma du microprocesseur. On peut noter que nous avons dû faire une entorse à notre partitions en différentes unités : le curseur \$c, bien que relatif aux accès mémoire, est géré par le module système. C'était le seul endroit où il subsistait des adresses d'instruction libres.
+
+
+\subsection{Jeu d'instruction détaillé}
 
 \begin{savenotes}
 \begin{longtable}{|c|l|l|}
@@ -207,6 +290,9 @@ d'être envoyées sur la sortie.
   \hline\hline
   00 ** ** & \multicolumn{2}{|l|}{SYS} \\
   \hline
+  00 00 10 & INCR    & Incrémente le curseur de bloc. \\
+  00 00 11 & DECR    & Décrémente le curseur de bloc. \\
+  \hline\hline
   00 01 00 & INPUT    & \'Ecrit l'input dans un registre donné. \\
   00 1* ** & OUTPUT x & \'Ecrit la valeur de \$a0 dans la mémoire graphique x, avec 0 $\leq$ x $\leq$ 7 \\
   00 11 11 & FLIP     & Actualise l'affichage du timer avec ce qu'il y a dans sa mémoire. \\
@@ -248,7 +334,7 @@ d'être envoyées sur la sortie.
   \hline
   11 00 ij & JFRA ij & Ajoute \$[i][j] à l'adresse de lecture (saut en avant relatif). \\
   11 01 ij & JBRA ij & Retranche \$[i][j] à l'adresse de lecture (saut en arrière relatif). \\
-  11 10 ij & IIO  ij & Saute une instruction si le registre donné est nul. \\
+  11 10 ij & IIO  ij & Saute une instruction si le registre donné est non nul. \\
   11 11 0i & JAA  i  & Saut à une adresse absolue donnée par \$[i]0.\$[i]1\\
   11 11 10 & WCA     & \'Ecrit l'adresse courante dans \$a0.\$a1. \\
   11 11 11 & END      & Termine le programme. \\
@@ -258,7 +344,7 @@ d'être envoyées sur la sortie.
 \end{longtable}
 \end{savenotes}
 
-On peut constater qu'il manque 4 instructions dans ce tableau, les 4 premières.
+On peut constater qu'il manque 2 instructions dans ce tableau, les 2 premières.
 La toute première, l'instruction 00 00 00, a volontairement été laissée inactive
 car c'est la valeur que prennent toutes les cases de la ROM par défaut. Il était
 important pour aider au déboguage qu'elle ne fasse rien et peut s'avérer utile
@@ -266,32 +352,41 @@ si on fait des sauts de taille approximative et que l'on a donc besoin d'ajuster
 ce qui peut être le cas lorsque l'on cherche à optimiser le code en profitant du
 fait qu'une certaine valeur soit déjà chargée dans un registre.
 
-Pour les 3 instructions restantes, elles ne font rien non plus mais uniquement car
-on ne leur a pas trouvé de rôle. Elles font partie de l'unitée système et sont trop
+\paragraph{}Pour l'instruction restante, elle ne fait rien non plus mais uniquement car
+on ne lui a pas trouvé de rôle. Elle fait partie de l'unitée système et est trop
 peu nombreuse pour ajouter par exemple une fonction de lecture des registres graphiques.
-On ne pouvait leur donner de rôle sans aboutir à un jeu d'instruction complètement
-incohérent. Elles pouront cependant s'avérer utiles si on ajoute d'autres entrées
-au circuit : des entrées permettant le contrôle de l'horloge.
+On ne pouvait lui donner de rôle sans aboutir à un jeu d'instruction complètement incohérent.
 
-\subsection{Interactions entre les différentes unités}
 
-On envoit à chaque unité son code opération (les quatre bits qui ne servent pas
-à définir l'unité), et elle exécute cette opération. L'ALU par exemple, envoit
-les valeurs \$a0 et \$a1 à chaque opérations, et reçoit tous les \$r0 et \$r1
-associés. Elle mux alors selon le code opération qu'elle a reçu. De même, les
-résultats des unités sont mux pour n'effectuer que l'action voulue. Selon
-l'unité, ces résultats peuvent changer différents choses (les valeurs des
-registres pour l'ALU, l'emplacement de la tête de lecture pour JUMP, etc).
-Les instructions ayant généralement des effets de bord (le flip pour SYS,
-la modification de la RAM pour MEM, les sauts pour JUMP), on indique à chaque
-unité si elle doit agir ou pas.\\
+\subsection{Outils de développement}
 
-\begin{figure}[h]
-\centering
-\includegraphics{archi.eps}
-\caption{\label{archi} Architecture microprocesseur}
-\end{figure}
-La figure \ref{archi} présente l'architecture microprocesseur et l'interaction
-entre les différentes unités.
+\paragraph{}Le microprocesseur doit être décrit sous forme de netlist. On se rend cependant très vite compte en faisant quelques essais que rédiger directement en netlist est extrêmement fastidieux (et de fait, on manipulera par moment des netlist de près de 30 000 lignes). De nombreuses portions du code se répètent, certaines sont paramétriques et si on décide de changer la taille des mots machine par exemple on est bien embêté.
+
+\paragraph{}C'est pourquoi il est impératif d'utiliser une description plus haut niveau. Il y a pour cela deux possibilités :
+\begin{itemize}
+	\item utiliser un programme générant directement la netlist pour le micro
+	\item compiler en netlist depuis un langage de description de circuits plus haut niveau.
+\end{itemize}
+
+\paragraph{}Un compilateur minijazz étant fourni, nous avons choisi la seconde option. Ce choix a cependant posé plusieurs problèmes.
+
+Premièrement, minijazz étant un langage très simple, il ne gère pas l'import de fichiers les uns dans les autres. Cette fonctionnalité nous semblait pourtant essentielle, d'une part pour pouvoir utiliser une même portion de circuit dans plusieurs tests distincts (par exemple le gpu et l'alu) et d'autre part pour pouvoir travailler sans se gêner sur le circuit (git gère bien mieux des fichiers séparés).
+
+Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit les « The following constraint is not satisfied: ((8 = 0) ? 1 : (8 = (((0 <= (8 - 1)) ? (((8 - 1) - 0) + 1) : 0) + ((0 <= (8 - 8)) ? (((8 - 8) - 0) + 1) : 0)))) » ou les erreurs localisées « Quelque part entre la première et la dernière ligne du fichier ». Le debogage consistait donc en une longue dichotomie sur tout le code du microprocesseur.
+
+
+
+
+
+\section{Programme}
+
+\section{Oscillateur}
+
+\section{Afficheurs}
+
+
+
+
+
 
 \end{document}
