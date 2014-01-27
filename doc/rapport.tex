@@ -529,9 +529,37 @@ Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit
 \includegraphics[height=4em]{zoom_input.eps}
 \end{figure}
 
+\paragraph{}La question de la source de temps s'est posée assez vite. Nous avions le choix entre fixer la cadence du processeur et compter les instructions ou envoyer un signal périodique en entrée. Nous avons choisi la seconde option, plus souple et plus proche de la réalité, et nous avons même décidé de ne pas utiliser l'horloge de l'ordinateur mais un circuit électronique réel.
 
 
+\begin{figure}[h]
+\centering
+\includegraphics{oscillator.jpg.eps}
+\caption{\label{schema} Schéma de l'oscillateur carré utilisé}
+\end{figure}
+\paragraph{}Le circuit, oscillateur carré, est réalisé à l'aide de deux portes NOT (enfin des portes NANDs avec les deux entrées reliées dans la pratique), deux résistances et un condensateur, comme le montre la figure \ref{schema}.
 
+Afin de contrôler la période des oscillation et l'ajuster au plus près d'une seconde, nous avons remplacé la résistance centrale par un potentiomètre et avons ainsi atteint une précision de $10^{-3}$s.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics{sysdig_clock.eps}
+\caption{\label{arduino_schema} Schéma du montage avec l'arduino}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth,height=0.9\textheight,keepaspectratio]{arduino.jpg.eps}
+\caption{\label{schema} Photographie du montage avec l'arduino. Ici l'arduino est branché (par le fil orange) à un bouton servant pour les tests.}
+\end{figure}
+
+\paragraph{}La deuxième étape consiste à interfacer cet oscillateur avec l'ordinateur. Nous utilisons pour celà un arduino avec un programme extrêmement simple : lire le pin 2 et écrire sa valeur sur le port série. Le port série est ensuite lu pas un programme sur l'ordinateur et envoyé par piping sur l'entrée de la simulation. Le shcéma du montage avec l'arduino est présenté en figure \ref{arduino_schema} et une photographie du montage réel est en figure \ref{arduino_photo}.
+
+\paragraph{}Concernant la lecture du port série depuis l'ordinateur, nous avons tout d'abord rédigé un script python, mais finalement il suffit de faire \texttt{cat < /dev/ttyACM0} pour lire le port série de ttyACM0 (ce nom peut varier d'une machine à l'autre, entre ttyACM* et ttyUSB* généralement). Le seul problème est de configurer correctement le port (baudrate, bit de parité, etc) et pour cela la commande \texttt{stty} est utilisée mais ne donne pas toujours les résultats escomptés. La seule solution trouvée est de lancer \texttt{minicom} et d'y configurer le port en « \texttt{9600 8N1} ». Après l'avoir coupé, les paramètres restent actifs.
+
+
+\paragraph{}Les résultats obtenus sont assez précis (nous avons testé la simulation sur 3h pour vérifier le comportement du circuit (réel) à chaud). Différents graphes et tableaux sont disponibles à cette adresse : \url{https://github.com/eliemichel/sysdig/wiki/Horloge} (je ne les insère pas ici pour éviter de surcharger).
 
 
 \section{Afficheurs}
@@ -540,6 +568,8 @@ Deuxièmement, les messages d'erreur de mjc étaient assez obscures, que ce soit
 \centering
 \includegraphics[height=4em]{zoom_output.eps}
 \end{figure}
+
+
 
 
 
