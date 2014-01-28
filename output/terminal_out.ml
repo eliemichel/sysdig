@@ -48,7 +48,7 @@ let buff = String.create 1 in
 		s := "";
 		while String.length !s < 99 do
 			match Unix.read Unix.stdin buff 0 1 with
-				| 0 -> ()(*Format.printf "\nClose output (End of pipe)@." ; exit 0*)
+				| 0 -> Format.printf "\nClose output (End of pipe)@." ; exit 0
 				| n -> s := !s ^ buff
 		done;
 		let aux i = (int_of_7seg (String.sub !s (7 * i + 1) 7)) in

@@ -132,9 +132,45 @@
 
 \section{Afficheurs}
 % Aurélien (TODO)
-\begin{frame}{Afficheurs}
+\begin{frame}{Afficheur non graphique}
+	\begin{block}{Afficheur heure et date}
+		\begin{itemize}
+			\item Lecture en continue
+			\item Décodage 7 segments $\rightarrow$ chiffre
+		\end{itemize}
+	\end{block}
 	
+	\pause
+	
+	\begin{block}{Afficheur stats}
+		\begin{itemize}
+			\item Secondes « réelles »
+			\item Fréquences (moyenne et instantanée)
+		\end{itemize}
+	\end{block}
 \end{frame}
+
+
+\begin{frame}{Afficheur graphique}
+	\begin{block}{Serveur}
+		\begin{itemize}
+			\item Serveur NodeJS
+			\item Même base que l'afficheur non graphique
+			\item Permet de communiquer avec le client en temps réel
+			\item Envoi toutes les 100ms
+		\end{itemize}
+	\end{block}
+	
+	\pause
+	
+	\begin{block}{Client}
+		\begin{itemize}
+			\item Inspiré d'un exemple de la bibliothèque graphique RaphaëlJS
+			\item Ne gère pas correctement le nombre de jours par mois
+		\end{itemize}
+	\end{block}
+\end{frame}
+
 
 
 \section{Oscillateur}
