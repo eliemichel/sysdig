@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 \usepackage[francais]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -18,68 +18,79 @@
 \date{28 janvier 2014}
 
 \begin{document}
-\maketitle
+
+\begin{frame}
+  \maketitle
+\end{frame}
 
 \section*{Introduction}
 
 \begin{frame}{Vue d'ensemble}
-	\begin{figure}
-		\centering
-		\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{organisation}
-	\end{figure}
+  \begin{figure}
+    \centering
+    \includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{organisation}
+  \end{figure}
 \end{frame}
 
 \begin{frame}{Sommaire}
-	\tableofcontents
+  \tableofcontents
 \end{frame}
 
 
-\section{Simulateur}
-% Nicolas et Élie
+\section{Simulateur} % Nicolas et Élie
+
 \begin{frame}{Simulateur - Fonctionnement général}
-	\begin{itemize}
-		\item Parseur de netlist
-		\item Optimizer (ordonne et simplifie les netlists)
-		\item Parseur de fichier de ROM
-		\item Lecture/Écriture des entrées/sorties du circuit
-		\item Initialisation
-		\item Cœur du simulateur
-	\end{itemize}
+  \begin{itemize}
+  \item Parseur de netlist
+  \item Optimizer (ordonne et simplifie les netlists)
+  \item Parseur de fichier de ROM
+  \item Lecture/Écriture des entrées/sorties du circuit
+  \item Initialisation
+  \item Cœur du simulateur
+  \end{itemize}
 \end{frame}
 % Décomposé en Optimisation | Utilisation (ROM & entrées/sorties)
 
 \begin{frame}{Simulateur - Fonctionnement interne}
-	\begin{block}{Optimizer}
-		% Nicolas (TODO)
-	\end{block}
-	
-	\pause
-	
-	\begin{block}{Simulation}
-		\begin{itemize}
-			\item Problèmes d'optimisation
-			\item Phase d'initialisation pour modifier la structure des données
-		\end{itemize}
-	\end{block}
+  
+  \begin{block}{Optimizer}
+    \begin{itemize}
+    \item Successeur du Scheduler
+    \item Suppression des nappes (sauf vers RAM et ROM)
+    \item Suppression des doublons
+    \item Problèmes de complexité
+    \end{itemize}
+  \end{block}
+  
+  \pause
+  
+  \begin{block}{Simulation}
+    \begin{itemize}
+    \item Problèmes d'optimisation
+    \item Phase d'initialisation pour modifier la structure des données
+    \end{itemize}
+  \end{block}
+  
 \end{frame}
 
 \begin{frame}{Simulateur - Utilisation}
-	\begin{block}{ROM}
-		\begin{itemize}
-			\item Contient le programme à exécuter.
-			\item Décrit par un fichier .bin, suite de 0 et 1 pouvant contenir des commentaires.
-		\end{itemize}
-	\end{block}
+
+  \begin{block}{ROM}
+    \begin{itemize}
+    \item Contient le programme à exécuter.
+    \item Décrit par un fichier .bin, suite de 0 et 1 pouvant contenir des commentaires.
+    \end{itemize}
+  \end{block}
 	
-	\pause
+  \pause
 	
-	\begin{block}{Entrées/Sorties}
-		\begin{itemize}
-			\item Utilisations de l'entrée/sortie standard
-			\item Communication avec les périphériques par pipe
-			\item Possibilité d'asynchronisation de l'entrée
-		\end{itemize}
-	\end{block}
+  \begin{block}{Entrées/Sorties}
+    \begin{itemize}
+    \item Utilisations de l'entrée/sortie standard
+    \item Communication avec les périphériques par pipe
+    \item Possibilité d'asynchronisation de l'entrée
+    \end{itemize}
+  \end{block}
 
 \end{frame}
 
