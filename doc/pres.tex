@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass{beamer}
 \usepackage[francais]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -124,7 +124,13 @@
 \section{Programme}
 % Louis (TODO)
 \begin{frame}{Programme}
-	
+	\begin{itemize}
+		\item Lexer "compilateur"
+		\item Initialisation de la RAM
+		\item LUT dans la RAM à l'initialisation
+		\item Réinitialisation de la LUT au changement d'années (pour traiter les années bisextiles)
+		\item Indentation pour connaître la valeur de c
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Programme - Gestion de la mémoire}
@@ -137,6 +143,16 @@
 		\item Surtout lorsqu'il a fallu prendre en compte le nombre de jours par mois
 		\item LUT dans la RAM à l'initialisation
 		\item Réinitialisation de la LUT au changement d'années (pour traiter les années bisextiles)
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Programme - Compilation}
+	\begin{itemize}
+		\item Langage plus haut niveau pour créer le code
+		\item Pile et données statiques
+		\item Valeurs des Li6 chargés au début
+		\item Vérification : valeur de c
+		\item Optimisation difficile
 	\end{itemize}
 \end{frame}
 
