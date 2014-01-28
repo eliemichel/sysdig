@@ -4,9 +4,12 @@
 
 all: rapport pres
 
-%: %.tex
-	latex $@.tex
-	dvipdfmx $@.dvi
+rapport: rapport.tex
+	latex rapport.tex
+	dvipdf rapport.dvi
+
+pres: pres.tex
+	pdflatex pres.tex
 
 clean:
 	@rm -fv *.aux *.dvi *.log *.nav *.out *.snm *.toc
